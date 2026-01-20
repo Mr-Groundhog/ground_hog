@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 9526",
-    "build": "next build",
     "start": "next start -p 9526",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build": "prisma generate && prisma db push && next build",
+    "prisma:mysql": "prisma generate --schema=./prisma/schema.mysql.prisma"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

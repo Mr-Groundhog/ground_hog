@@ -41,7 +41,7 @@ const postSchema = z.object({
   summary: z.string().optional(),
   coverImage: z.string().optional(),
   categoryId: z.string().optional(),
-  published: z.boolean().default(false),
+  published: z.boolean(),
 });
 
 type PostFormValues = z.infer<typeof postSchema>;
@@ -63,7 +63,7 @@ interface EditorUIProps {
 
 import { useLoadingStore } from "@/store/loading-store";
 
-export function EditorUI({ initialData, currentUserId }: EditorUIProps) {
+export function EditorUI({ initialData, currentUserId, categories }: EditorUIProps) {
   const router = useRouter();
   const { startLoading, stopLoading } = useLoadingStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,7 +79,7 @@ export function EditorUI({ initialData, currentUserId }: EditorUIProps) {
       summary: initialData?.summary || "",
       coverImage: initialData?.coverImage || "",
       categoryId: initialData?.categoryId || "",
-      published: initialData?.published || false,
+      published: initialData?.published ?? false,
     },
   });
 
@@ -128,12 +128,12 @@ export function EditorUI({ initialData, currentUserId }: EditorUIProps) {
     // 触发表单提交，如果校验通过则调用 onSubmit
     // 这里需要手动触发 submit，因为按钮在 form 外部或者作为 trigger
     // 最简单的方式是把按钮放在 form 内部，或者使用 handleSubmit(onSubmit)()
-    handleSubmit(onSubmit)();
+    form.handleSubmit(onSubmit)();
   };
 
   const handleSaveDraft = () => {
     setValue("published", false);
-    handleSubmit(onSubmit)();
+    form.handleSubmit(onSubmit)();
   };
 
   return (

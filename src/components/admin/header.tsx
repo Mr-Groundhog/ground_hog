@@ -76,7 +76,7 @@ export function AdminHeader() {
            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
              <Globe className="h-4 w-4" />
            </Button>
-           <ThemeToggle />
+           {/* <ThemeToggle /> */}
            {/* <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
              <Bell className="h-4 w-4" />
            </Button>

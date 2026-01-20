@@ -7,6 +7,7 @@ datasource db {
   // 重置
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // 注释
   // directUrl = env("DIRECT_URL")
 }
 

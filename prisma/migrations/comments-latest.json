@@ -1,0 +1,173 @@
+{
+  "users": {
+    "table": {
+      "tableName": "users",
+      "comment": ""
+    },
+    "columns": [
+      {
+        "tableName": "users",
+        "columnName": "id",
+        "comment": "主键，建议使用 cuid 提高安全性 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "username",
+        "comment": "用户名，全局唯一 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "email",
+        "comment": "邮箱，全局唯一 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "password",
+        "comment": "加密后的哈希密码 (第三方登录注册时可为空) "
+      },
+      {
+        "tableName": "users",
+        "columnName": "nickname",
+        "comment": "昵称 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "avatar",
+        "comment": "头像 URL "
+      },
+      {
+        "tableName": "users",
+        "columnName": "bio",
+        "comment": "个人简介 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "gender",
+        "comment": "性别：0-保密, 1-男, 2-女 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "role",
+        "comment": "角色：USER(普通用户), ADMIN(管理员) "
+      },
+      {
+        "tableName": "users",
+        "columnName": "is_active",
+        "comment": "是否激活 (用于管理员手动冻结账号) "
+      },
+      {
+        "tableName": "users",
+        "columnName": "is_delete",
+        "comment": "0: 正常, 2: 被删除 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "deleted_at",
+        "comment": "记录删除的具体时间 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "email_verified",
+        "comment": "邮箱验证时间 (非空则表示已验证) "
+      },
+      {
+        "tableName": "users",
+        "columnName": "phone",
+        "comment": "手机号 (可选扩展) "
+      },
+      {
+        "tableName": "users",
+        "columnName": "phone_verified",
+        "comment": "手机验证时间 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "created_at",
+        "comment": "注册时间 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "updated_at",
+        "comment": "最后一次修改资料时间 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "last_login_at",
+        "comment": "最后一次登录时间 "
+      },
+      {
+        "tableName": "users",
+        "columnName": "last_login_ip",
+        "comment": "最后一次登录 IP "
+      }
+    ]
+  },
+  "accounts": {
+    "table": {
+      "tableName": "accounts",
+      "comment": ""
+    },
+    "columns": [
+      {
+        "tableName": "accounts",
+        "columnName": "id",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "user_id",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "type",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "provider",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "provider_account_id",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "refresh_token",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "access_token",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "expires_at",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "token_type",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "scope",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "id_token",
+        "comment": ""
+      },
+      {
+        "tableName": "accounts",
+        "columnName": "session_state",
+        "comment": ""
+      }
+    ]
+  }
+}

@@ -6,7 +6,7 @@
     "dev": "next dev -p 9526",
     "start": "next start -p 9526",
     "lint": "eslint",
-    "build": "prisma generate && prisma db push && next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
     "prisma:mysql": "prisma generate --schema=./prisma/schema.mysql.prisma"
   },
   "dependencies": {

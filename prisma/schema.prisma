@@ -132,7 +132,7 @@ model Post {
   status      PostStatus @default(DRAFT)
   viewCount   Int        @default(0) @map("view_count")
   
-  userId      String     @map("user_id")
+  userId      String?     @map("user_id")
   user        User       @relation(fields: [userId], references: [id])
   
   categoryId  String?    @map("category_id")

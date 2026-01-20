@@ -126,7 +126,7 @@ model Post {
   id          String     @id @default(cuid())
   title       String
   slug        String     @unique
-  content     String     @db.LongText
+  content     String     @db.Text
   excerpt     String?    @db.Text
   coverImage  String?    @map("cover_image")
   status      PostStatus @default(DRAFT)

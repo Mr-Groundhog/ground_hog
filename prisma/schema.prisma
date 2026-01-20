@@ -4,6 +4,7 @@ generator client {
 }
 
 datasource db {
+  // 重置
   provider = "postgresql"
   url      = env("DATABASE_URL")
   // directUrl = env("DIRECT_URL")

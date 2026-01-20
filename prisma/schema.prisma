@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  
 }
 
 datasource db {
@@ -102,31 +103,51 @@ model Category {
   @@map("categories")
 }
 
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  
+  posts     Post[]
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("tags")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 model Post {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
-  slug        String   @unique
-  content     String   @db.Text
-  summary     String?  @db.Text
-  coverImage  String?  @map("cover_image")
-  viewCount   Int      @default(0) @map("view_count")
-  published   Boolean  @default(false)
+  slug        String     @unique
+  content     String     @db.LongText
+  excerpt     String?    @db.Text
+  coverImage  String?    @map("cover_image")
+  status      PostStatus @default(DRAFT)
+  viewCount   Int        @default(0) @map("view_count")
   
-  categoryId  String?  @map("category_id")
-  category    Category? @relation(fields: [categoryId], references: [id])
+  userId      String     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id])
   
-  authorId    String   @map("author_id")
-  author      User     @relation(fields: [authorId], references: [id])
+  categoryId  String?    @map("category_id")
+  category    Category?  @relation(fields: [categoryId], references: [id])
   
+  tags        Tag[]
   comments    Comment[]
   interactions Interaction[]
   
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  publishedAt DateTime?  @map("published_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
 
-  @@index([authorId])
+  @@index([userId])
   @@index([categoryId])
-  @@index([published])
   @@map("posts")
 }
 
@@ -134,11 +155,11 @@ model Comment {
   id          String   @id @default(cuid())
   content     String   @db.Text
   
-  postId      String   @map("post_id")
-  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
   userId      String   @map("user_id")
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  postId      String   @map("post_id")
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   
   parentId    String?  @map("parent_id")
   parent      Comment? @relation("CommentToComment", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -221,4 +242,36 @@ model AiTool {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("ai_tools")
+}
+
+// ---------------------- 工具箱相关实体 ----------------------
+
+enum ToolType {
+  LOCAL     // 本地开发工具 (内部路由)
+  EXTERNAL  // 在线工具 (外部链接)
+}
+
+enum ToolStatus {
+  PENDING     // 待审核
+  NORMAL      // 正常
+  DEBUG       // 调试
+  UPDATE      // 更新
+  MAINTENANCE // 维护
+}
+
+model Tool {
+  id          String     @id @default(cuid())
+  name        String
+  description String     @db.Text
+  icon        String?    // Lucide 图标名称或图片URL
+  version     String?    // e.g. "v1.0.0"
+  status      ToolStatus @default(NORMAL)
+  type        ToolType   @default(EXTERNAL)
+  url         String     // Route path for LOCAL, URL for EXTERNAL
+  category    String     // "数据处理", "网络工具" 等
+  
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("tools")
 }

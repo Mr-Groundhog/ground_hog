@@ -144,24 +144,24 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             </h2>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500 text-sm font-bold text-black overflow-hidden">
-                 {post.author.avatar ? (
-                    <img src={post.author.avatar} alt={post.author.nickname || post.author.username} className="h-full w-full object-cover" />
+                 {post.user.avatar ? (
+                    <img src={post.user.avatar} alt={post.user.nickname || post.user.username} className="h-full w-full object-cover" />
                  ) : (
-                    (post.author.nickname || post.author.username).slice(0, 2).toUpperCase()
+                    (post.user.nickname || post.user.username).slice(0, 2).toUpperCase()
                  )}
               </div>
               <div>
                 <div className="text-sm font-semibold text-white">
-                  {post.author.nickname || post.author.username}
+                  {post.user.nickname || post.user.username}
                 </div>
                 <div className="text-xs text-zinc-400">
                   {/* Title 暂时没有，用 username 代替或留空 */}
-                  @{post.author.username}
+                  @{post.user.username}
                 </div>
               </div>
             </div>
             <p className="mt-4 text-xs leading-relaxed text-zinc-400">
-              {post.author.bio || "这个人很懒，什么都没写。"}
+              {post.user.bio || "这个人很懒，什么都没写。"}
             </p>
             <button className="mt-4 w-full rounded-md bg-cyan-500 py-2 text-xs font-medium text-black hover:bg-cyan-400">
               关注作者

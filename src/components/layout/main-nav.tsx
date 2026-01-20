@@ -27,7 +27,7 @@ export function MainNav() {
   }, []);
 
   const navItems = [
-    { href: "/json-tool", label: "工具箱" },
+    { href: "/tools", label: "工具箱" },
     { href: "/ai-platform", label: "AI 平台" },
     { href: "/history", label: "个人简历" },
     { href: "/graph", label: "生活随笔" },
@@ -58,27 +58,27 @@ export function MainNav() {
               const isActive = pathname === item.href;
               return (
                 <NavigationMenuItem key={item.href}>
-                  <Link href={item.href} legacyBehavior passHref>
-                    <NavigationMenuLink
-                      className={cn(
-                        navigationMenuTriggerStyle(),
-                        "h-9 px-4 text-xs font-medium transition-colors bg-transparent hover:bg-zinc-800/50 hover:text-cyan-400 focus:bg-zinc-800/50 focus:text-cyan-400",
-                        isActive ? "text-cyan-400" : "text-zinc-400"
-                      )}
-                    >
+                  <NavigationMenuLink
+                    asChild
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "h-9 px-4 text-xs font-medium transition-colors bg-transparent hover:bg-zinc-800/50 hover:text-cyan-400 focus:bg-zinc-800/50 focus:text-cyan-400",
+                      isActive ? "text-cyan-400" : "text-zinc-400"
+                    )}
+                  >
+                    <Link href={item.href}>
                       {item.label}
                       {isActive && (
                         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
                       )}
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
               );
             })}
           </NavigationMenuList>
         </NavigationMenu>
       </div>
-
       <div className="flex items-center gap-4 shrink-0">
         {mounted && isAuthenticated ? (
           <div className="flex items-center gap-2">

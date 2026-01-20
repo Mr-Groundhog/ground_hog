@@ -25,7 +25,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   if (!post) notFound();
 
   // 简单的权限检查，实际应在 Server Action 进一步校验
-  if (post.authorId !== user.id && user.role !== "ADMIN") {
+  if (post.userId !== user.id && user.role !== "ADMIN") {
     // 这里可以重定向到无权限页面，或者简单返回
     redirect("/dashboard/posts");
   }

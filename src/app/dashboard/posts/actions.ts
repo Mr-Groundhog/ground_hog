@@ -28,7 +28,7 @@ export async function getPosts(page = 1, pageSize = 10, query = "", categoryId?:
       orderBy: { createdAt: "desc" },
       include: {
         category: true,
-        author: {
+        user: {
           select: {
             username: true,
             nickname: true,
@@ -69,7 +69,7 @@ export async function createPost(data: PostFormValues, authorId: string) {
   await prisma.post.create({
     data: {
       ...validated,
-      authorId,
+      userId: authorId,
     },
   });
 
@@ -126,7 +126,7 @@ export async function getPostBySlug(slug: string) {
     where: { slug },
     include: {
       category: true,
-      author: {
+      user: {
         select: {
           username: true,
           nickname: true,

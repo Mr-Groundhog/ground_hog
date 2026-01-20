@@ -16,10 +16,12 @@ export default function SiteLayout({
         </div>
       </header>
       <ScrollArea className="flex-1 h-[calc(100vh-4rem)]">
-        <main className="flex flex-col min-h-full">
-          {children}
-        </main>
-        <SiteFooter />
+        <div className="flex min-h-full flex-col">
+          <main className="flex-1 flex flex-col">
+            {children}
+          </main>
+          <SiteFooter />
+        </div>
       </ScrollArea>
     </div>
   );

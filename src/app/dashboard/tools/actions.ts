@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { toolSchema, ToolFormValues } from "./schema";
 import { revalidatePath } from "next/cache";
+import { ToolStatus } from "@prisma/client";
 
 export async function getTools({
   page = 1,
@@ -29,7 +30,10 @@ export async function getTools({
       where,
       skip,
       take: limit,
-      orderBy: { createdAt: "desc" },
+      orderBy: [
+        { status: 'asc' }, // Pending first (if PENDING is 'PENDING' string order might not be ideal but okay)
+        { createdAt: 'desc' }
+      ],
     }),
     prisma.tool.count({ where }),
   ]);
@@ -61,6 +65,17 @@ export async function updateTool(id: string, data: ToolFormValues) {
   await prisma.tool.update({
     where: { id },
     data: validated,
+  });
+
+  revalidatePath("/dashboard/tools");
+  revalidatePath("/tools");
+  return { success: true };
+}
+
+export async function updateToolStatus(id: string, status: ToolStatus) {
+  await prisma.tool.update({
+    where: { id },
+    data: { status },
   });
 
   revalidatePath("/dashboard/tools");

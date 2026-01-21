@@ -259,6 +259,7 @@ enum ToolStatus {
   DEBUG       // 调试
   UPDATE      // 更新
   MAINTENANCE // 维护
+  REJECTED    // 已拒绝
 }
 
 model Tool {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Tool } from "@prisma/client";
+import { Tool, ToolStatus } from "@prisma/client";
 import {
   Table,
   TableBody,
@@ -19,10 +19,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Plus, Pencil, Trash } from "lucide-react";
+import { MoreHorizontal, Plus, Pencil, Trash, CheckCircle, XCircle } from "lucide-react";
 import { ToolDialog } from "./tool-dialog";
-import { deleteTool } from "../actions";
+import { deleteTool, updateToolStatus } from "../actions";
 import { toast } from "sonner";
 
 interface ToolListProps {
@@ -81,6 +82,15 @@ export function ToolList({
     }
   };
 
+  const handleStatusChange = async (id: string, status: ToolStatus) => {
+    try {
+      await updateToolStatus(id, status);
+      toast.success(status === 'NORMAL' ? "已审核通过" : "已更新状态");
+    } catch (error) {
+      toast.error("操作失败");
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "NORMAL": return <Badge className="bg-green-500/15 text-green-500 hover:bg-green-500/25 border-0">正常</Badge>;
@@ -88,6 +98,7 @@ export function ToolList({
       case "UPDATE": return <Badge className="bg-blue-500/15 text-blue-500 hover:bg-blue-500/25 border-0">更新</Badge>;
       case "MAINTENANCE": return <Badge className="bg-red-500/15 text-red-500 hover:bg-red-500/25 border-0">维护</Badge>;
       case "PENDING": return <Badge className="bg-orange-500/15 text-orange-500 hover:bg-orange-500/25 border-0">待审核</Badge>;
+      case "REJECTED": return <Badge className="bg-gray-500/15 text-gray-500 hover:bg-gray-500/25 border-0">已拒绝</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };
@@ -157,6 +168,25 @@ export function ToolList({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {tool.status === 'PENDING' && (
+                          <>
+                            <DropdownMenuItem 
+                              onClick={() => handleStatusChange(tool.id, 'NORMAL')}
+                              className="text-green-600 focus:text-green-600"
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              通过审核
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleStatusChange(tool.id, 'REJECTED')}
+                              className="text-orange-600 focus:text-orange-600"
+                            >
+                              <XCircle className="mr-2 h-4 w-4" />
+                              拒绝
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
                         <DropdownMenuItem onClick={() => openEditDialog(tool)}>
                           <Pencil className="mr-2 h-4 w-4" />
                           编辑

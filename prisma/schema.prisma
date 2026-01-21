@@ -9,6 +9,7 @@ datasource db {
   url      = env("DATABASE_URL")
   // 注释
   // directUrl = env("DIRECT_URL")
+  relationMode = "prisma"
 }
 
 model User {
@@ -164,7 +165,7 @@ model Comment {
   post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   
   parentId    String?  @map("parent_id")
-  parent      Comment? @relation("CommentToComment", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent      Comment? @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   replies     Comment[] @relation("CommentToComment")
   
   isEdited    Boolean  @default(false) @map("is_edited")

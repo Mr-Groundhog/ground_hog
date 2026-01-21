@@ -1,24 +1,20 @@
 generator client {
   provider = "prisma-client-js"
-  
 }
 
 datasource db {
-  // 重置
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // 注释
-  // directUrl = env("DIRECT_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
 model User {
   /// 主键，建议使用 cuid 提高安全性 
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   /// 用户名，全局唯一 
-  username      String    @unique
+  username      String        @unique
   /// 邮箱，全局唯一 
-  email         String    @unique
+  email         String        @unique
   /// 加密后的哈希密码 (第三方登录注册时可为空) 
   password      String?
   /// 昵称 
@@ -26,34 +22,32 @@ model User {
   /// 头像 URL 
   avatar        String?
   /// 个人简介 
-  bio           String?   @db.Text
+  bio           String?
   /// 性别：0-保密, 1-男, 2-女 
-  gender        Int       @default(0)
+  gender        Int           @default(0)
   /// 角色：USER(普通用户), ADMIN(管理员) 
-  role          Role      @default(USER)
+  role          Role          @default(USER)
   /// 是否激活 (用于管理员手动冻结账号) 
-  isActive      Boolean   @default(true) @map("is_active")
+  isActive      Boolean       @default(true) @map("is_active")
   /// 0: 正常, 2: 被删除 
-  isDelete      Int       @default(0) @map("is_delete")
+  isDelete      Int           @default(0) @map("is_delete")
   /// 记录删除的具体时间 
-  deletedAt     DateTime? @map("deleted_at")
+  deletedAt     DateTime?     @map("deleted_at")
   /// 邮箱验证时间 (非空则表示已验证) 
-  emailVerified DateTime? @map("email_verified")
+  emailVerified DateTime?     @map("email_verified")
   /// 手机号 (可选扩展) 
-  phone         String?   @unique
+  phone         String?       @unique
   /// 手机验证时间 
-  phoneVerified DateTime? @map("phone_verified")
+  phoneVerified DateTime?     @map("phone_verified")
   /// 注册时间 
-  createdAt     DateTime  @default(now()) @map("created_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
   /// 最后一次修改资料时间 
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
   /// 最后一次登录时间 
-  lastLoginAt   DateTime? @map("last_login_at")
+  lastLoginAt   DateTime?     @map("last_login_at")
   /// 最后一次登录 IP 
-  lastLoginIp   String?   @map("last_login_ip")
+  lastLoginIp   String?       @map("last_login_ip")
   accounts      Account[]
-  
-  // Relations
   posts         Post[]
   comments      Comment[]
   interactions  Interaction[]
@@ -69,12 +63,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
-  refreshToken      String? @map("refresh_token") @db.Text
-  accessToken       String? @map("access_token") @db.Text
+  refreshToken      String? @map("refresh_token")
+  accessToken       String? @map("access_token")
   expiresAt         Int?    @map("expires_at")
   tokenType         String? @map("token_type")
   scope             String?
-  idToken           String? @map("id_token") @db.Text
+  idToken           String? @map("id_token")
   sessionState      String? @map("session_state")
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -83,25 +77,16 @@ model Account {
   @@map("accounts")
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
-// ---------------------- 博客相关实体 ----------------------
-
 model Category {
   id          String   @id @default(cuid())
   name        String   @unique
   slug        String   @unique
-  description String?  @db.Text
-  icon        String?  // Lucide 图标名称
-  color       String?  // 霓虹色值
-  
-  posts       Post[]
-  
+  description String?
+  icon        String?
+  color       String?
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  posts       Post[]
 
   @@map("categories")
 }
@@ -110,13 +95,123 @@ model Tag {
   id        String   @id @default(cuid())
   name      String   @unique
   slug      String   @unique
-  
-  posts     Post[]
-  
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  posts     Post[]
 
   @@map("tags")
+}
+
+model Post {
+  id           String        @id @default(cuid())
+  title        String
+  slug         String        @unique
+  content      String
+  excerpt      String?
+  coverImage   String?       @map("cover_image")
+  status       PostStatus    @default(DRAFT)
+  viewCount    Int           @default(0) @map("view_count")
+  userId       String        @map("user_id")
+  categoryId   String?       @map("category_id")
+  publishedAt  DateTime?     @map("published_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  user         User          @relation(fields: [userId], references: [id])
+  category     Category?     @relation(fields: [categoryId], references: [id])
+  tags         Tag[]
+  comments     Comment[]
+  interactions Interaction[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@map("posts")
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  content   String
+  userId    String    @map("user_id")
+  postId    String    @map("post_id")
+  parentId  String?   @map("parent_id")
+  isEdited  Boolean   @default(false) @map("is_edited")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies   Comment[] @relation("CommentToComment")
+
+  @@index([postId])
+  @@index([userId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model Interaction {
+  id        String          @id @default(cuid())
+  type      InteractionType
+  userId    String          @map("user_id")
+  postId    String          @map("post_id")
+  createdAt DateTime        @default(now()) @map("created_at")
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post            @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId, type])
+  @@index([postId])
+  @@index([userId])
+  @@map("interactions")
+}
+
+model FriendLink {
+  id          String           @id @default(cuid())
+  name        String
+  url         String
+  description String?
+  logo        String?
+  coverImage  String?          @map("cover_image")
+  email       String?
+  status      FriendLinkStatus @default(PENDING)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@map("friend_links")
+}
+
+model AiTool {
+  id          String       @id @default(cuid())
+  name        String
+  description String
+  url         String
+  icon        String?
+  coverImage  String?      @map("cover_image")
+  category    String
+  tags        String?
+  status      AiToolStatus @default(PENDING)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@map("ai_tools")
+}
+
+model Tool {
+  id          String     @id @default(cuid())
+  name        String
+  description String
+  icon        String?
+  version     String?
+  status      ToolStatus @default(NORMAL)
+  type        ToolType   @default(EXTERNAL)
+  url         String
+  category    String
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("tools")
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 enum PostStatus {
@@ -125,81 +220,9 @@ enum PostStatus {
   ARCHIVED
 }
 
-model Post {
-  id          String     @id @default(cuid())
-  title       String
-  slug        String     @unique
-  content     String     @db.Text
-  excerpt     String?    @db.Text
-  coverImage  String?    @map("cover_image")
-  status      PostStatus @default(DRAFT)
-  viewCount   Int        @default(0) @map("view_count")
-  
-  userId      String     @map("user_id")
-  user        User       @relation(fields: [userId], references: [id])
-  
-  categoryId  String?    @map("category_id")
-  category    Category?  @relation(fields: [categoryId], references: [id])
-  
-  tags        Tag[]
-  comments    Comment[]
-  interactions Interaction[]
-  
-  publishedAt DateTime?  @map("published_at")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
-
-  @@index([userId])
-  @@index([categoryId])
-  @@map("posts")
-}
-
-model Comment {
-  id          String   @id @default(cuid())
-  content     String   @db.Text
-  
-  userId      String   @map("user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  postId      String   @map("post_id")
-  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
-  parentId    String?  @map("parent_id")
-  parent      Comment? @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  replies     Comment[] @relation("CommentToComment")
-  
-  isEdited    Boolean  @default(false) @map("is_edited")
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@index([postId])
-  @@index([userId])
-  @@index([parentId])
-  @@map("comments")
-}
-
 enum InteractionType {
   LIKE
   FAVORITE
-}
-
-model Interaction {
-  id        String          @id @default(cuid())
-  type      InteractionType
-  
-  userId    String          @map("user_id")
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  postId    String          @map("post_id")
-  post      Post            @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime        @default(now()) @map("created_at")
-
-  @@unique([userId, postId, type]) // 同一个用户对同一篇文章的同种操作只能有一次
-  @@index([postId])
-  @@index([userId])
-  @@map("interactions")
 }
 
 enum FriendLinkStatus {
@@ -208,96 +231,21 @@ enum FriendLinkStatus {
   REJECTED
 }
 
-model FriendLink {
-  id          String           @id @default(cuid())
-  name        String
-  url         String
-  description String?          @db.Text
-  logo        String?
-  coverImage  String?          @map("cover_image")
-  email       String?
-  status      FriendLinkStatus @default(PENDING)
-  
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
-
-  @@map("friend_links")
-}
-
 enum AiToolStatus {
   PENDING
   APPROVED
   REJECTED
 }
 
-model AiTool {
-  id          String   @id @default(cuid())
-  name        String
-  description String   @db.Text
-  url         String
-  icon        String?
-  coverImage  String?  @map("cover_image")
-  category    String   // e.g. "对话聊天", "图像生成"
-  tags        String?  // e.g. "GPT-4,开源" (comma separated)
-  status      AiToolStatus @default(PENDING)
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@map("ai_tools")
-}
-
-// ---------------------- 工具箱相关实体 ----------------------
-
 enum ToolType {
-  LOCAL     // 本地开发工具 (内部路由)
-  EXTERNAL  // 在线工具 (外部链接)
+  LOCAL
+  EXTERNAL
 }
 
 enum ToolStatus {
-  PENDING     // 待审核
-  NORMAL      // 正常
-  DEBUG       // 调试
-  UPDATE      // 更新
-  MAINTENANCE // 维护
-  REJECTED    // 已拒绝
-}
-
-model Tool {
-  id          String     @id @default(cuid())
-  name        String
-  description String     @db.Text
-  icon        String?    // Lucide 图标名称或图片URL
-  version     String?    // e.g. "v1.0.0"
-  status      ToolStatus @default(NORMAL)
-  type        ToolType   @default(EXTERNAL)
-  url         String     // Route path for LOCAL, URL for EXTERNAL
-  category    String     // "数据处理", "网络工具" 等
-  
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
-
-  @@map("tools")
-}
-
-// ---------------------- 统计相关实体 ----------------------
-
-model SiteVisit {
-  id        String   @id @default(cuid())
-  uv        String   // 唯一访客标识 (cookie/fingerprint)
-  pageUrl   String   @map("page_url")
-  device    String   // 'pc' or 'mobile'
-  referrer  String?  // 访问来源
-  ip        String   // 用户IP
-  
-  // Optional: Geo-location if we want to expand later
-  country   String?
-  city      String?
-  
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@index([createdAt])
-  @@index([pageUrl])
-  @@index([uv])
-  @@map("site_visits")
+  PENDING
+  NORMAL
+  DEBUG
+  UPDATE
+  MAINTENANCE
 }

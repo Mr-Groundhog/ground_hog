@@ -1,21 +1,17 @@
-
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Eye, 
-  Ticket, 
-  ShoppingCart, 
-  ShieldCheck, 
   Users, 
   FileBarChart, 
   Settings, 
   KeyRound,
-  MoreHorizontal 
+  MoreHorizontal,
+  MousePointerClick
 } from "lucide-react";
 import { 
-  LineChart, 
-  Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -28,67 +24,93 @@ import {
   Cell
 } from "recharts";
 import { Button } from "@/components/ui/button";
-
-const data = [
-  { name: '1月', uv: 200, pv: 100 },
-  { name: '2月', uv: 300, pv: 150 },
-  { name: '3月', uv: 450, pv: 200 },
-  { name: '4月', uv: 600, pv: 280 },
-  { name: '5月', uv: 700, pv: 350 },
-  { name: '6月', uv: 750, pv: 400 },
-  { name: '7月', uv: 600, pv: 300 },
-  { name: '8月', uv: 400, pv: 250 },
-  { name: '9月', uv: 300, pv: 200 },
-  { name: '10月', uv: 800, pv: 450 },
-  { name: '11月', uv: 900, pv: 500 },
-  { name: '12月', uv: 600, pv: 350 },
-];
-
-const pieData = [
-  { name: 'Converted', value: 75 },
-  { name: 'Remaining', value: 25 },
-];
-const COLORS = ['#3b82f6', '#e5e7eb'];
+import { 
+  getAnalyticsSummary, 
+  getTrafficTrend, 
+  getTopPages, 
+  TrendData, 
+  PageViewData 
+} from "./actions";
 
 export default function DashboardPage() {
+  const [summary, setSummary] = useState({
+    totalPV: 0,
+    totalUV: 0,
+    todayPV: 0,
+    todayUV: 0,
+    yesterdayPV: 0,
+    yesterdayUV: 0,
+  });
+  const [trendData, setTrendData] = useState<TrendData[]>([]);
+  const [topPages, setTopPages] = useState<PageViewData[]>([]);
+  const [trendType, setTrendType] = useState<'day' | 'month' | 'year'>('day');
+
+  useEffect(() => {
+    // Fetch Summary
+    getAnalyticsSummary().then(setSummary);
+    // Fetch Top Pages
+    getTopPages().then(setTopPages);
+  }, []);
+
+  useEffect(() => {
+    // Fetch Trend when type changes
+    getTrafficTrend(trendType).then(setTrendData);
+  }, [trendType]);
+
+  // Calculate trends
+  const pvTrend = summary.yesterdayPV > 0 
+    ? ((summary.todayPV - summary.yesterdayPV) / summary.yesterdayPV * 100).toFixed(1) + "%" 
+    : "N/A";
+  const pvTrendUp = summary.todayPV >= summary.yesterdayPV;
+
+  const uvTrend = summary.yesterdayUV > 0
+    ? ((summary.todayUV - summary.yesterdayUV) / summary.yesterdayUV * 100).toFixed(1) + "%"
+    : "N/A";
+  const uvTrendUp = summary.todayUV >= summary.yesterdayUV;
+
+  const COLORS = ['#3b82f6', '#e5e7eb'];
+
   return (
     <div className="space-y-6">
       {/* Cards Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard 
-          title="访问量" 
-          value="2,000" 
+          title="今日访问 (PV)" 
+          value={summary.todayPV.toLocaleString()} 
           icon={Eye} 
-          trend="12%" 
-          trendUp={true} 
+          trend={pvTrend} 
+          trendUp={pvTrendUp} 
           color="bg-blue-500"
+          subValue={`总计: ${summary.totalPV.toLocaleString()}`}
         />
         <StatCard 
-          title="销售额" 
-          value="¥20,000" 
-          icon={Ticket} 
-          trend="8%" 
+          title="今日访客 (UV)" 
+          value={summary.todayUV.toLocaleString()} 
+          icon={Users} 
+          trend={uvTrend} 
+          trendUp={uvTrendUp} 
+          color="bg-purple-500"
+          iconColor="text-purple-500"
+          subValue={`总计: ${summary.totalUV.toLocaleString()}`}
+        />
+        {/* Placeholder cards for layout balance */}
+        <StatCard 
+          title="平均停留时间" 
+          value="0m 0s" 
+          icon={MousePointerClick} 
+          trend="0%" 
           trendUp={true} 
-          color="bg-orange-500"
-          iconColor="text-orange-500"
-        />
-        <StatCard 
-          title="订单量" 
-          value="8,000" 
-          icon={ShoppingCart} 
-          trend="2%" 
-          trendUp={false} 
           color="bg-cyan-500"
           iconColor="text-cyan-500"
         />
         <StatCard 
-          title="成交额" 
-          value="¥5,000" 
-          icon={ShieldCheck} 
-          trend="15%" 
+          title="跳出率" 
+          value="0%" 
+          icon={FileBarChart} 
+          trend="0%" 
           trendUp={true} 
-          color="bg-purple-500"
-          iconColor="text-purple-500"
+          color="bg-orange-500"
+          iconColor="text-orange-500"
         />
       </div>
 
@@ -97,18 +119,39 @@ export default function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div className="space-y-1">
             <CardTitle className="text-base font-medium">流量趋势</CardTitle>
-            <p className="text-xs text-muted-foreground">最近30天访问量统计</p>
+            <p className="text-xs text-muted-foreground">访问量统计概览</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-7 text-xs">今日</Button>
-            <Button variant="default" size="sm" className="h-7 text-xs bg-blue-500 hover:bg-blue-600">本月</Button>
-            <Button variant="outline" size="sm" className="h-7 text-xs">全年</Button>
+            <Button 
+              variant={trendType === 'day' ? "default" : "outline"} 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => setTrendType('day')}
+            >
+              按天
+            </Button>
+            <Button 
+              variant={trendType === 'month' ? "default" : "outline"} 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => setTrendType('month')}
+            >
+              按月
+            </Button>
+            <Button 
+              variant={trendType === 'year' ? "default" : "outline"} 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => setTrendType('year')}
+            >
+              按年
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -133,8 +176,8 @@ export default function DashboardPage() {
                     tick={{ fontSize: 12, fill: '#6b7280' }} 
                 />
                 <Tooltip />
-                <Area type="monotone" dataKey="uv" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorUv)" />
-                <Area type="monotone" dataKey="pv" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPv)" />
+                <Area type="monotone" dataKey="uv" name="访客数(UV)" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorUv)" />
+                <Area type="monotone" dataKey="pv" name="访问量(PV)" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPv)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -142,54 +185,44 @@ export default function DashboardPage() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Quick Nav */}
+        {/* Top Pages */}
         <Card className="col-span-2">
            <CardHeader>
+            <CardTitle className="text-base font-medium">热门页面 TOP 10</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {topPages.map((page, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 max-w-[70%]">
+                    <span className="text-sm font-medium w-6">{i + 1}.</span>
+                    <span className="text-sm text-muted-foreground truncate" title={page.url}>
+                      {page.url}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="text-muted-foreground">PV: <span className="text-foreground font-medium">{page.pv}</span></span>
+                    <span className="text-muted-foreground">UV: <span className="text-foreground font-medium">{page.uv}</span></span>
+                  </div>
+                </div>
+              ))}
+              {topPages.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">暂无数据</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Nav (Kept from original) */}
+        <Card>
+           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-medium">快速导航</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-4 gap-4 py-8">
+          <CardContent className="grid grid-cols-2 gap-4 py-4">
             <QuickNavItem icon={Users} label="用户管理" color="text-blue-500" />
             <QuickNavItem icon={FileBarChart} label="报表分析" color="text-green-500" />
             <QuickNavItem icon={Settings} label="核心设置" color="text-purple-500" />
             <QuickNavItem icon={KeyRound} label="权限验证" color="text-orange-500" />
-          </CardContent>
-        </Card>
-
-        {/* Conversion Stats */}
-        <Card>
-           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium">转化率统计</CardTitle>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-4">
-             <div className="relative h-[180px] w-[180px]">
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie
-                            data={pieData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            paddingAngle={0}
-                            dataKey="value"
-                            startAngle={90}
-                            endAngle={-270}
-                        >
-                            {pieData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                    </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold">75%</span>
-                    <span className="text-xs text-muted-foreground">总体转化</span>
-                </div>
-             </div>
           </CardContent>
         </Card>
       </div>
@@ -202,7 +235,7 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({ title, value, icon: Icon, trend, trendUp, color, iconColor }: any) {
+function StatCard({ title, value, icon: Icon, trend, trendUp, color, iconColor, subValue }: any) {
   return (
     <Card>
       <CardContent className="p-6">
@@ -222,6 +255,9 @@ function StatCard({ title, value, icon: Icon, trend, trendUp, color, iconColor }
               </span>
               <span className="ml-1 text-muted-foreground">较昨日</span>
            </div>
+           {subValue && (
+             <div className="text-xs text-muted-foreground">{subValue}</div>
+           )}
         </div>
         <div className="mt-3 h-1 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
             <div className={`h-full rounded-full ${color}`} style={{ width: '60%' }} />

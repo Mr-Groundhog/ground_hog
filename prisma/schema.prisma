@@ -279,3 +279,25 @@ model Tool {
 
   @@map("tools")
 }
+
+// ---------------------- 统计相关实体 ----------------------
+
+model SiteVisit {
+  id        String   @id @default(cuid())
+  uv        String   // 唯一访客标识 (cookie/fingerprint)
+  pageUrl   String   @map("page_url")
+  device    String   // 'pc' or 'mobile'
+  referrer  String?  // 访问来源
+  ip        String   // 用户IP
+  
+  // Optional: Geo-location if we want to expand later
+  country   String?
+  city      String?
+  
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([pageUrl])
+  @@index([uv])
+  @@map("site_visits")
+}

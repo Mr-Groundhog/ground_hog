@@ -5,6 +5,8 @@ import "./globals.css";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { LoadingProvider } from "@/components/providers/loading-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { AnalyticsTracker } from "@/components/analytics-tracker";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +36,9 @@ export default function RootLayout({
         <QueryProvider>
           <LoadingProvider>
             {children}
+            <Suspense fallback={null}>
+              <AnalyticsTracker />
+            </Suspense>
           </LoadingProvider>
         </QueryProvider>
         <Toaster />

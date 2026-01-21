@@ -27,6 +27,7 @@ import { SubmitToolDialog } from "./submit-tool-dialog";
 
 interface ToolboxClientProps {
   initialTools: Tool[];
+  categories: string[];
 }
 
 // Icon helper
@@ -37,21 +38,17 @@ const getIcon = (name: string | null) => {
   return Icon || Code2;
 };
 
-const categories = [
-  { id: "all", name: "全部工具", icon: LayoutGrid },
-  { id: "数据处理", name: "数据处理", icon: FileJson },
-  { id: "编码转换", name: "编码转换", icon: Code2 },
-  { id: "网络工具", name: "网络工具", icon: Globe },
-  { id: "图像辅助", name: "图像辅助", icon: ImageIcon },
-  { id: "加解密", name: "加解密", icon: Shield },
-  { id: "DevOps", name: "DevOps", icon: Cpu },
-];
-
-export function ToolboxClient({ initialTools }: ToolboxClientProps) {
+export function ToolboxClient({ initialTools, categories: propCategories }: ToolboxClientProps) {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const allCategories = [{ id: "all", name: "全部工具", icon: LayoutGrid }, ...propCategories.map(cat => ({
+    id: cat,
+    name: cat,
+    icon: Code2 // Default icon, can be improved later
+  }))];
 
   const filteredTools = initialTools.filter(tool => {
     const matchesCategory = activeCategory === "all" || tool.category === activeCategory;
@@ -98,7 +95,7 @@ export function ToolboxClient({ initialTools }: ToolboxClientProps) {
           <div className="text-[10px] text-cyan-500 font-mono mb-6">CORE MODULES v1.4</div>
           
           <nav className="space-y-1">
-            {categories.map((cat) => {
+            {allCategories.map((cat) => {
               const Icon = cat.icon;
               return (
                 <button

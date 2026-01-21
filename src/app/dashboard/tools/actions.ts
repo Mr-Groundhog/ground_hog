@@ -59,6 +59,22 @@ export async function createTool(data: ToolFormValues) {
   return { success: true };
 }
 
+export async function getDistinctToolCategories() {
+  const categories = await prisma.tool.findMany({
+    distinct: ['category'],
+    select: {
+      category: true,
+    },
+    where: {
+      status: {
+        not: "PENDING", // Only show non-pending tools to public
+      }
+    },
+    orderBy: { category: "asc" },
+  });
+  return categories.map(c => c.category);
+}
+
 export async function updateTool(id: string, data: ToolFormValues) {
   const validated = toolSchema.parse(data);
 

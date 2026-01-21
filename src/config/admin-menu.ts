@@ -77,26 +77,7 @@ export const adminRoutes: AdminRoute[] = [
         status: "NORMAL",
         isExternal: false,
       },
-      {
-        name: "友链管理",
-        path: "/dashboard/friend-links",
-        icon: Link,
-        type: "MENU",
-        sort: 4,
-        visible: true,
-        status: "NORMAL",
-        isExternal: false,
-      },
-      {
-        name: "AI 工具管理",
-        path: "/dashboard/ai-tools",
-        icon: Tag,
-        type: "MENU",
-        sort: 5,
-        visible: true,
-        status: "NORMAL",
-        isExternal: false,
-      }
+      
     ]
   },
   {
@@ -121,67 +102,97 @@ export const adminRoutes: AdminRoute[] = [
     ]
   },
   {
-    name: "管理",
-    path: "/admin-manage",
-    type: "CATALOG",
-    icon: Settings,
+        name: "友链管理",
+        path: "/dashboard/friend-links",
+        icon: Link,
+        type: "MENU",
+        sort: 4,
+        visible: true,
+        status: "NORMAL",
+        isExternal: false,
+      },
+      {
+        name: "AI 工具管理",
+        path: "/dashboard/ai-tools",
+        icon: Tag,
+        type: "MENU",
+        sort: 5,
+        visible: true,
+        status: "NORMAL",
+        isExternal: false,
+      },
+      {
+        name: "工具箱管理",
+        path: "/dashboard/tools",
+        icon: Briefcase,
+        type: "MENU",
+        sort: 6,
+        visible: true,
+        status: "NORMAL",
+        isExternal: false,
+      },
+  {
+    name: "用户管理",
+    path: "/dashboard/users",
+    icon: Users,
+    type: "MENU",
     sort: 4,
     visible: true,
     status: "NORMAL",
     isExternal: false,
-    children: [
-      {
-        name: "系统管理",
-        path: "/dashboard/system",
-        icon: Settings,
-        type: "CATALOG",
-        sort: 1,
-        visible: true,
-        status: "NORMAL",
-        isExternal: false,
-        children: [
-          {
-            name: "用户管理",
-            path: "/dashboard/users",
-            icon: Users,
-            type: "MENU",
-            sort: 1,
-            visible: true,
-            status: "NORMAL",
-            isExternal: false,
-          },
-          {
-            name: "权限验证",
-            path: "/dashboard/auth",
-            icon: Shield,
-            type: "MENU",
-            sort: 2,
-            visible: true,
-            status: "NORMAL",
-            isExternal: false,
-          },
-        ]
-      },
-      {
-        name: "项目",
-        path: "/dashboard/projects",
-        icon: Layers,
-        type: "MENU",
-        sort: 2,
-        visible: true,
-        status: "NORMAL",
-        isExternal: false,
-      },
-      {
-        name: "关于",
-        path: "/dashboard/about",
-        icon: FileText,
-        type: "MENU",
-        sort: 3,
-        visible: true,
-        status: "NORMAL",
-        isExternal: false,
-      }
-    ]
   }
+  // {
+  //   name: "管理",
+  //   path: "/admin-manage",
+  //   type: "CATALOG",
+  //   icon: Settings,
+  //   sort: 5,
+  //   visible: true,
+  //   status: "NORMAL",
+  //   isExternal: false,
+  //   children: [
+  //     {
+  //       name: "系统管理",
+  //       path: "/dashboard/system",
+  //       icon: Settings,
+  //       type: "CATALOG",
+  //       sort: 1,
+  //       visible: true,
+  //       status: "NORMAL",
+  //       isExternal: false,
+  //       children: [
+  //         {
+  //           name: "权限验证",
+  //           path: "/dashboard/auth",
+  //           icon: Shield,
+  //           type: "MENU",
+  //           sort: 2,
+  //           visible: true,
+  //           status: "NORMAL",
+  //           isExternal: false,
+  //         },
+  //       ]
+  //     },
+  //     {
+  //       name: "项目",
+  //       path: "/dashboard/projects",
+  //       icon: Layers,
+  //       type: "MENU",
+  //       sort: 2,
+  //       visible: true,
+  //       status: "NORMAL",
+  //       isExternal: false,
+  //     },
+  //     {
+  //       name: "关于",
+  //       path: "/dashboard/about",
+  //       icon: FileText,
+  //       type: "MENU",
+  //       sort: 3,
+  //       visible: true,
+  //       status: "NORMAL",
+  //       isExternal: false,
+  //     }
+  //   ]
+  // }
 ];

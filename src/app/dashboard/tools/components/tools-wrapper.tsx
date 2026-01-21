@@ -1,4 +1,4 @@
-import { getTools } from "../actions";
+import { getDistinctToolCategories, getTools } from "../actions";
 import { ToolList } from "./tool-list";
 
 export async function ToolsWrapper({
@@ -16,6 +16,8 @@ export async function ToolsWrapper({
     search,
   });
 
+  const categories = await getDistinctToolCategories();
+
   return (
     <ToolList
       data={data}
@@ -23,6 +25,7 @@ export async function ToolsWrapper({
       page={page}
       limit={limit}
       totalPages={totalPages}
+      categories={categories}
     />
   );
 }

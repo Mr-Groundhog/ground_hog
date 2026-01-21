@@ -37,6 +37,7 @@ interface ToolDialogProps {
   onOpenChange: (open: boolean) => void;
   initialData?: Tool | null;
   onSuccess: () => void;
+  categories: string[];
 }
 
 export function ToolDialog({
@@ -44,6 +45,7 @@ export function ToolDialog({
   onOpenChange,
   initialData,
   onSuccess,
+  categories,
 }: ToolDialogProps) {
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolSchema),
@@ -118,9 +120,20 @@ export function ToolDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>分类</FormLabel>
-                    <FormControl>
-                      <Input placeholder="例如：数据处理" {...field} />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="选择分类" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

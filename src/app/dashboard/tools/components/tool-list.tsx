@@ -32,6 +32,7 @@ interface ToolListProps {
   page: number;
   limit: number;
   totalPages: number;
+  categories: string[];
 }
 
 export function ToolList({
@@ -40,6 +41,7 @@ export function ToolList({
   page,
   limit,
   totalPages,
+  categories,
 }: ToolListProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
@@ -236,6 +238,7 @@ export function ToolList({
         onOpenChange={setDialogOpen}
         initialData={selectedTool}
         onSuccess={() => router.refresh()}
+        categories={categories}
       />
     </div>
   );

@@ -16,6 +16,7 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { WeatherWidget } from "@/components/weather-widget";
 
 export function MainNav() {
   const pathname = usePathname();
@@ -80,6 +81,7 @@ export function MainNav() {
         </NavigationMenu>
       </div>
       <div className="flex items-center gap-4 shrink-0">
+        <WeatherWidget />
         {mounted && isAuthenticated ? (
           <div className="flex items-center gap-2">
             <span className="text-xs text-zinc-400 hidden sm:inline-block">

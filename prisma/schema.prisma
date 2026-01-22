@@ -209,6 +209,21 @@ model Tool {
   @@map("tools")
 }
 
+model SiteVisit {
+  id        Int      @id @default(autoincrement())
+  uv        String   @map("uv")
+  pageUrl   String   @map("page_url")
+  device    String
+  referrer  String?
+  ip        String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([uv])
+  @@index([pageUrl])
+  @@index([createdAt])
+  @@map("site_visits")
+}
+
 enum Role {
   USER
   ADMIN

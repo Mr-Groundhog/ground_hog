@@ -33,6 +33,77 @@ export function JsonTool() {
   const [viewMode, setViewMode] = React.useState<"tree" | "graph" | "table">("tree");
   const [expandAll, setExpandAll] = React.useState(true);
 
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [currentMatch, setCurrentMatch] = React.useState(0);
+  const [matches, setMatches] = React.useState<HTMLElement[]>([]);
+
+  // Search Logic
+  React.useEffect(() => {
+    if (!parsedJson || !searchQuery) {
+      // Clear highlights
+      const highlighted = document.querySelectorAll('.json-highlight');
+      highlighted.forEach(el => {
+        el.outerHTML = el.textContent || '';
+      });
+      setMatches([]);
+      return;
+    }
+
+    // Debounce search
+    const timer = setTimeout(() => {
+      // Clear previous highlights first
+      const prevHighlighted = document.querySelectorAll('.json-highlight');
+      prevHighlighted.forEach(el => {
+        const parent = el.parentNode;
+        if (parent) {
+            parent.replaceChild(document.createTextNode(el.textContent || ''), el);
+        }
+      });
+
+      // Find all string values and keys in the viewer
+      const container = document.querySelector('.react-json-view');
+      if (!container) return;
+
+      // Selectors for react-json-view structure
+      const elements = container.querySelectorAll('.string-value, .variable-value, .object-key');
+      const found: HTMLElement[] = [];
+
+      elements.forEach((el) => {
+        if (el.textContent && el.textContent.toLowerCase().includes(searchQuery.toLowerCase())) {
+          // Highlight logic: Wrap text in span
+          // Note: react-json-view might re-render and lose this, but it works for static view
+          const text = el.textContent;
+          const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
+          
+          if (parts.length > 1) {
+             el.innerHTML = parts.map(part => 
+               part.toLowerCase() === searchQuery.toLowerCase() 
+                 ? `<span class="json-highlight bg-yellow-500 text-black font-bold px-0.5 rounded-sm">${part}</span>` 
+                 : part
+             ).join('');
+             // Store the wrapper element for scrolling
+             found.push(el as HTMLElement);
+          }
+        }
+      });
+
+      setMatches(found);
+      setCurrentMatch(0);
+      if (found.length > 0) {
+        found[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, parsedJson]);
+
+  const handleNextMatch = () => {
+    if (matches.length === 0) return;
+    const next = (currentMatch + 1) % matches.length;
+    setCurrentMatch(next);
+    matches[next].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   // Real-time parsing
   React.useEffect(() => {
     if (!rawJson.trim()) {
@@ -228,11 +299,11 @@ export function JsonTool() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-auto p-4 bg-white dark:bg-zinc-950">
-          {parsedJson ? (
+          <div className="flex-1 overflow-auto p-4 bg-white">
+            {parsedJson ? (
              <ReactJson 
                src={parsedJson} 
-               theme={resolvedTheme === "dark" ? "monokai" : "rjv-default"}
+               theme="rjv-default"
                style={{ backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '14px' }}
                displayDataTypes={true}
                displayObjectSize={true}
@@ -263,12 +334,30 @@ export function JsonTool() {
           </div>
           
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-              <Input 
-                className="h-7 w-[150px] pl-7 text-xs bg-transparent border-zinc-200 dark:border-zinc-800" 
-                placeholder="搜索节点..." 
-              />
+            <div className="relative flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <Input 
+                  className="h-7 w-[200px] pl-7 pr-12 text-xs bg-transparent border-zinc-200 dark:border-zinc-800" 
+                  placeholder="搜索内容 (支持高亮)..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {matches.length > 0 && (
+                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
+                     {currentMatch + 1}/{matches.length}
+                   </span>
+                )}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 px-2 text-xs"
+                onClick={handleNextMatch}
+                disabled={matches.length === 0}
+              >
+                下一个
+              </Button>
             </div>
           </div>
         </div>

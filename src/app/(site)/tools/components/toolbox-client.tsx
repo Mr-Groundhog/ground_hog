@@ -189,8 +189,8 @@ export function ToolboxClient({ initialTools, categories: propCategories }: Tool
             </div>
 
             <div className={cn(
-              "grid gap-6",
-              viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
+              "grid gap-4",
+              viewMode === "grid" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" : "grid-cols-1"
             )}>
               {filteredTools.length > 0 ? (
                 filteredTools.map((tool) => {
@@ -199,33 +199,24 @@ export function ToolboxClient({ initialTools, categories: propCategories }: Tool
                     <div 
                       key={tool.id}
                       onClick={() => handleToolClick(tool)}
-                      className="group relative bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-6 hover:bg-zinc-900/80 hover:border-cyan-500/30 transition-all duration-300 cursor-pointer overflow-hidden"
+                      className="group relative bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-4 hover:bg-zinc-900/80 hover:border-cyan-500/30 transition-all duration-300 cursor-pointer overflow-hidden h-24 flex flex-col justify-between"
                     >
-                      <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ArrowRight className="h-5 w-5 text-cyan-500 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
-                      </div>
-                      
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="h-10 w-10 rounded-lg bg-cyan-950/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
-                          <Icon className="h-6 w-6" />
-                        </div>
-                        <span className={cn("text-[10px] px-2 py-1 rounded border font-mono", getStatusColor(tool.status))}>
-                          [ 状态: {getStatusText(tool.status)} ]
-                        </span>
-                      </div>
-                      
-                      <h3 className="text-lg font-bold text-zinc-100 mb-2 group-hover:text-cyan-400 transition-colors">
+                      <h3 className="text-sm font-bold text-zinc-100 group-hover:text-cyan-400 transition-colors line-clamp-2">
                         {tool.name}
                       </h3>
-                      <p className="text-sm text-zinc-500 line-clamp-2 mb-4 h-10">
-                        {tool.description}
-                      </p>
                       
-                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-800/50">
-                        <span className="text-xs text-zinc-600 font-mono">
-                          {tool.version || "v1.0.0"}
-                        </span>
-                        <ArrowRight className="h-4 w-4 text-zinc-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+                      <div className="flex items-center justify-between mt-2">
+                         <span className={cn("text-[10px] font-mono transform scale-90 origin-left", 
+                           tool.status === 'NORMAL' ? "text-green-500" :
+                           tool.status === 'DEBUG' ? "text-yellow-500" :
+                           tool.status === 'UPDATE' ? "text-blue-500" :
+                           tool.status === 'MAINTENANCE' ? "text-red-500" :
+                           "text-zinc-500"
+                         )}>
+                           [{getStatusText(tool.status)}]
+                         </span>
+                         
+                         <ArrowRight className="h-4 w-4 text-zinc-600 group-hover:text-cyan-400 transition-colors" />
                       </div>
                     </div>
                   );

@@ -109,8 +109,8 @@ export function Base64Converter() {
                 <Copy className="h-3 w-3" />
               </Button>
             </div>
-            <Textarea 
-              className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1"
+            <Textarea
+              className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1 break-words whitespace-pre-wrap"
               placeholder={mode === "encode" ? "输入要编码的文本..." : "输入要解码的 Base64 字符串..."}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -134,8 +134,8 @@ export function Base64Converter() {
                 <Copy className="h-3 w-3" />
               </Button>
             </div>
-            <Textarea 
-              className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1"
+            <Textarea
+              className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1 break-words whitespace-pre-wrap"
               placeholder="结果将显示在这里..."
               value={output}
               readOnly

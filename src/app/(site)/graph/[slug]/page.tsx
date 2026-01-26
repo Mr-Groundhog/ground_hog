@@ -36,12 +36,12 @@ function getHeadings(markdown: string) {
 }
 
 interface BlogDetailPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
-  const { slug } = params;
-  
+  const { slug } = await params;
+
   const post = await getPostBySlug(slug);
 
   if (!post) {
@@ -65,7 +65,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
               {post.title}
             </h1>
             <p className="text-sm text-zinc-400 md:text-base">
-              {post.summary}
+              {post.excerpt}
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-zinc-500 md:text-sm">
               <span className="inline-flex items-center gap-1">

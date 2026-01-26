@@ -79,7 +79,7 @@ export function PostFeed({ initialPosts, initialPage, totalPages: initialTotalPa
                   {post.title}
                 </CardTitle>
                 <CardDescription className="mt-2 text-xs text-zinc-400 line-clamp-2">
-                  {post.summary || post.content.slice(0, 100)}...
+                  {post.excerpt || post.content.slice(0, 100)}...
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 p-4 pt-3">

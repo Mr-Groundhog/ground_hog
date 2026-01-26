@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/session";
 import { EditorUI } from "../components/editor-ui";
 
 interface EditPostPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export const metadata = {
@@ -13,7 +13,7 @@ export const metadata = {
 };
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
-  const { id } = params;
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -36,13 +36,13 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   }));
 
   return (
-    <EditorUI 
-      categories={serializedCategories} 
-      currentUserId={user.id} 
+    <EditorUI
+      categories={serializedCategories}
+      currentUserId={user.id}
       initialData={{
         ...post,
         // 处理可能为 null 的字段
-        summary: post.summary || null,
+        excerpt: post.excerpt || null,
         coverImage: post.coverImage || null,
         categoryId: post.categoryId || null
       }}

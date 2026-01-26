@@ -38,10 +38,10 @@ const postSchema = z.object({
   title: z.string().min(1, "标题不能为空").max(100, "标题不能超过100个字符"),
   slug: z.string().optional(),
   content: z.string().min(1, "内容不能为空"),
-  summary: z.string().optional(),
+  excerpt: z.string().optional(),
   coverImage: z.string().optional(),
   categoryId: z.string().optional(),
-  published: z.boolean(),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
 });
 
 type PostFormValues = z.infer<typeof postSchema>;
@@ -54,10 +54,10 @@ interface EditorUIProps {
     title: string;
     slug: string;
     content: string;
-    summary?: string | null;
+    excerpt?: string | null;
     coverImage?: string | null;
     categoryId?: string | null;
-    published: boolean;
+    status: string;
   };
 }
 
@@ -76,10 +76,10 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
       title: initialData?.title || "",
       slug: initialData?.slug || "",
       content: initialData?.content || "",
-      summary: initialData?.summary || "",
+      excerpt: initialData?.excerpt || "",
       coverImage: initialData?.coverImage || "",
       categoryId: initialData?.categoryId || "",
-      published: initialData?.published ?? false,
+      status: initialData?.status || "DRAFT",
     },
   });
 
@@ -106,9 +106,9 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
         toast.success("文章已更新");
       } else {
         await createPost(finalData, currentUserId);
-        toast.success(data.published ? "文章已发布" : "草稿已保存");
+        toast.success(data.status === "PUBLISHED" ? "文章已发布" : "草稿已保存");
       }
-      
+
       router.push("/dashboard/posts");
       router.refresh();
     } catch (error: unknown) {
@@ -124,7 +124,7 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
   };
 
   const handlePublish = () => {
-    setValue("published", true);
+    setValue("status", "PUBLISHED");
     // 触发表单提交，如果校验通过则调用 onSubmit
     // 这里需要手动触发 submit，因为按钮在 form 外部或者作为 trigger
     // 最简单的方式是把按钮放在 form 内部，或者使用 handleSubmit(onSubmit)()
@@ -132,7 +132,7 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
   };
 
   const handleSaveDraft = () => {
-    setValue("published", false);
+    setValue("status", "DRAFT");
     form.handleSubmit(onSubmit)();
   };
 
@@ -248,7 +248,7 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
                 <div className="grid gap-2">
                   <Label>摘要</Label>
                   <Textarea
-                    {...register("summary")}
+                    {...register("excerpt")}
                     placeholder="文章简短介绍..."
                     className="h-24"
                   />

@@ -100,7 +100,7 @@ export function Base64Converter() {
 
         <div className="flex flex-1 gap-6">
           {/* Input Area */}
-          <Card className="flex-1 flex flex-col p-4 bg-background">
+          <Card className="flex-1 min-w-0 flex flex-col p-4 bg-background overflow-hidden">
             <div className="flex justify-between items-center mb-2">
               <Label className="text-muted-foreground">
                 {mode === "encode" ? "输入内容 (Text / File)" : "Base64 编码"}
@@ -109,8 +109,9 @@ export function Base64Converter() {
                 <Copy className="h-3 w-3" />
               </Button>
             </div>
-            <Textarea 
+            <Textarea
               className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1"
+              style={{ wordBreak: 'break-all', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}
               placeholder={mode === "encode" ? "输入要编码的文本..." : "输入要解码的 Base64 字符串..."}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -125,7 +126,7 @@ export function Base64Converter() {
           </div>
 
           {/* Output Area */}
-          <Card className="flex-1 flex flex-col p-4 bg-background">
+          <Card className="flex-1 min-w-0 flex flex-col p-4 bg-background overflow-hidden">
             <div className="flex justify-between items-center mb-2">
               <Label className="text-muted-foreground">
                 {mode === "encode" ? "Base64 结果" : "解码结果"}
@@ -134,8 +135,9 @@ export function Base64Converter() {
                 <Copy className="h-3 w-3" />
               </Button>
             </div>
-            <Textarea 
+            <Textarea
               className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1"
+              style={{ wordBreak: 'break-all', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}
               placeholder="结果将显示在这里..."
               value={output}
               readOnly

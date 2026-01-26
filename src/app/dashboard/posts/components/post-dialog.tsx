@@ -55,10 +55,10 @@ export function PostDialog({ open, onOpenChange, post, categories, currentUserId
       title: "",
       slug: "",
       content: "",
-      summary: "",
+      excerpt: "",
       coverImage: "",
       categoryId: undefined,
-      published: false,
+      status: "DRAFT",
     },
   });
 
@@ -68,20 +68,20 @@ export function PostDialog({ open, onOpenChange, post, categories, currentUserId
         title: post.title,
         slug: post.slug,
         content: post.content,
-        summary: post.summary || "",
+        excerpt: post.excerpt || "",
         coverImage: post.coverImage || "",
         categoryId: post.categoryId || undefined,
-        published: post.published,
+        status: post.status || "DRAFT",
       });
     } else {
       form.reset({
         title: "",
         slug: "",
         content: "",
-        summary: "",
+        excerpt: "",
         coverImage: "",
         categoryId: undefined,
-        published: false,
+        status: "DRAFT",
       });
     }
   }, [post, form, open]);
@@ -164,7 +164,7 @@ export function PostDialog({ open, onOpenChange, post, categories, currentUserId
 
             <FormField
               control={form.control}
-              name="summary"
+              name="excerpt"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>摘要</FormLabel>
@@ -222,19 +222,19 @@ export function PostDialog({ open, onOpenChange, post, categories, currentUserId
 
             <FormField
               control={form.control}
-              name="published"
+              name="status"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                   <div className="space-y-0.5">
                     <FormLabel>发布状态</FormLabel>
                     <FormDescription>
-                      {field.value ? "立即发布" : "存为草稿"}
+                      {field.value === "PUBLISHED" ? "立即发布" : "存为草稿"}
                     </FormDescription>
                   </div>
                   <FormControl>
                     <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+                      checked={field.value === "PUBLISHED"}
+                      onCheckedChange={(checked) => field.onChange(checked ? "PUBLISHED" : "DRAFT")}
                     />
                   </FormControl>
                 </FormItem>

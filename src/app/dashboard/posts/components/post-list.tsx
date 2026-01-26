@@ -40,7 +40,7 @@ interface PostItem {
   title: string;
   slug: string;
   category: PostCategory | null;
-  published: boolean;
+  status: string;
   viewCount: number;
   createdAt: string | Date;
   _count: PostMeta;
@@ -171,8 +171,8 @@ export function PostList({
                     ) : "-"}
                   </TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${post.published ? 'bg-green-50 text-green-700 ring-green-600/20' : 'bg-yellow-50 text-yellow-800 ring-yellow-600/20'}`}>
-                      {post.published ? "已发布" : "草稿"}
+                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${post.status === 'PUBLISHED' ? 'bg-green-50 text-green-700 ring-green-600/20' : 'bg-yellow-50 text-yellow-800 ring-yellow-600/20'}`}>
+                      {post.status === 'PUBLISHED' ? "已发布" : "草稿"}
                     </span>
                   </TableCell>
                   <TableCell>

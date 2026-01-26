@@ -12,7 +12,7 @@ export async function getPosts(page = 1, pageSize = 10, query = "", categoryId?:
   if (query) {
     where.OR = [
       { title: { contains: query } },
-      { summary: { contains: query } },
+      { excerpt: { contains: query } },
     ];
   }
 

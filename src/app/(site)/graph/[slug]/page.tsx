@@ -137,7 +137,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="sticky top-6 space-y-6">
           <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-5">
             <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
               作者信息
@@ -155,7 +155,6 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                   {post.user.nickname || post.user.username}
                 </div>
                 <div className="text-xs text-zinc-400">
-                  {/* Title 暂时没有，用 username 代替或留空 */}
                   @{post.user.username}
                 </div>
               </div>
@@ -168,37 +167,35 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             </button>
           </div>
 
-          <div className="sticky top-24 space-y-6">
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-5">
-              <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
-                目录
-              </h2>
-              <div className="space-y-2 text-xs text-zinc-400 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                {headings.map((heading) => (
-                  <a
-                    key={heading.id + heading.text}
-                    href={`#${heading.id}`}
-                    className={`block cursor-pointer rounded px-2 py-1 hover:bg-zinc-900 hover:text-cyan-300 transition-colors ${
-                      heading.level === 1 ? "font-semibold text-zinc-200" : ""
-                    } ${heading.level === 3 ? "pl-4 text-zinc-500" : ""}`}
-                  >
-                    {heading.text}
-                  </a>
-                ))}
-                {headings.length === 0 && (
-                  <p className="text-zinc-500">暂无可提取的标题</p>
-                )}
-              </div>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-5">
+            <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
+              目录
+            </h2>
+            <div className="space-y-2 text-xs text-zinc-400 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 custom-scrollbar">
+              {headings.map((heading) => (
+                <a
+                  key={heading.id + heading.text}
+                  href={`#${heading.id}`}
+                  className={`block cursor-pointer rounded px-2 py-1 hover:bg-zinc-900 hover:text-cyan-300 transition-colors ${
+                    heading.level === 1 ? "font-semibold text-zinc-200" : ""
+                  } ${heading.level === 3 ? "pl-4 text-zinc-500" : ""}`}
+                >
+                  {heading.text}
+                </a>
+              ))}
+              {headings.length === 0 && (
+                <p className="text-zinc-500">暂无可提取的标题</p>
+              )}
             </div>
+          </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-5">
-              <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
-                互动
-              </h2>
-              <Suspense fallback={<Skeleton className="h-10 w-full" />}>
-                <InteractionWrapper postId={post.id} />
-              </Suspense>
-            </div>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-5">
+            <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
+              互动
+            </h2>
+            <Suspense fallback={<Skeleton className="h-10 w-full" />}>
+              <InteractionWrapper postId={post.id} />
+            </Suspense>
           </div>
         </div>
       </div>

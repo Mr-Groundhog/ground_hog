@@ -55,7 +55,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(260px,1fr)]">
+      <div className="grid gap-12 lg:grid-cols-[1fr_320px]">
         <div className="space-y-8">
           <div className="space-y-4">
             <div className="text-xs text-zinc-500">
@@ -137,7 +137,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           </div>
         </div>
 
-        <div className="sticky top-6 space-y-6">
+        <div className="sticky top-24 space-y-6 self-start">
           <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-5">
             <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
               作者信息
@@ -171,7 +171,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
               目录
             </h2>
-            <div className="space-y-2 text-xs text-zinc-400 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-2 text-xs text-zinc-400 max-h-[calc(100vh-12rem)] overflow-y-auto pr-2 custom-scrollbar">
               {headings.map((heading) => (
                 <a
                   key={heading.id + heading.text}

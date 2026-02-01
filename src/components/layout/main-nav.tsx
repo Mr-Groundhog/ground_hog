@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, LogOut } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
@@ -22,6 +22,7 @@ export function MainNav() {
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useUserStore();
   const [mounted, setMounted] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
@@ -35,92 +36,185 @@ export function MainNav() {
     { href: "/friends", label: "友链" },
   ];
 
-  return (
-    <div className="flex w-full items-center justify-between px-6 h-16 bg-[#09090b]">
-      <div className="flex items-center gap-8">
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center rounded overflow-hidden">
-            <Image
-              src="/static/logo/hog.png"
-              alt="Logo"
-              width={32}
-              height={32}
-              className="object-contain"
-            />
-          </div>
-          <span className="font-mono text-lg font-bold tracking-tighter text-white whitespace-nowrap">
-            ground_hog
-          </span>
-        </Link>
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
-        <NavigationMenu>
-          <NavigationMenuList className="gap-1">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <NavigationMenuItem key={item.href}>
-                  <NavigationMenuLink
-                    asChild
-                    className={cn(
-                      navigationMenuTriggerStyle(),
-                      "h-9 px-4 text-xs font-medium transition-colors bg-transparent hover:bg-zinc-800/50 hover:text-cyan-400 focus:bg-zinc-800/50 focus:text-cyan-400",
-                      isActive ? "text-cyan-400" : "text-zinc-400"
-                    )}
-                  >
-                    <Link href={item.href}>
-                      {item.label}
-                      {isActive && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
-                      )}
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              );
-            })}
-          </NavigationMenuList>
-        </NavigationMenu>
-      </div>
-      <div className="flex items-center gap-4 shrink-0">
-        <WeatherWidget />
-        {mounted && isAuthenticated ? (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-400 hidden sm:inline-block">
-              {user?.username || user?.email}
+  return (
+    <>
+      {/* PC端导航栏 */}
+      <div className="flex w-full items-center justify-between px-6 h-16 bg-[#09090b]">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <div className="flex h-8 w-8 items-center justify-center rounded overflow-hidden">
+              <Image
+                src="/static/logo/hog.png"
+                alt="Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            </div>
+            <span className="font-mono text-lg font-bold tracking-tighter text-white whitespace-nowrap">
+              ground_hog
             </span>
-            {user?.role === "ADMIN" && (
+          </Link>
+
+          <NavigationMenu className="hidden md:block">
+            <NavigationMenuList className="gap-1">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <NavigationMenuItem key={item.href}>
+                    <NavigationMenuLink
+                      asChild
+                      className={cn(
+                        navigationMenuTriggerStyle(),
+                        "h-9 px-4 text-xs font-medium transition-colors bg-transparent hover:bg-zinc-800/50 hover:text-cyan-400 focus:bg-zinc-800/50 focus:text-cyan-400",
+                        isActive ? "text-cyan-400" : "text-zinc-400"
+                      )}
+                    >
+                      <Link href={item.href}>
+                        {item.label}
+                        {isActive && (
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
+                        )}
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                );
+              })}
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
+        <div className="flex items-center gap-4 shrink-0">
+          <WeatherWidget className="hidden md:block" />
+          {mounted && isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-400 hidden sm:inline-block">
+                {user?.username || user?.email}
+              </span>
+              {user?.role === "ADMIN" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 w-9 p-0 rounded-md text-zinc-400 hover:text-cyan-400 hover:bg-zinc-800/50"
+                  asChild
+                  title="Dashboard"
+                >
+                  <Link href="/dashboard">
+                    <LayoutDashboard className="h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 rounded-md text-zinc-400 hover:text-cyan-400 hover:bg-zinc-800/50"
-                asChild
-                title="Dashboard"
+                className="h-9 w-9 p-0 rounded-md text-zinc-400 hover:text-red-400 hover:bg-zinc-800/50"
+                onClick={() => logout()}
+                title="Logout"
               >
-                <Link href="/dashboard">
-                  <LayoutDashboard className="h-4 w-4" />
-                </Link>
+                <LogOut className="h-4 w-4" />
               </Button>
-            )}
+            </div>
+          ) : (
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
-              className="h-9 w-9 p-0 rounded-md text-zinc-400 hover:text-red-400 hover:bg-zinc-800/50"
-              onClick={() => logout()}
-              title="Logout"
+              className="h-9 rounded-md bg-zinc-100 px-4 text-xs font-semibold text-zinc-950 hover:bg-white whitespace-nowrap"
+              asChild
             >
-              <LogOut className="h-4 w-4" />
+              <Link href="/login">登录</Link>
             </Button>
-          </div>
-        ) : (
+          )}
+          {/* 手机端汉堡菜单按钮 */}
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
-            className="h-9 rounded-md bg-zinc-100 px-4 text-xs font-semibold text-zinc-950 hover:bg-white whitespace-nowrap"
-            asChild
+            className="h-9 w-9 p-0 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800/50 md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <Link href="/login">登录</Link>
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
-        )}
+        </div>
       </div>
-    </div>
+
+      {/* 手机端移动菜单 */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 top-16 z-50 bg-[#09090b]/95 backdrop-blur-sm">
+          <nav className="flex flex-col gap-2 p-4">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={closeMobileMenu}
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3 rounded-md text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-zinc-800/50 text-cyan-400"
+                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                  )}
+                >
+                  <span>{item.label}</span>
+                  {isActive && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                  )}
+                </Link>
+              );
+            })}
+            {/* 手机端天气显示 */}
+            {mounted && (
+              <div className="px-4 py-2">
+                <WeatherWidget />
+              </div>
+            )}
+            {/* 手机端登录状态 */}
+            {mounted && (
+              <div className="mt-4 pt-4 border-t border-zinc-800">
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <div className="px-4 py-2 text-xs text-zinc-500">
+                      {user?.username || user?.email}
+                    </div>
+                    {user?.role === "ADMIN" && (
+                      <Link
+                        href="/dashboard"
+                        onClick={closeMobileMenu}
+                        className="flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-cyan-400"
+                      >
+                        <LayoutDashboard className="h-4 w-4" />
+                        <span>Dashboard</span>
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        logout();
+                        closeMobileMenu();
+                      }}
+                      className="flex w-full items-center gap-2 px-4 py-3 rounded-md text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-red-400"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>退出登录</span>
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={closeMobileMenu}
+                    className="flex items-center justify-center w-full px-4 py-3 rounded-md bg-zinc-100 text-sm font-semibold text-zinc-950 hover:bg-white"
+                  >
+                    登录
+                  </Link>
+                )}
+              </div>
+            )}
+          </nav>
+        </div>
+      )}
+    </>
   );
 }

@@ -20,7 +20,7 @@ interface WeatherData {
 
 
 
-export function WeatherWidget() {
+export function WeatherWidget({ className }: { className?: string }) {
   const [data, setData] = React.useState<WeatherData | null>(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -58,7 +58,7 @@ export function WeatherWidget() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 bg-zinc-800/30 rounded-full">
+      <div className={cn("flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 bg-zinc-800/30 rounded-full", className)}>
         <Loader2 className="h-3 w-3 animate-spin" />
         <span>获取天气...</span>
       </div>
@@ -70,7 +70,7 @@ export function WeatherWidget() {
   const Icon = getWeatherIcon(data.weather);
 
   return (
-    <div className="flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-white bg-zinc-800/30 rounded-full hover:bg-zinc-800/50 hover:text-cyan-400 transition-colors cursor-default group" title={`${data.city}: ${data.weather} ${data.wind_direction}风${data.wind_power}级`}>
+    <div className={cn("flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-white bg-zinc-800/30 rounded-full hover:bg-zinc-800/50 hover:text-cyan-400 transition-colors cursor-default group", className)} title={`${data.city}: ${data.weather} ${data.wind_direction}风${data.wind_power}级`}>
       <div className="flex items-center gap-1.5">
         <Icon className="h-3.5 w-3.5 text-yellow-500 group-hover:text-cyan-400 transition-colors" />
         <span>{data.city}</span>

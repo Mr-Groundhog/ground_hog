@@ -1,7 +1,6 @@
 
 import { MainNav } from "@/components/layout/main-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function SiteLayout({
   children,
@@ -15,14 +14,12 @@ export default function SiteLayout({
           <MainNav />
         </div>
       </header>
-      <ScrollArea className="flex-1 h-[calc(100vh-4rem)]">
+      <main className="flex-1">
         <div className="flex min-h-full flex-col">
-          <main className="flex-1 flex flex-col">
-            {children}
-          </main>
+          {children}
           <SiteFooter />
         </div>
-      </ScrollArea>
+      </main>
     </div>
   );
 }

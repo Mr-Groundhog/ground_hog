@@ -114,6 +114,23 @@ export function MainNav() {
           </NavigationMenu>
         </div>
         <div className="flex items-center gap-4 shrink-0">
+          {/* PC端天气显示 */}
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-zinc-800/30 rounded-full whitespace-nowrap">
+            {weatherLoading ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>获取天气...</span>
+              </>
+            ) : weather ? (
+              <>
+                <span>{weather.city}</span>
+                <span className="text-zinc-600">|</span>
+                <span>{weather.temperature}°C</span>
+                <span className="text-white/80">{weather.weather}</span>
+              </>
+            ) : null}
+          </div>
+
           {mounted && isAuthenticated ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-zinc-400 hidden sm:inline-block">
@@ -193,25 +210,9 @@ export function MainNav() {
                 </Link>
               );
             })}
-            {/* 手机端天气显示 */}
-            <div className="px-4 py-2">
-              {weatherLoading ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 bg-zinc-800/50 rounded-full">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  <span>获取天气...</span>
-                </div>
-              ) : weather ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-zinc-800/50 rounded-full whitespace-nowrap">
-                  <span>{weather.city}</span>
-                  <span className="text-zinc-600">|</span>
-                  <span>{weather.temperature}°C</span>
-                  <span className="text-white/80">{weather.weather}</span>
-                </div>
-              ) : null}
-            </div>
             {/* 手机端登录状态 */}
             {mounted && (
-              <div className="mt-2 pt-4 border-t border-zinc-800">
+              <div className="mt-4 pt-4 border-t border-zinc-800">
                 {isAuthenticated ? (
                   <div className="space-y-2">
                     <div className="px-4 py-2 text-xs text-zinc-500">

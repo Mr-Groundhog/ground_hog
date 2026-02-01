@@ -58,8 +58,8 @@ export function WeatherWidget({ className }: { className?: string }) {
 
   if (loading) {
     return (
-      <div className={cn("flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 bg-zinc-800/30 rounded-full", className)}>
-        <Loader2 className="h-3 w-3 animate-spin" />
+      <div className={cn("flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 bg-zinc-800/30 rounded-full whitespace-nowrap", className)}>
+        <Loader2 className="h-3 w-3 animate-spin shrink-0" />
         <span>获取天气...</span>
       </div>
     );
@@ -70,13 +70,13 @@ export function WeatherWidget({ className }: { className?: string }) {
   const Icon = getWeatherIcon(data.weather);
 
   return (
-    <div className={cn("flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-white bg-zinc-800/30 rounded-full hover:bg-zinc-800/50 hover:text-cyan-400 transition-colors cursor-default group", className)} title={`${data.city}: ${data.weather} ${data.wind_direction}风${data.wind_power}级`}>
+    <div className={cn("flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-white bg-zinc-800/30 rounded-full hover:bg-zinc-800/50 hover:text-cyan-400 transition-colors cursor-default group whitespace-nowrap", className)} title={`${data.city}: ${data.weather} ${data.wind_direction}风${data.wind_power}级`}>
       <div className="flex items-center gap-1.5">
-        <Icon className="h-3.5 w-3.5 text-yellow-500 group-hover:text-cyan-400 transition-colors" />
-        <span>{data.city}</span>
+        <Icon className="h-3.5 w-3.5 text-yellow-500 group-hover:text-cyan-400 transition-colors shrink-0" />
+        <span className="shrink-0">{data.city}</span>
       </div>
-      <div className="w-[1px] h-3 bg-zinc-700" />
-      <div className="flex items-center gap-1">
+      <div className="w-[1px] h-3 bg-zinc-700 shrink-0" />
+      <div className="flex items-center gap-1 shrink-0">
         <span>{data.temperature}°C</span>
         <span className="text-white/80 group-hover:text-cyan-400">{data.weather}</span>
       </div>

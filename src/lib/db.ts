@@ -13,4 +13,8 @@ export const prisma =
     },
   });
 
+prisma.$connect().then(async () => {
+  await prisma.$executeRaw`SET TIME ZONE 'Asia/Shanghai'`;
+});
+
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

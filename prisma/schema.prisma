@@ -32,19 +32,19 @@ model User {
   /// 0: 正常, 2: 被删除 
   isDelete      Int           @default(0) @map("is_delete")
   /// 记录删除的具体时间 
-  deletedAt     DateTime?     @map("deleted_at")
+  deletedAt     DateTime?     @db.Timestamptz @map("deleted_at")
   /// 邮箱验证时间 (非空则表示已验证) 
-  emailVerified DateTime?     @map("email_verified")
+  emailVerified DateTime?     @db.Timestamptz @map("email_verified")
   /// 手机号 (可选扩展) 
   phone         String?       @unique
   /// 手机验证时间 
-  phoneVerified DateTime?     @map("phone_verified")
+  phoneVerified DateTime?     @db.Timestamptz @map("phone_verified")
   /// 注册时间 
-  createdAt     DateTime      @default(now()) @map("created_at")
+  createdAt     DateTime      @db.Timestamptz @default(now()) @map("created_at")
   /// 最后一次修改资料时间 
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+  updatedAt     DateTime      @db.Timestamptz @updatedAt @map("updated_at")
   /// 最后一次登录时间 
-  lastLoginAt   DateTime?     @map("last_login_at")
+  lastLoginAt   DateTime?     @db.Timestamptz @map("last_login_at")
   /// 最后一次登录 IP 
   lastLoginIp   String?       @map("last_login_ip")
   accounts      Account[]
@@ -84,8 +84,8 @@ model Category {
   description String?
   icon        String?
   color       String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime @db.Timestamptz @default(now()) @map("created_at")
+  updatedAt   DateTime @db.Timestamptz @updatedAt @map("updated_at")
   posts       Post[]
 
   @@map("categories")
@@ -95,8 +95,8 @@ model Tag {
   id        String   @id @default(cuid())
   name      String   @unique
   slug      String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @db.Timestamptz @default(now()) @map("created_at")
+  updatedAt DateTime @db.Timestamptz @updatedAt @map("updated_at")
   posts     Post[]
 
   @@map("tags")
@@ -113,9 +113,9 @@ model Post {
   viewCount    Int           @default(0) @map("view_count")
   userId       String        @map("user_id")
   categoryId   String?       @map("category_id")
-  publishedAt  DateTime?     @map("published_at")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
+  publishedAt  DateTime?     @db.Timestamptz @map("published_at")
+  createdAt    DateTime      @db.Timestamptz @default(now()) @map("created_at")
+  updatedAt    DateTime      @db.Timestamptz @updatedAt @map("updated_at")
   user         User          @relation(fields: [userId], references: [id])
   category     Category?     @relation(fields: [categoryId], references: [id])
   tags         Tag[]
@@ -134,8 +134,8 @@ model Comment {
   postId    String    @map("post_id")
   parentId  String?   @map("parent_id")
   isEdited  Boolean   @default(false) @map("is_edited")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime  @db.Timestamptz @default(now()) @map("created_at")
+  updatedAt DateTime  @db.Timestamptz @updatedAt @map("updated_at")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
@@ -152,7 +152,7 @@ model Interaction {
   type      InteractionType
   userId    String          @map("user_id")
   postId    String          @map("post_id")
-  createdAt DateTime        @default(now()) @map("created_at")
+  createdAt DateTime        @db.Timestamptz @default(now()) @map("created_at")
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post            @relation(fields: [postId], references: [id], onDelete: Cascade)
 
@@ -171,8 +171,8 @@ model FriendLink {
   coverImage  String?          @map("cover_image")
   email       String?
   status      FriendLinkStatus @default(PENDING)
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
+  createdAt   DateTime         @db.Timestamptz @default(now()) @map("created_at")
+  updatedAt   DateTime         @db.Timestamptz @updatedAt @map("updated_at")
 
   @@map("friend_links")
 }
@@ -187,8 +187,8 @@ model AiTool {
   category    String
   tags        String?
   status      AiToolStatus @default(PENDING)
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  createdAt   DateTime     @db.Timestamptz @default(now()) @map("created_at")
+  updatedAt   DateTime     @db.Timestamptz @updatedAt @map("updated_at")
 
   @@map("ai_tools")
 }
@@ -203,8 +203,8 @@ model Tool {
   type        ToolType   @default(EXTERNAL)
   url         String
   category    String
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  createdAt   DateTime   @db.Timestamptz @default(now()) @map("created_at")
+  updatedAt   DateTime   @db.Timestamptz @updatedAt @map("updated_at")
 
   @@map("tools")
 }
@@ -216,7 +216,7 @@ model SiteVisit {
   device    String
   referrer  String?
   ip        String
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime @db.Timestamptz @default(now()) @map("created_at")
 
   @@index([uv])
   @@index([pageUrl])

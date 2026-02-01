@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
@@ -16,16 +16,44 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { WeatherWidget } from "@/components/weather-widget";
+
+// 天气数据类型
+interface WeatherData {
+  city: string;
+  temperature: string | number;
+  weather: string;
+}
 
 export function MainNav() {
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useUserStore();
   const [mounted, setMounted] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [weather, setWeather] = React.useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = React.useState(true);
 
   React.useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // 获取天气数据
+  React.useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const res = await fetch("https://uapis.cn/api/v1/misc/weather?adcode=330782");
+        const json = await res.json();
+        setWeather({
+          city: json.city,
+          temperature: json.temperature,
+          weather: json.weather,
+        });
+      } catch (error) {
+        console.error("Failed to fetch weather:", error);
+      } finally {
+        setWeatherLoading(false);
+      }
+    };
+    fetchWeather();
   }, []);
 
   const navItems = [
@@ -86,7 +114,6 @@ export function MainNav() {
           </NavigationMenu>
         </div>
         <div className="flex items-center gap-4 shrink-0">
-          <WeatherWidget className="hidden md:block" />
           {mounted && isAuthenticated ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-zinc-400 hidden sm:inline-block">
@@ -167,14 +194,24 @@ export function MainNav() {
               );
             })}
             {/* 手机端天气显示 */}
-            {mounted && (
-              <div className="px-4 py-2">
-                <WeatherWidget />
-              </div>
-            )}
+            <div className="px-4 py-2">
+              {weatherLoading ? (
+                <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 bg-zinc-800/50 rounded-full">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>获取天气...</span>
+                </div>
+              ) : weather ? (
+                <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-zinc-800/50 rounded-full whitespace-nowrap">
+                  <span>{weather.city}</span>
+                  <span className="text-zinc-600">|</span>
+                  <span>{weather.temperature}°C</span>
+                  <span className="text-white/80">{weather.weather}</span>
+                </div>
+              ) : null}
+            </div>
             {/* 手机端登录状态 */}
             {mounted && (
-              <div className="mt-4 pt-4 border-t border-zinc-800">
+              <div className="mt-2 pt-4 border-t border-zinc-800">
                 {isAuthenticated ? (
                   <div className="space-y-2">
                     <div className="px-4 py-2 text-xs text-zinc-500">

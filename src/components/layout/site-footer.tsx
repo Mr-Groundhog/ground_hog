@@ -3,7 +3,7 @@
 export function SiteFooter() {
   return (
     <footer className="mt-16 border-t border-zinc-800 py-6 px-4 text-[10px] text-zinc-500 font-mono uppercase tracking-wider md:mt-20 md:py-8">
-      <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+      <div className="flex flex-col items-center justify-center gap-4 md:flex-row md:justify-center">
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>

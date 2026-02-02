@@ -73,11 +73,41 @@ export async function deleteFriendLink(id: string) {
   return { success: true };
 }
 
-export async function approveFriendLink(id: string) {
+export async function approveFriendLink(id: string, request?: Request) {
+  const friendLink = await prisma.friendLink.findUnique({
+    where: { id },
+  });
+
+  if (!friendLink) {
+    throw new Error("友链不存在");
+  }
+
+  // 更新友链状态
   await prisma.friendLink.update({
     where: { id },
     data: { status: "APPROVED" },
   });
+
+  // 如果有邮箱且请求对象存在，则发送邮件
+  if (friendLink.email && request) {
+    try {
+      // 获取客户端IP
+      let ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip");
+      if (!ip) {
+        ip = "127.0.0.1";
+      }
+      if (ip && ip.includes(",")) {
+        ip = ip.split(",")[0].trim();
+      }
+
+      const { sendFriendApproveEmail } = await import("@/lib/email-service");
+      await sendFriendApproveEmail(friendLink.email, friendLink.name, ip);
+    } catch (error) {
+      console.error("发送邮件失败:", error);
+      // 邮件发送失败不阻止审核通过操作
+    }
+  }
+
   revalidatePath("/dashboard/friend-links");
   revalidatePath("/friends");
   return { success: true };

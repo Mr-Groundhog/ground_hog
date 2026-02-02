@@ -224,6 +224,25 @@ model SiteVisit {
   @@map("site_visits")
 }
 
+model EmailLog {
+  id           String      @id @default(cuid())
+  fromEmail    String      @map("from_email")
+  toEmail      String      @map("to_email")
+  subject      String
+  content      String?
+  status       EmailStatus @default(PENDING)
+  errorMessage String?     @map("error_message")
+  ip           String
+  sendCount    Int         @default(1) @map("send_count")
+  createdAt    DateTime    @db.Timestamptz @default(now()) @map("created_at")
+  sentAt       DateTime?   @db.Timestamptz @map("sent_at")
+
+  @@index([ip])
+  @@index([createdAt])
+  @@index([status])
+  @@map("email_logs")
+}
+
 enum Role {
   USER
   ADMIN
@@ -263,4 +282,10 @@ enum ToolStatus {
   DEBUG
   UPDATE
   MAINTENANCE
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
 }

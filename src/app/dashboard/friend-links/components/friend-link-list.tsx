@@ -77,7 +77,19 @@ export function FriendLinkList({ data, total, page, totalPages }: FriendLinkList
   const handleApprove = async (id: string) => {
     startLoading();
     try {
-      await approveFriendLink(id);
+      // 创建一个模拟的Request对象来传递headers
+      const mockRequest = {
+        headers: {
+          get: (name: string) => {
+            if (name === 'x-forwarded-for' || name === 'x-real-ip') {
+              return '127.0.0.1'; // 本地开发环境使用localhost IP
+            }
+            return null;
+          }
+        }
+      } as unknown as Request;
+      
+      await approveFriendLink(id, mockRequest);
       toast.success("已审核通过");
     } catch (error: any) {
       toast.error(error.message || "操作失败");

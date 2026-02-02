@@ -3,6 +3,9 @@ import { sendMail } from "@/lib/mailer";
 import { render } from '@react-email/render';
 import { FriendApproveTemplate } from "@/app/dashboard/friend-links/components/contact-template";
 
+// 确保 React Email 组件可以在服务器端渲染
+import { createElement } from 'react';
+
 // IP限制检查
 export async function checkIPLimit(ip: string): Promise<{ allowed: boolean; message?: string }> {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); // 1小时前
@@ -63,7 +66,7 @@ export async function sendFriendApproveEmail(
   }
 
   // 渲染邮件模板
-  const emailHtml = await render(FriendApproveTemplate({ siteName }));
+  const emailHtml = await render(createElement(FriendApproveTemplate, { siteName }));
 
   let emailLog: any;
 

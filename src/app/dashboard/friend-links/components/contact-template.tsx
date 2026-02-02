@@ -43,6 +43,7 @@ export const FriendApproveTemplate = ({ siteName }: { siteName: string }) => (
 // 样式配置
 const main = { backgroundColor: '#f9fafb', fontFamily: 'sans-serif' };
 const container = { margin: '0 auto', padding: '40px 20px' };
+const logoSection = { textAlign: 'center' as const, marginBottom: '24px' };
 const section = { backgroundColor: '#ffffff', padding: '32px', borderRadius: '12px', border: '1px solid #e5e7eb' };
 const h1 = { color: '#111827', fontSize: '24px', textAlign: 'center' as const, letterSpacing: '2px' };
 const text = { color: '#4b5563', fontSize: '16px', lineHeight: '26px' };

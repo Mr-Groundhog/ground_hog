@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { friendLinkSchema, FriendLinkFormValues } from "./schema";
 import { revalidatePath } from "next/cache";
-
+import { sendFriendApproveEmail } from "@/lib/email-service";
 export async function getFriendLinks({
   page = 1,
   limit = 5,
@@ -99,7 +99,6 @@ export async function approveFriendLink(id: string, request?: Request) {
       ip = ip.split(",")[0].trim();
     }
 
-    const { sendFriendApproveEmail } = await import("@/lib/email-service");
     await sendFriendApproveEmail(friendLink.email, friendLink.name, ip);
   } else if (!friendLink.email) {
     console.warn(`友链 ${friendLink.name} 没有提供邮箱，跳过发送邮件`);

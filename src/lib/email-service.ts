@@ -64,10 +64,12 @@ export async function sendFriendApproveEmail(
 
   // 渲染邮件模板
   const emailHtml = await render(FriendApproveTemplate({ siteName }));
-  
+
+  let emailLog: any;
+
   try {
     // 记录邮件发送尝试
-    const emailLog = await prisma.emailLog.create({
+    emailLog = await prisma.emailLog.create({
       data: {
         fromEmail: process.env.GMAIL_USER || "",
         toEmail: toEmail,
@@ -102,14 +104,16 @@ export async function sendFriendApproveEmail(
 
   } catch (error) {
     // 记录发送失败
-    await prisma.emailLog.update({
-      where: { id: emailLog.id },
-      data: {
-        status: "FAILED",
-        errorMessage: error instanceof Error ? error.message : "未知错误",
-      },
-    });
-    
+    if (emailLog) {
+      await prisma.emailLog.update({
+        where: { id: emailLog.id },
+        data: {
+          status: "FAILED",
+          errorMessage: error instanceof Error ? error.message : "未知错误",
+        },
+      });
+    }
+
     throw error;
   }
 }

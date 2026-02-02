@@ -90,9 +90,24 @@ export function FriendLinkList({ data, total, page, totalPages }: FriendLinkList
       } as unknown as Request;
       
       await approveFriendLink(id, mockRequest);
-      toast.success("已审核通过");
+      toast.success("已审核通过", {
+        description: "友链状态已更新"
+      });
     } catch (error: any) {
-      toast.error(error.message || "操作失败");
+      // 检查是否是IP限制错误
+      if (error.message?.includes("每小时最多只能发送")) {
+        toast.error("审核通过，但邮件发送受限", {
+          description: error.message
+        });
+      } else if (error.message?.includes("友链不存在")) {
+        toast.error("操作失败", {
+          description: error.message
+        });
+      } else {
+        toast.error("审核通过，但邮件发送失败", {
+          description: error.message || "请检查邮件日志"
+        });
+      }
     } finally {
       stopLoading();
     }

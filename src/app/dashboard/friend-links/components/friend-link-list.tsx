@@ -77,22 +77,48 @@ export function FriendLinkList({ data, total, page, totalPages }: FriendLinkList
   const handleApprove = async (id: string) => {
     startLoading();
     try {
-      // 创建一个模拟的Request对象来传递headers
-      const mockRequest = {
-        headers: {
-          get: (name: string) => {
-            if (name === 'x-forwarded-for' || name === 'x-real-ip') {
-              return '127.0.0.1'; // 本地开发环境使用localhost IP
-            }
-            return null;
-          }
-        }
-      } as unknown as Request;
+      // 先更新友链状态
+      await approveFriendLink(id);
       
-      await approveFriendLink(id, mockRequest);
-      toast.success("已审核通过", {
-        description: "友链状态已更新"
-      });
+      // 然后尝试发送邮件通知
+      const link = data.find(item => item.id === id);
+      if (link && link.email) {
+        try {
+          const response = await fetch("/api/send-friend-approval", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: link.email,
+              siteName: link.name,
+            }),
+          });
+
+          const result = await response.json();
+          
+          if (result.success) {
+            toast.success("已审核通过", {
+              description: "友链状态已更新，通知邮件已发送"
+            });
+          } else {
+            // 即使邮件发送失败，也要显示审核成功的消息
+            toast.success("已审核通过", {
+              description: "友链状态已更新，但邮件发送失败：" + result.message
+            });
+          }
+        } catch (emailError) {
+          // 如果邮件发送失败，仍然显示审核成功
+          toast.success("已审核通过", {
+            description: "友链状态已更新，但邮件发送失败"
+          });
+          console.error('邮件发送错误:', emailError);
+        }
+      } else {
+        toast.success("已审核通过", {
+          description: "友链状态已更新"
+        });
+      }
     } catch (error: any) {
       // 检查是否是IP限制错误
       if (error.message?.includes("每小时最多只能发送")) {
@@ -104,8 +130,8 @@ export function FriendLinkList({ data, total, page, totalPages }: FriendLinkList
           description: error.message
         });
       } else {
-        toast.error("审核通过，但邮件发送失败", {
-          description: error.message || "请检查邮件日志"
+        toast.error("操作失败", {
+          description: error.message || "请稍后重试"
         });
       }
     } finally {

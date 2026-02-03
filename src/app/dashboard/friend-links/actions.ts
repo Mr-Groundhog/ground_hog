@@ -88,28 +88,9 @@ export async function approveFriendLink(id: string, request?: Request) {
     data: { status: "APPROVED" },
   });
 
-  // 如果有邮箱且请求对象存在，则发送邮件
-  if (friendLink.email && request) {
-    // 获取客户端IP
-    let ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip");
-    if (!ip) {
-      ip = "127.0.0.1";
-    }
-    if (ip && ip.includes(",")) {
-      ip = ip.split(",")[0].trim();
-    }
-
-    // 在后台异步发送邮件，不影响页面响应
-    process.nextTick(async () => {
-      try {
-        await sendFriendApproveEmail(friendLink.email!, friendLink.name, ip);
-      } catch (error) {
-        console.error('邮件发送失败:', error);
-      }
-    });
-  } else if (!friendLink.email) {
-    console.warn(`友链 ${friendLink.name} 没有提供邮箱，跳过发送邮件`);
-  }
+  // 注意：邮件发送现在通过API路由处理，以确保正确获取IP地址
+  // 如果是通过API路由调用（如前端管理界面），邮件会在那里处理
+  // 这里只更新状态，不处理邮件发送逻辑
 
   revalidatePath("/dashboard/friend-links");
   revalidatePath("/friends");

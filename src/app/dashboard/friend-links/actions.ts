@@ -99,7 +99,14 @@ export async function approveFriendLink(id: string, request?: Request) {
       ip = ip.split(",")[0].trim();
     }
 
-    await sendFriendApproveEmail(friendLink.email, friendLink.name, ip);
+    // 在后台异步发送邮件，不影响页面响应
+    process.nextTick(async () => {
+      try {
+        await sendFriendApproveEmail(friendLink.email!, friendLink.name, ip);
+      } catch (error) {
+        console.error('邮件发送失败:', error);
+      }
+    });
   } else if (!friendLink.email) {
     console.warn(`友链 ${friendLink.name} 没有提供邮箱，跳过发送邮件`);
   }

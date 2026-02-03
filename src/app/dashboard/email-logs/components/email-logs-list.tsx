@@ -16,6 +16,16 @@ import { retryFailedEmailAction } from "../actions";
 import { toast } from "sonner";
 import { useLoadingStore } from "@/store/loading-store";
 import { RefreshCw, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface EmailLogsListProps {
   data: any[];
@@ -28,6 +38,8 @@ interface EmailLogsListProps {
 export function EmailLogsList({ data, total, page, totalPages }: EmailLogsListProps) {
   const router = useRouter();
   const { startLoading, stopLoading } = useLoadingStore();
+  const [retryDialogOpen, setRetryDialogOpen] = useState(false);
+  const [logToRetry, setLogToRetry] = useState<string | null>(null);
 
   const handleRetry = async (logId: string) => {
     startLoading();
@@ -43,6 +55,19 @@ export function EmailLogsList({ data, total, page, totalPages }: EmailLogsListPr
     }
   };
 
+  const confirmRetry = () => {
+    if (logToRetry) {
+      handleRetry(logToRetry);
+      setLogToRetry(null);
+      setRetryDialogOpen(false);
+    }
+  };
+
+  const openRetryDialog = (logId: string) => {
+    setLogToRetry(logId);
+    setRetryDialogOpen(true);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "SENT":
@@ -55,7 +80,6 @@ export function EmailLogsList({ data, total, page, totalPages }: EmailLogsListPr
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
-
 
 
   const handlePageChange = (newPage: number) => {
@@ -105,7 +129,7 @@ export function EmailLogsList({ data, total, page, totalPages }: EmailLogsListPr
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRetry(log.id)}
+                        onClick={() => openRetryDialog(log.id)}
                         title="重试发送"
                       >
                         <RefreshCw className="w-4 h-4 mr-1" />
@@ -147,6 +171,26 @@ export function EmailLogsList({ data, total, page, totalPages }: EmailLogsListPr
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={retryDialogOpen} onOpenChange={setRetryDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认重发邮件？</AlertDialogTitle>
+            <AlertDialogDescription>
+              您确定要重发这封失败的邮件吗？重发操作将消耗您的IP限制额度。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRetry}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              确认重发
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

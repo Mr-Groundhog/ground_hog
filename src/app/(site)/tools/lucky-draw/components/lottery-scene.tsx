@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { useLotteryStore } from "./lottery-store";
+import { motion } from "framer-motion";
 
 interface Star {
   id: number;
@@ -54,99 +54,207 @@ function StarBackground() {
   );
 }
 
-interface DanmakuItem {
+interface SphereParticle {
   id: string;
   name: string;
-  top: number;
-  delay: number;
-  durationScale: number;
-  size: number;
-  color: string;
+  x: number;
+  y: number;
+  z: number;
+  scale: number;
+  opacity: number;
 }
 
-function ParticipantDanmaku() {
+function ParticipantSphere() {
   const participants = useLotteryStore((state) => state.participants);
   const status = useLotteryStore((state) => state.status);
-  const speed = useLotteryStore((state) => state.config.speed || 5);
-  const [items, setItems] = useState<DanmakuItem[]>([]);
-  
+  const [particles, setParticles] = useState<SphereParticle[]>([]);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const rotationSpeed = useRef({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // 初始化球形粒子分布
   useEffect(() => {
-    let namesToShow: string[] = [];
     if (participants.length === 0) {
-      namesToShow = ["虚位以待...", "年会盛典", "2026", "好运连连", "特等奖", "锦鲤附体", "大奖等你拿", "万事如意"];
-    } else {
-      namesToShow = participants.map(p => p.name);
-      // Ensure enough density
-      if (namesToShow.length < 50) {
-        const repeat = Math.ceil(50 / namesToShow.length);
-        namesToShow = Array(repeat).fill(namesToShow).flat();
-      }
+      // 如果没有参与者，显示默认提示
+      setParticles([]);
+      return;
     }
 
-    const newItems = namesToShow.map((name, i) => {
-      const row = i % 15;
-      const top = (row * 6) + Math.random() * 4 + 5; 
-      const colors = ["#2dd4bf", "#f472b6", "#fbbf24", "#60a5fa", "#a78bfa", "#34d399"];
+    const newParticles: SphereParticle[] = [];
+    const names = participants.map(p => p.name);
 
-      return {
-        id: `dm-${i}-${Math.random()}`,
-        name,
-        top,
-        delay: Math.random() * -20,
-        durationScale: 0.8 + Math.random() * 0.4,
-        size: 16 + Math.random() * 12,
-        color: colors[Math.floor(Math.random() * colors.length)],
-      };
-    });
-    setItems(newItems);
+    // 使用球面均匀分布算法
+    const phi = Math.PI * (3 - Math.sqrt(5)); // 黄金角
+
+    for (let i = 0; i < names.length; i++) {
+      const y = 1 - (i / (names.length - 1)) * 2; // y goes from 1 to -1
+      const radius = Math.sqrt(1 - y * y); // radius at y
+      
+      const theta = phi * i; // golden angle increment
+      
+      const x = Math.cos(theta) * radius;
+      const z = Math.sin(theta) * radius;
+
+      newParticles.push({
+        id: `particle-${i}`,
+        name: names[i],
+        x: x * 100,
+        y: y * 100,
+        z: z * 100,
+        scale: 1,
+        opacity: 1,
+      });
+    }
+
+    setParticles(newParticles);
   }, [participants]);
 
-  // Normal speed calculation
-  const normalDuration = Math.max(2, 33 - (speed * 3));
-  
-  // When running, make it super fast (0.5s - 1s) to create a blur effect
-  // We use a key to force re-render if needed, but CSS transition might handle it
-  const isRunning = status === 'running';
+  // 旋转动画效果
+  useEffect(() => {
+    if (status !== 'running' || particles.length === 0) {
+      rotationSpeed.current = { x: 0, y: 0 };
+      return;
+    }
+
+    // 设置随机旋转速度
+    rotationSpeed.current = {
+      x: (Math.random() - 0.5) * 0.05,
+      y: (Math.random() - 0.5) * 0.05 + 0.01
+    };
+
+    let animationFrameId: number;
+    
+    const animate = () => {
+      setRotation(prev => ({
+        x: prev.x + rotationSpeed.current.x,
+        y: prev.y + rotationSpeed.current.y
+      }));
+
+      // 逐渐减慢旋转速度
+      rotationSpeed.current.x *= 0.995;
+      rotationSpeed.current.y *= 0.995;
+
+      // 如果旋转速度足够慢，停止动画
+      if (Math.abs(rotationSpeed.current.x) < 0.0001 && Math.abs(rotationSpeed.current.y) < 0.0001) {
+        rotationSpeed.current = { x: 0, y: 0 };
+        // 在停止时，可能需要触发停止逻辑
+        setTimeout(() => {
+          if (status === 'running') {
+            useLotteryStore.getState().stopLottery();
+          }
+        }, 500);
+      } else {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [status, particles.length]);
+
+  // 计算每个粒子的3D变换
+  const getTransform = (particle: SphereParticle) => {
+    // 应用旋转矩阵
+    const cosX = Math.cos(rotation.x);
+    const sinX = Math.sin(rotation.x);
+    const cosY = Math.cos(rotation.y);
+    const sinY = Math.sin(rotation.y);
+
+    // 旋转点
+    let x = particle.x;
+    let y = particle.y;
+    let z = particle.z;
+
+    // 围绕Y轴旋转
+    const rotatedX = x * cosY - z * sinY;
+    const rotatedZ = x * sinY + z * cosY;
+    x = rotatedX;
+    z = rotatedZ;
+
+    // 围绕X轴旋转
+    const rotatedY = y * cosX - z * sinX;
+    const finalZ = y * sinX + z * cosX;
+    y = rotatedY;
+    z = finalZ;
+
+    // 透视投影
+    const perspective = 800;
+    const scale = perspective / (perspective + z);
+    const finalX = x * scale;
+    const finalY = y * scale;
+
+    // 计算透明度和大小，基于Z坐标（深度）
+    const opacity = Math.max(0.2, Math.min(1, (z + 100) / 200));
+    const particleScale = Math.max(0.5, Math.min(1.5, scale));
+
+    return {
+      transform: `translate3d(${finalX}px, ${finalY}px, ${z}px) scale(${particleScale})`,
+      opacity: opacity,
+      zIndex: Math.round(z + 100),
+    };
+  };
 
   return (
-    <div className={`absolute inset-0 overflow-hidden perspective-[1000px] transition-all duration-500 ${isRunning ? 'scale-110 blur-[2px]' : ''}`}>
-      <style jsx global>{`
-        @keyframes scrollLeft {
-          from { transform: translateX(100vw); }
-          to { transform: translateX(-100%); }
-        }
-      `}</style>
-      
-      {items.map((item) => (
-        <div
-          key={item.id}
-          className="absolute whitespace-nowrap font-bold"
-          style={{
-            top: `${item.top}%`,
-            fontSize: `${item.size}px`,
-            color: item.color,
-            textShadow: `0 0 5px ${item.color}80`,
-            animationName: 'scrollLeft',
-            // If running, override duration to be extremely fast
-            animationDuration: isRunning ? `${(Math.random() * 0.5 + 0.2)}s` : `${normalDuration * item.durationScale}s`,
-            animationTimingFunction: 'linear',
-            animationIterationCount: 'infinite',
-            animationDelay: isRunning ? '0s' : `${item.delay}s`,
-            opacity: status === 'show-winner' ? 0.1 : (isRunning ? 0.8 : 0.9),
-            transition: 'opacity 0.5s, filter 0.3s',
-            willChange: 'transform, animation-duration'
-          }}
-        >
-          {item.name}
-        </div>
-      ))}
-      
-      {/* Speed Lines Overlay when Running */}
-      {isRunning && (
-        <div className="absolute inset-0 z-10 opacity-50 bg-[repeating-linear-gradient(90deg,transparent,transparent_50px,rgba(255,255,255,0.1)_50px,rgba(255,255,255,0.1)_52px)] animate-pulse pointer-events-none" />
-      )}
-
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/80 pointer-events-none" />
+    <div 
+      ref={containerRef}
+      className="absolute inset-0 flex items-center justify-center overflow-hidden"
+    >
+      <div className="relative w-80 h-80 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] flex items-center justify-center">
+        {/* 球形容器边框 */}
+        {participants.length > 0 && (
+          <div className="absolute w-full h-full rounded-full border border-white/10" style={{
+            boxShadow: 'inset 0 0 30px rgba(255,255,255,0.1)',
+          }} />
+        )}
+        
+        {particles.length > 0 ? (
+          particles.map((particle) => {
+            const transformStyle = getTransform(particle);
+            const isWinner = useLotteryStore.getState().currentWinners.some(w => w.name === particle.name);
+            
+            return (
+              <div
+                key={particle.id}
+                className={`absolute px-3 py-1 rounded-full text-sm font-bold transition-all duration-300 ${
+                  isWinner 
+                    ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black scale-125 z-[1000]' 
+                    : 'bg-white/10 text-white backdrop-blur-sm border border-white/20'
+                }`}
+                style={{
+                  transform: transformStyle.transform,
+                  opacity: transformStyle.opacity,
+                  zIndex: transformStyle.zIndex,
+                  left: '50%',
+                  top: '50%',
+                  marginLeft: '-50%',
+                  marginTop: '-50%',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {particle.name}
+              </div>
+            );
+          })
+        ) : (
+          // 显示占位符文本
+          <div className="absolute text-white/30 text-center text-lg font-light">
+            {participants.length === 0 ? '请添加参与者' : '正在准备抽奖...'}
+          </div>
+        )}
+        
+        {/* 旋转指示器 */}
+        {status === 'running' && particles.length > 0 && (
+          <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-spin pointer-events-none" style={{ 
+            borderWidth: '1px',
+            borderStyle: 'dashed',
+            animationDuration: '3s'
+          }} />
+        )}
+      </div>
     </div>
   );
 }
@@ -196,7 +304,7 @@ export function LotteryScene() {
   return (
     <div className="w-full h-full absolute inset-0 -z-10 bg-black overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-black to-black">
       <StarBackground />
-      <ParticipantDanmaku />
+      <ParticipantSphere />
       <WinnerDisplay />
     </div>
   );

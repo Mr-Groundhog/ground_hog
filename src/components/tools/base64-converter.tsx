@@ -49,7 +49,7 @@ export function Base64Converter() {
         const result = e.target?.result as string;
         // For image encoding, we put result in output directly if mode is encode
         // But the UI structure is Input -> Output. 
-        // If uploading file, it's basically "File -> Base64".
+        // If uploading file, it's basically "File -> Base64". 
         // So we set Input as file info? No, we set Output directly.
         setMode("encode");
         // Base64 string includes "data:image/png;base64,..."
@@ -69,27 +69,28 @@ export function Base64Converter() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] w-full gap-6 p-6">
-      <div className="flex flex-1 flex-col gap-6">
+    <div className="flex flex-col w-full gap-4 p-4 md:p-6 md:flex-row md:gap-6 md:h-[calc(100vh-8rem)]">
+      <div className="flex flex-1 flex-col gap-4 md:gap-6 w-full">
         {/* Controls */}
-        <div className="flex items-center justify-between">
-          <Tabs value={mode} onValueChange={(v) => setMode(v as "encode" | "decode")} className="w-[400px]">
-            <TabsList>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <Tabs value={mode} onValueChange={(v) => setMode(v as "encode" | "decode")} className="w-full md:w-[400px]">
+            <TabsList className="w-full grid grid-cols-2">
               <TabsTrigger value="encode" className="flex-1">Base64 编码</TabsTrigger>
               <TabsTrigger value="decode" className="flex-1">Base64 解码</TabsTrigger>
             </TabsList>
           </Tabs>
           
-          <div className="flex gap-2">
-            <div className="relative">
+          <div className="flex gap-2 mt-2 md:mt-0">
+            <div className="relative w-full md:w-auto">
               <Input 
                 type="file" 
                 className="absolute inset-0 opacity-0 cursor-pointer" 
                 onChange={handleFileUpload}
               />
-              <Button variant="outline">
+              <Button variant="outline" className="w-full md:w-auto">
                 <Upload className="mr-2 h-4 w-4" />
-                图片转 Base64
+                <span className="hidden sm:inline">图片转 Base64</span>
+                <span className="sm:hidden">图片转</span>
               </Button>
             </div>
             <Button variant="ghost" size="icon" onClick={() => { setInput(""); setOutput(""); }}>
@@ -98,11 +99,11 @@ export function Base64Converter() {
           </div>
         </div>
 
-        <div className="flex flex-1 gap-6">
+        <div className="flex flex-col gap-4 md:flex-row md:gap-6 w-full">
           {/* Input Area */}
-          <Card className="flex-1 min-w-0 flex flex-col p-4 bg-background overflow-hidden">
+          <Card className="flex-1 min-w-0 flex flex-col p-4 bg-background overflow-hidden w-full md:w-auto">
             <div className="flex justify-between items-center mb-2">
-              <Label className="text-muted-foreground">
+              <Label className="text-muted-foreground text-sm">
                 {mode === "encode" ? "输入内容 (Text / File)" : "Base64 编码"}
               </Label>
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCopy(input)}>
@@ -110,7 +111,7 @@ export function Base64Converter() {
               </Button>
             </div>
             <Textarea
-              className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1"
+              className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1 h-32 md:h-auto"
               style={{ wordBreak: 'break-all', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}
               placeholder={mode === "encode" ? "输入要编码的文本..." : "输入要解码的 Base64 字符串..."}
               value={input}
@@ -119,16 +120,16 @@ export function Base64Converter() {
           </Card>
 
           {/* Action Center */}
-          <div className="flex flex-col justify-center gap-4">
+          <div className="flex flex-row md:flex-col justify-center items-center gap-4 md:gap-4 self-center md:self-auto py-4 md:py-0">
             <Button variant="secondary" size="icon" className="rounded-full h-10 w-10" onClick={handleSwap}>
               <ArrowRightLeft className="h-4 w-4" />
             </Button>
           </div>
 
           {/* Output Area */}
-          <Card className="flex-1 min-w-0 flex flex-col p-4 bg-background overflow-hidden">
+          <Card className="flex-1 min-w-0 flex flex-col p-4 bg-background overflow-hidden w-full md:w-auto">
             <div className="flex justify-between items-center mb-2">
-              <Label className="text-muted-foreground">
+              <Label className="text-muted-foreground text-sm">
                 {mode === "encode" ? "Base64 结果" : "解码结果"}
               </Label>
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCopy(output)}>
@@ -136,7 +137,7 @@ export function Base64Converter() {
               </Button>
             </div>
             <Textarea
-              className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1"
+              className="flex-1 resize-none font-mono text-sm bg-muted/30 border-0 focus-visible:ring-1 h-32 md:h-auto"
               style={{ wordBreak: 'break-all', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}
               placeholder="结果将显示在这里..."
               value={output}
@@ -144,7 +145,7 @@ export function Base64Converter() {
             />
             {/* Image Preview if output looks like image data */}
             {output.startsWith("data:image") && (
-              <div className="mt-4 h-32 border rounded-md overflow-hidden bg-checkered flex items-center justify-center">
+              <div className="mt-4 h-32 border rounded-md overflow-hidden bg-checkered flex items-center justify-center md:h-40 lg:h-48">
                 <img src={output} alt="Preview" className="h-full w-full object-contain" />
               </div>
             )}

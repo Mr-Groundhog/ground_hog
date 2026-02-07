@@ -183,9 +183,9 @@ export function JsonTool() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] w-full gap-4 p-4 bg-zinc-50/50 dark:bg-zinc-950">
+    <div className="flex flex-col w-full gap-4 p-4 bg-zinc-50/50 dark:bg-zinc-950 md:flex-row md:gap-4 md:p-4 md:h-[calc(100vh-8rem)]">
       {/* Left Column: Raw Input */}
-      <div className="flex flex-1 flex-col rounded-xl border bg-background shadow-sm overflow-hidden">
+      <div className="flex flex-1 flex-col rounded-xl border bg-background shadow-sm overflow-hidden w-full md:w-1/2">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-2 bg-zinc-50/50 dark:bg-zinc-900/50">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -212,7 +212,7 @@ export function JsonTool() {
             spellCheck={false}
           />
           {/* Format Button (Floating or Bottom) - Design shows it at bottom right of left panel */}
-          <div className="absolute bottom-4 right-4 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="absolute bottom-4 right-4 opacity-0 transition-opacity group-hover:opacity-100 md:hidden">
              <Button size="sm" onClick={handleFormat} className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg">
                <FileJson className="mr-2 h-4 w-4" />
                格式化并处理
@@ -233,9 +233,9 @@ export function JsonTool() {
       </div>
 
       {/* Right Column: Visualization */}
-      <div className="flex flex-1 flex-col rounded-xl border bg-background shadow-sm overflow-hidden">
+      <div className="flex flex-1 flex-col rounded-xl border bg-background shadow-sm overflow-hidden w-full md:w-1/2">
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-4 py-2 bg-zinc-50/50 dark:bg-zinc-900/50">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 py-2 bg-zinc-50/50 dark:bg-zinc-900/50 border-b">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Maximize2 className="h-4 w-4" />
@@ -321,7 +321,7 @@ export function JsonTool() {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t px-4 py-2 bg-zinc-50/50 dark:bg-zinc-900/50">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-2 bg-zinc-50/50 dark:bg-zinc-900/50 border-t">
           <div className="flex items-center gap-4 text-xs">
             <div className="flex items-center gap-1.5">
               <div className={cn("h-2 w-2 rounded-full", parsedJson ? "bg-green-500" : "bg-zinc-300")} />
@@ -333,12 +333,12 @@ export function JsonTool() {
             <span className="text-muted-foreground">耗时: {stats.time}</span>
           </div>
           
-          <div className="flex items-center gap-2">
-            <div className="relative flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-auto">
               <div className="relative">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                 <Input 
-                  className="h-7 w-[200px] pl-7 pr-12 text-xs bg-transparent border-zinc-200 dark:border-zinc-800" 
+                  className="h-7 w-full pl-7 pr-12 text-xs bg-transparent border-zinc-200 dark:border-zinc-800" 
                   placeholder="搜索内容 (支持高亮)..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -352,7 +352,7 @@ export function JsonTool() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-7 px-2 text-xs"
+                className="h-7 px-2 text-xs mt-2 sm:mt-0 sm:ml-2 w-full sm:w-auto"
                 onClick={handleNextMatch}
                 disabled={matches.length === 0}
               >

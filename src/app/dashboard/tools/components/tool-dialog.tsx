@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toolSchema, ToolFormValues } from "../schema";
 import { Button } from "@/components/ui/button";
@@ -49,17 +50,38 @@ export function ToolDialog({
 }: ToolDialogProps) {
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolSchema),
-    defaultValues: {
-      name: initialData?.name || "",
-      description: initialData?.description || "",
-      url: initialData?.url || "",
-      icon: initialData?.icon || "",
-      version: initialData?.version || "",
-      category: initialData?.category || "",
-      status: (initialData?.status as any) || "NORMAL",
-      type: (initialData?.type as any) || "EXTERNAL",
-    },
   });
+
+  // 监听对话框打开状态和初始数据变化
+  useEffect(() => {
+    if (open) {
+      if (initialData) {
+        // 编辑模式
+        form.reset({
+          name: initialData.name || "",
+          description: initialData.description || "",
+          url: initialData.url || "",
+          icon: initialData.icon || "",
+          version: initialData.version || "",
+          category: initialData.category || "",
+          status: initialData.status as any || "NORMAL",
+          type: initialData.type as any || "EXTERNAL",
+        });
+      } else {
+        // 新增模式
+        form.reset({
+          name: "",
+          description: "",
+          url: "",
+          icon: "",
+          version: "",
+          category: "",
+          status: "NORMAL",
+          type: "EXTERNAL",
+        });
+      }
+    }
+  }, [open, initialData, form]);
 
   const onSubmit = async (data: ToolFormValues) => {
     try {

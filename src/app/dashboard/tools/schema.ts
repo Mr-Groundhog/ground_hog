@@ -7,8 +7,8 @@ export const toolSchema = z.object({
   icon: z.string().optional(),
   version: z.string().optional(),
   category: z.string().min(1, "分类不能为空"),
-  status: z.enum(["NORMAL", "DEBUG", "UPDATE", "MAINTENANCE"]).default("NORMAL"),
-  type: z.enum(["LOCAL", "EXTERNAL"]).default("EXTERNAL"),
+  status: z.enum(["NORMAL", "DEBUG", "UPDATE", "MAINTENANCE"]),
+  type: z.enum(["LOCAL", "EXTERNAL"]),
 });
 
 export type ToolFormValues = z.infer<typeof toolSchema>;

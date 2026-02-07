@@ -45,21 +45,22 @@ export function QRCodeGenerator() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] w-full gap-6 p-6">
+    <div className="flex flex-col w-full gap-4 p-4 md:p-6 md:flex-row md:gap-6 md:h-[calc(100vh-8rem)]">
       {/* Settings Panel */}
-      <Card className="flex-1 p-6 space-y-8 overflow-y-auto">
+      <Card className="flex-1 p-4 md:p-6 space-y-6 md:space-y-8 overflow-y-auto w-full md:w-auto">
         <div className="flex items-center gap-2 pb-4 border-b">
           <Settings2 className="h-5 w-5 text-muted-foreground" />
-          <h2 className="font-semibold">二维码设置</h2>
+          <h2 className="font-semibold text-lg">二维码设置</h2>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 md:space-y-6">
           <div className="space-y-2">
             <Label>内容</Label>
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="输入文本或链接..."
+              className="w-full"
             />
           </div>
 
@@ -73,6 +74,7 @@ export function QRCodeGenerator() {
               min={128}
               max={512}
               step={8}
+              className="w-full"
             />
           </div>
 
@@ -91,7 +93,7 @@ export function QRCodeGenerator() {
             <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2">
               <div className="space-y-2">
                 <Label>上传图片</Label>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   {logoUrl ? (
                     <div className="relative h-16 w-16 rounded-md border overflow-hidden group">
                       <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
@@ -107,12 +109,12 @@ export function QRCodeGenerator() {
                       <ImageIcon className="h-6 w-6 text-muted-foreground" />
                     </div>
                   )}
-                  <div className="flex-1">
+                  <div className="flex-1 w-full">
                     <Input
                       type="file"
                       accept="image/*"
                       onChange={handleLogoUpload}
-                      className="cursor-pointer"
+                      className="cursor-pointer w-full"
                     />
                   </div>
                 </div>
@@ -128,6 +130,7 @@ export function QRCodeGenerator() {
                   min={20}
                   max={120}
                   step={4}
+                  className="w-full"
                 />
               </div>
             </div>
@@ -136,10 +139,10 @@ export function QRCodeGenerator() {
       </Card>
 
       {/* Preview Panel */}
-      <Card className="flex-1 p-6 flex flex-col items-center justify-center bg-zinc-50/50 dark:bg-zinc-900/50 border-dashed">
+      <Card className="flex-1 p-4 md:p-6 flex flex-col items-center justify-center bg-zinc-50/50 dark:bg-zinc-900/50 border-dashed w-full md:w-auto">
         <div 
           ref={qrRef}
-          className="p-8 bg-white rounded-xl shadow-sm border"
+          className="p-4 md:p-8 bg-white rounded-xl shadow-sm border"
         >
           <QRCodeCanvas
             value={value}
@@ -154,8 +157,8 @@ export function QRCodeGenerator() {
           />
         </div>
         
-        <div className="mt-8 flex gap-4">
-          <Button onClick={handleDownload} className="w-40">
+        <div className="mt-6 md:mt-8 flex flex-col w-full max-w-xs gap-4">
+          <Button onClick={handleDownload} className="w-full">
             <Download className="mr-2 h-4 w-4" />
             下载图片
           </Button>

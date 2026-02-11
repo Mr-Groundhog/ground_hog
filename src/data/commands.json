@@ -1,0 +1,383 @@
+[
+  {
+    "id": "ls",
+    "name": "ls",
+    "desc": "列出目录内容",
+    "category": "文件管理",
+    "examples": [
+      { "cmd": "ls -la", "note": "列出所有文件详细信息" },
+      { "cmd": "ls -lh", "note": "人性化显示文件大小" },
+      { "cmd": "ls -R", "note": "递归列出所有子目录" },
+      { "cmd": "ls -a", "note": "显示隐藏文件" }
+    ]
+  },
+  {
+    "id": "cd",
+    "name": "cd",
+    "desc": "切换当前目录",
+    "category": "文件管理",
+    "examples": [
+      { "cmd": "cd /path/to/dir", "note": "切换到指定目录" },
+      { "cmd": "cd ..", "note": "返回上级目录" },
+      { "cmd": "cd ~", "note": "切换到用户主目录" },
+      { "cmd": "cd -", "note": "返回上一次所在目录" }
+    ]
+  },
+  {
+    "id": "cp",
+    "name": "cp",
+    "desc": "复制文件或目录",
+    "category": "文件管理",
+    "examples": [
+      { "cmd": "cp source.txt dest.txt", "note": "复制文件" },
+      { "cmd": "cp -r dir1 dir2", "note": "递归复制目录" },
+      { "cmd": "cp -i file1 file2", "note": "交互式复制，覆盖前询问" },
+      { "cmd": "cp -p file1 file2", "note": "保持文件属性不变" }
+    ]
+  },
+  {
+    "id": "mv",
+    "name": "mv",
+    "desc": "移动或重命名文件",
+    "category": "文件管理",
+    "examples": [
+      { "cmd": "mv old.txt new.txt", "note": "重命名文件" },
+      { "cmd": "mv file.txt /path/to/", "note": "移动文件到目录" },
+      { "cmd": "mv -i file1 file2", "note": "交互式移动，覆盖前询问" },
+      { "cmd": "mv *.txt /path/to/", "note": "移动所有txt文件" }
+    ]
+  },
+  {
+    "id": "rm",
+    "name": "rm",
+    "desc": "删除文件或目录",
+    "category": "文件管理",
+    "examples": [
+      { "cmd": "rm file.txt", "note": "删除文件" },
+      { "cmd": "rm -r dir", "note": "递归删除目录" },
+      { "cmd": "rm -f file.txt", "note": "强制删除，不询问" },
+      { "cmd": "rm -i file.txt", "note": "交互式删除，逐个确认" }
+    ]
+  },
+  {
+    "id": "mkdir",
+    "name": "mkdir",
+    "desc": "创建新目录",
+    "category": "文件管理",
+    "examples": [
+      { "cmd": "mkdir dirname", "note": "创建单个目录" },
+      { "cmd": "mkdir -p dir1/dir2/dir3", "note": "递归创建多级目录" },
+      { "cmd": "mkdir -m 755 dirname", "note": "创建目录并设置权限" }
+    ]
+  },
+  {
+    "id": "grep",
+    "name": "grep",
+    "desc": "文本搜索工具",
+    "category": "文本处理",
+    "examples": [
+      { "cmd": "grep 'keyword' file.txt", "note": "在文件中搜索关键词" },
+      { "cmd": "grep -r 'keyword' .", "note": "递归搜索当前目录" },
+      { "cmd": "grep -n 'keyword' file.txt", "note": "显示匹配行号" },
+      { "cmd": "grep -i 'keyword' file.txt", "note": "忽略大小写搜索" },
+      { "cmd": "grep -v 'keyword' file.txt", "note": "显示不匹配的行" }
+    ]
+  },
+  {
+    "id": "sed",
+    "name": "sed",
+    "desc": "流编辑器",
+    "category": "文本处理",
+    "examples": [
+      { "cmd": "sed 's/old/new/g' file.txt", "note": "替换文件中所有old为new" },
+      { "cmd": "sed -i 's/old/new/g' file.txt", "note": "直接修改文件" },
+      { "cmd": "sed '2,5d' file.txt", "note": "删除第2到5行" },
+      { "cmd": "sed '/pattern/d' file.txt", "note": "删除匹配行的内容" }
+    ]
+  },
+  {
+    "id": "awk",
+    "name": "awk",
+    "desc": "模式扫描与处理语言",
+    "category": "文本处理",
+    "examples": [
+      { "cmd": "awk '{print $1}' file.txt", "note": "打印第一列" },
+      { "cmd": "awk -F: '{print $1}' /etc/passwd", "note": "指定分隔符打印" },
+      { "cmd": "awk '/pattern/ {print $0}' file.txt", "note": "打印匹配行" },
+      { "cmd": "awk 'NR==1,NR==5' file.txt", "note": "打印1到5行" }
+    ]
+  },
+  {
+    "id": "find",
+    "name": "find",
+    "desc": "文件查找工具",
+    "category": "文本处理",
+    "examples": [
+      { "cmd": "find /path -name '*.txt'", "note": "按名称查找文件" },
+      { "cmd": "find /path -type f", "note": "查找普通文件" },
+      { "cmd": "find /path -type d", "note": "查找目录" },
+      { "cmd": "find /path -size +1M", "note": "查找大于1MB的文件" },
+      { "cmd": "find /path -mtime -7", "note": "查找7天内修改的文件" }
+    ]
+  },
+  {
+    "id": "ps",
+    "name": "ps",
+    "desc": "查看进程状态",
+    "category": "系统管理",
+    "examples": [
+      { "cmd": "ps aux", "note": "显示所有进程详细信息" },
+      { "cmd": "ps -ef", "note": "显示完整格式进程" },
+      { "cmd": "ps -aux | grep nginx", "note": "查找特定进程" },
+      { "cmd": "ps -T -p <pid>", "note": "查看进程的线程" }
+    ]
+  },
+  {
+    "id": "top",
+    "name": "top",
+    "desc": "实时查看系统进程",
+    "category": "系统管理",
+    "examples": [
+      { "cmd": "top", "note": "实时查看系统状态" },
+      { "cmd": "top -u username", "note": "查看特定用户的进程" },
+      { "cmd": "top -p 1234", "note": "监控特定PID进程" }
+    ]
+  },
+  {
+    "id": "kill",
+    "name": "kill",
+    "desc": "终止进程",
+    "category": "系统管理",
+    "examples": [
+      { "cmd": "kill 1234", "note": "终止PID为1234的进程" },
+      { "cmd": "kill -9 1234", "note": "强制终止进程" },
+      { "cmd": "kill -l", "note": "列出所有信号" },
+      { "cmd": "killall nginx", "note": "按名称终止进程" },
+      { "cmd": "pkill -f 'nginx'", "note": "按模式终止进程" }
+    ]
+  },
+  {
+    "id": "df",
+    "name": "df",
+    "desc": "查看磁盘空间",
+    "category": "系统管理",
+    "examples": [
+      { "cmd": "df -h", "note": "人性化显示磁盘使用情况" },
+      { "cmd": "df -T", "note": "显示文件系统类型" },
+      { "cmd": "df -i", "note": "显示inode使用情况" }
+    ]
+  },
+  {
+    "id": "du",
+    "name": "du",
+    "desc": "查看目录大小",
+    "category": "系统管理",
+    "examples": [
+      { "cmd": "du -sh /path", "note": "查看目录总大小" },
+      { "cmd": "du -h /path", "note": "人性化显示各级目录大小" },
+      { "cmd": "du -h --max-depth=1", "note": "显示当前目录各子目录大小" }
+    ]
+  },
+  {
+    "id": "ping",
+    "name": "ping",
+    "desc": "测试网络连通性",
+    "category": "网络",
+    "examples": [
+      { "cmd": "ping google.com", "note": "测试到google的连通性" },
+      { "cmd": "ping -c 4 google.com", "note": "发送4次Ping后停止" },
+      { "cmd": "ping -i 0.5 google.com", "note": "设置Ping间隔为0.5秒" }
+    ]
+  },
+  {
+    "id": "curl",
+    "name": "curl",
+    "desc": "命令行 HTTP 客户端",
+    "category": "网络",
+    "examples": [
+      { "cmd": "curl https://example.com", "note": "获取网页内容" },
+      { "cmd": "curl -I https://example.com", "note": "获取HTTP响应头" },
+      { "cmd": "curl -o file.txt https://example.com", "note": "下载文件" },
+      { "cmd": "curl -d 'key=value' https://api.com", "note": "发送POST请求" },
+      { "cmd": "curl -H 'Authorization: Bearer token' https://api.com", "note": "发送带Header请求" }
+    ]
+  },
+  {
+    "id": "wget",
+    "name": "wget",
+    "desc": "文件下载工具",
+    "category": "网络",
+    "examples": [
+      { "cmd": "wget https://example.com/file.zip", "note": "下载文件" },
+      { "cmd": "wget -c https://example.com/file.zip", "note": "断点续传下载" },
+      { "cmd": "wget -r -np https://example.com/", "note": "递归下载网站" },
+      { "cmd": "wget -O output.txt https://example.com", "note": "指定输出文件名" }
+    ]
+  },
+  {
+    "id": "ssh",
+    "name": "ssh",
+    "desc": "安全远程登录",
+    "category": "网络",
+    "examples": [
+      { "cmd": "ssh user@host", "note": "连接到远程主机" },
+      { "cmd": "ssh -p 2222 user@host", "note": "指定端口连接" },
+      { "cmd": "ssh -i /path/to/key user@host", "note": "使用密钥登录" },
+      { "cmd": "ssh -L 8080:localhost:80 user@host", "note": "本地端口转发" }
+    ]
+  },
+  {
+    "id": "scp",
+    "name": "scp",
+    "desc": "安全复制文件",
+    "category": "网络",
+    "examples": [
+      { "cmd": "scp file.txt user@host:/path/", "note": "上传文件到远程" },
+      { "cmd": "scp user@host:/path/file.txt .", "note": "从远程下载文件" },
+      { "cmd": "scp -r dir user@host:/path/", "note": "递归复制目录" },
+      { "cmd": "scp -P 2222 file.txt user@host:/path/", "note": "指定端口复制" }
+    ]
+  },
+  {
+    "id": "chmod",
+    "name": "chmod",
+    "desc": "修改文件权限",
+    "category": "权限",
+    "examples": [
+      { "cmd": "chmod 755 file.txt", "note": "设置权限为rwxr-xr-x" },
+      { "cmd": "chmod +x script.sh", "note": "添加执行权限" },
+      { "cmd": "chmod -R 644 *", "note": "递归设置文件权限" },
+      { "cmd": "chmod u+x,g+w file.txt", "note": "分别设置用户和组权限" }
+    ]
+  },
+  {
+    "id": "chown",
+    "name": "chown",
+    "desc": "修改文件所有者",
+    "category": "权限",
+    "examples": [
+      { "cmd": "chown user file.txt", "note": "修改文件所有者" },
+      { "cmd": "chown user:group file.txt", "note": "修改所有者和所属组" },
+      { "cmd": "chown -R user:group /path/", "note": "递归修改目录所有者" }
+    ]
+  },
+  {
+    "id": "tar",
+    "name": "tar",
+    "desc": "归档压缩工具",
+    "category": "压缩",
+    "examples": [
+      { "cmd": "tar -cvf archive.tar dir/", "note": "创建tar归档" },
+      { "cmd": "tar -xvf archive.tar", "note": "解压tar归档" },
+      { "cmd": "tar -czvf archive.tar.gz dir/", "note": "创建gzip压缩包" },
+      { "cmd": "tar -xzvf archive.tar.gz", "note": "解压gzip压缩包" },
+      { "cmd": "tar -cjvf archive.tar.bz2 dir/", "note": "创建bzip2压缩包" }
+    ]
+  },
+  {
+    "id": "zip",
+    "name": "zip",
+    "desc": "ZIP 压缩工具",
+    "category": "压缩",
+    "examples": [
+      { "cmd": "zip archive.zip file.txt", "note": "压缩文件" },
+      { "cmd": "zip -r archive.zip dir/", "note": "递归压缩目录" },
+      { "cmd": "unzip archive.zip", "note": "解压zip文件" },
+      { "cmd": "unzip -l archive.zip", "note": "列出zip内容" }
+    ]
+  },
+  {
+    "id": "cat",
+    "name": "cat",
+    "desc": "查看文件内容",
+    "category": "文件管理",
+    "examples": [
+      { "cmd": "cat file.txt", "note": "查看文件全部内容" },
+      { "cmd": "cat file1.txt file2.txt", "note": "合并多个文件" },
+      { "cmd": "cat -n file.txt", "note": "显示行号" },
+      { "cmd": "cat > file.txt", "note": "创建或覆盖文件" },
+      { "cmd": "cat >> file.txt", "note": "追加内容到文件" }
+    ]
+  },
+  {
+    "id": "head",
+    "name": "head",
+    "desc": "查看文件头部",
+    "category": "文件管理",
+    "examples": [
+      { "cmd": "head -n 10 file.txt", "note": "查看前10行" },
+      { "cmd": "head -c 100 file.txt", "note": "查看前100字节" },
+      { "cmd": "head -q file1.txt file2.txt", "note": "不显示文件名" }
+    ]
+  },
+  {
+    "id": "tail",
+    "name": "tail",
+    "desc": "查看文件尾部",
+    "category": "文件管理",
+    "examples": [
+      { "cmd": "tail -n 10 file.txt", "note": "查看最后10行" },
+      { "cmd": "tail -f file.txt", "note": "实时监控文件变化" },
+      { "cmd": "tail -f -n 0 file.txt", "note": "实时监控，不显示历史行" }
+    ]
+  },
+  {
+    "id": "wc",
+    "name": "wc",
+    "desc": "统计文件信息",
+    "category": "文本处理",
+    "examples": [
+      { "cmd": "wc -l file.txt", "note": "统计行数" },
+      { "cmd": "wc -w file.txt", "note": "统计单词数" },
+      { "cmd": "wc -c file.txt", "note": "统计字节数" },
+      { "cmd": "wc file.txt", "note": "统计行数、单词数、字节数" }
+    ]
+  },
+  {
+    "id": "sort",
+    "name": "sort",
+    "desc": "排序文本",
+    "category": "文本处理",
+    "examples": [
+      { "cmd": "sort file.txt", "note": "默认排序" },
+      { "cmd": "sort -r file.txt", "note": "反向排序" },
+      { "cmd": "sort -n file.txt", "note": "数字排序" },
+      { "cmd": "sort -k2 file.txt", "note": "按第二列排序" },
+      { "cmd": "sort -u file.txt", "note": "去重排序" }
+    ]
+  },
+  {
+    "id": "uniq",
+    "name": "uniq",
+    "desc": "去除重复行",
+    "category": "文本处理",
+    "examples": [
+      { "cmd": "uniq file.txt", "note": "去除相邻重复行" },
+      { "cmd": "uniq -c file.txt", "note": "显示重复次数" },
+      { "cmd": "uniq -d file.txt", "note": "只显示重复行" },
+      { "cmd": "sort file.txt | uniq", "note": "先排序再去重" }
+    ]
+  },
+  {
+    "id": "free",
+    "name": "free",
+    "desc": "查看内存使用",
+    "category": "系统管理",
+    "examples": [
+      { "cmd": "free -h", "note": "人性化显示内存使用" },
+      { "cmd": "free -m", "note": "以MB为单位显示" },
+      { "cmd": "free -s 1", "note": "每秒刷新显示" }
+    ]
+  },
+  {
+    "id": "uname",
+    "name": "uname",
+    "desc": "查看系统信息",
+    "category": "系统管理",
+    "examples": [
+      { "cmd": "uname -a", "note": "显示所有系统信息" },
+      { "cmd": "uname -r", "note": "显示内核版本" },
+      { "cmd": "uname -m", "note": "显示系统架构" }
+    ]
+  }
+]

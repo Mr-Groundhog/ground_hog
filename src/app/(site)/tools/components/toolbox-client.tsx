@@ -89,7 +89,7 @@ export function ToolboxClient({ initialTools, categories: propCategories }: Tool
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <div className="w-64 border-r bg-[#09090b] flex flex-col fixed left-0 top-16 bottom-0 z-10 hidden md:flex">
+      <div className="w-64 border-r flex flex-col fixed left-0 top-16 bottom-0 z-10 hidden md:flex bg-black/40 backdrop-blur-sm">
         <div className="p-6">
           <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">工具分类</h2>
           <div className="text-[10px] text-cyan-500 font-mono mb-6">CORE MODULES v1.4</div>
@@ -122,7 +122,7 @@ export function ToolboxClient({ initialTools, categories: propCategories }: Tool
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 md:ml-64 bg-[#09090b]">
+      <div className="flex-1 md:ml-64">
         <div className="container max-w-6xl mx-auto p-6 space-y-8">
           
           {/* Search Area */}

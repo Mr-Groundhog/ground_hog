@@ -3,7 +3,7 @@ import { TechSpinner } from "@/components/common/loading";
 
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-black text-zinc-100 relative">
+    <div className="min-h-screen text-zinc-100 relative">
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
         <TechSpinner />
       </div>

@@ -9,7 +9,7 @@ export const revalidate = 300; // 5分钟缓存
 
 export default async function ToolboxPage() {
   return (
-    <div className="min-h-screen bg-[#09090b]">
+    <div className="min-h-screen">
       <Suspense fallback={<Skeleton className="h-screen w-full" />}>
         <ToolboxPromise />
       </Suspense>

@@ -44,7 +44,7 @@ export function AiPlatformClient({ initialTools }: AiPlatformClientProps) {
   });
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="min-h-screen text-zinc-100">
       <AiHero search={search} onSearchChange={setSearch} />
       
       <div className="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">

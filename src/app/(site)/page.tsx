@@ -2,22 +2,18 @@ import { Hero } from "@/components/site/hero";
 import { StatusGrid } from "@/components/site/status-grid";
 import { FeatureGrid } from "@/components/site/feature-grid";
 import { UtilityGrid } from "@/components/site/utility-grid";
-import { ParticlesBackground } from "@/components/site/particles-background";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen ">
-      <ParticlesBackground />
-      <div className="relative z-10">
-        <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
-          <div className="space-y-8">
-            <Hero />
-            <StatusGrid />
-            <div className="py-8">
-              <FeatureGrid />
-            </div>
-            <UtilityGrid />
+    <div className="min-h-screen">
+      <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
+        <div className="space-y-8">
+          <Hero />
+          <StatusGrid />
+          <div className="py-8">
+            <FeatureGrid />
           </div>
+          <UtilityGrid />
         </div>
       </div>
     </div>

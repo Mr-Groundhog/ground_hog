@@ -229,7 +229,7 @@ export default function DashboardPage() {
       
       {/* Footer */}
       <div className="mt-8 text-center text-xs text-muted-foreground">
-        2024 © ground_hog Dashboard - Built with Tailwind CSS
+        2026 © ground_hog Dashboard - Built with Tailwind CSS
       </div>
     </div>
   );

@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex min-h-screen items-center justify-center bg-black"
+      className="w-full"
     >
       <div className="w-full max-w-md overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl">
         <div className="mb-8 flex flex-col items-center text-center">

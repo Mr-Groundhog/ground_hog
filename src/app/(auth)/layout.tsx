@@ -1,3 +1,5 @@
+import { ParticlesBackground } from "@/components/site/particles-background";
+
 export default function AuthLayout({
   children,
 }: {
@@ -5,9 +7,12 @@ export default function AuthLayout({
 }) {
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#050505] text-zinc-300">
-      {/* Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,#00C8D208,transparent)]"></div>
+      {/* Particles Background - Fixed at bottom layer */}
+      <ParticlesBackground />
+      
+      {/* Grid Background Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,#00C8D208,transparent)] pointer-events-none"></div>
 
       {/* Top Left Decoration */}
       <div className="absolute left-8 top-8 hidden flex-col gap-1 font-mono text-xs text-zinc-500 md:flex">
@@ -44,7 +49,7 @@ export default function AuthLayout({
 
       {/* Bottom Right Decoration */}
       <div className="absolute bottom-8 right-8 hidden font-mono text-xs text-zinc-600 md:block">
-        © 2024 神经链路接口
+        © 2026 神经链路接口
       </div>
 
       {/* Main Content */}

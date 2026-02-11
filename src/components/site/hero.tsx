@@ -15,7 +15,7 @@ export function Hero() {
       <div className="relative flex h-full flex-col items-center justify-center text-center">
         {/* Tag */}
         <div className="mb-4 rounded-full border border-cyan-500/20 bg-cyan-950/30 px-3 py-1 md:mb-6">
-          <span className="text-xs font-medium text-cyan-400">系统状态：已优化</span>
+          <span className="text-xs font-medium text-cyan-400">系统状态：已加速</span>
         </div>
 
         {/* Heading */}
@@ -33,7 +33,7 @@ export function Hero() {
         </p>
 
         {/* Buttons */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+        {/* <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           <Button className="h-10 gap-2 bg-cyan-400 px-6 text-black hover:bg-cyan-500">
             <Zap size={16} className="fill-black" />
             初始化项目
@@ -41,7 +41,7 @@ export function Hero() {
           <Button variant="outline" className="h-10 border-zinc-700 bg-zinc-900 px-6 text-white hover:bg-zinc-800 hover:text-white">
             查看存档
           </Button>
-        </div>
+        </div> */}
 
         {/* Status Text (Bottom) */}
         <div className="absolute bottom-4 left-4 right-4 flex flex-wrap justify-center gap-2 text-[10px] font-mono text-zinc-600 md:left-6 md:justify-start md:text-[10px] lg:flex-row lg:gap-4">

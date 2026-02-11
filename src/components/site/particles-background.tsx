@@ -21,7 +21,7 @@ export function ParticlesBackground() {
   }, []);
 
   const particlesLoaded = async (container?: Container) => {
-    console.log(container);
+    console.log("Particles loaded:", container);
   };
 
   const options = useMemo(
@@ -55,13 +55,13 @@ export function ParticlesBackground() {
       },
       particles: {
         color: {
-          value: "#00C8D2",
+          value: "#00C8D2", // Cyan color matching the theme
         },
         links: {
           color: "#00C8D2",
           distance: 150,
           enable: true,
-          opacity: 0.5,
+          opacity: 0.3, // Reduced opacity for subtler effect
           width: 1,
         },
         move: {
@@ -71,7 +71,7 @@ export function ParticlesBackground() {
             default: "bounce" as const,
           },
           random: false,
-          speed: 2,
+          speed: 1.5, // Slower speed for calmer effect
           straight: false,
         },
         number: {
@@ -79,16 +79,16 @@ export function ParticlesBackground() {
             enable: true,
             area: 800,
           },
-          value: 80,
+          value: 60, // Fewer particles for login page
         },
         opacity: {
-          value: 0.5,
+          value: 0.4, // Lower opacity
         },
         shape: {
           type: "circle",
         },
         size: {
-          value: { min: 1, max: 3 },
+          value: { min: 1, max: 2.5 },
         },
       },
       detectRetina: true,
@@ -100,7 +100,7 @@ export function ParticlesBackground() {
     return (
       <div className="fixed inset-0 -z-10 w-screen bg-[#09090b]">
         <Particles
-          id="tsparticles"
+          id="auth-particles"
           particlesLoaded={particlesLoaded}
           options={options}
           className="h-full w-full"
@@ -109,5 +109,10 @@ export function ParticlesBackground() {
     );
   }
 
-  return <div className="fixed inset-0 -z-10 w-screen bg-[#09090b] bg-blue-500/20">Loading particles...</div>;
+  return (
+    <div className="fixed inset-0 -z-10 w-screen bg-[#09090b]">
+      {/* Minimal fallback gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-transparent to-purple-900/10" />
+    </div>
+  );
 }

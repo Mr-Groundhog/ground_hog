@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 export function Hero() {
   return (
     <div className="relative h-[400px] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/50 p-6 md:h-[500px] md:p-12">
-      {/* Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      {/* Grid Background - Reduced opacity for particle visibility */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]"></div>
 
-      {/* Radial Gradient Overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,#00C8D215,transparent)]"></div>
+      {/* Radial Gradient Overlay - Reduced opacity */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,#00C8D208,transparent)]"></div>
 
       <div className="relative flex h-full flex-col items-center justify-center text-center">
         {/* Tag */}

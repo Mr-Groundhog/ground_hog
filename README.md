@@ -49,7 +49,7 @@
 
 详细使用指南请查看 [MAILER_GUIDE.md](./MAILER_GUIDE.md)
 
-测试页面：[/mail-test](http://localhost:9527/mail-test)
+
 
 ## 🏗 项目结构
 

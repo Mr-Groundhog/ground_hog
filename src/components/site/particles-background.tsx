@@ -96,23 +96,18 @@ export function ParticlesBackground() {
     [],
   );
 
-  if (init) {
-    return (
-      <div className="fixed inset-0 -z-10 w-screen bg-[#09090b]">
+  return (
+    <div className="fixed inset-0 -z-10 w-screen bg-[#09090b]">
+      {init ? (
         <Particles
           id="auth-particles"
           particlesLoaded={particlesLoaded}
           options={options}
           className="h-full w-full"
         />
-      </div>
-    );
-  }
-
-  return (
-    <div className="fixed inset-0 -z-10 w-screen bg-[#09090b]">
-      {/* Minimal fallback gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-transparent to-purple-900/10" />
+      ) : (
+        <div className="absolute inset-0 bg-[#09090b]" />
+      )}
     </div>
   );
 }

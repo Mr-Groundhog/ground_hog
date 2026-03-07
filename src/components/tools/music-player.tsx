@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Music,
   Upload,
@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 import AudioPlayer from "react-h5-audio-player";
 import "react-h5-audio-player/lib/styles.css";
 import { cn } from "@/lib/utils";
@@ -52,6 +54,7 @@ export function MusicPlayer() {
   const playerRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lyricsScrollRef = useRef<HTMLDivElement>(null);
+  const searchResultsRef = useRef<HTMLDivElement>(null);
   
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
@@ -59,11 +62,20 @@ export function MusicPlayer() {
   const [musicSource, setMusicSource] = useState<"netease" | "kuwo" | "joox" | "bilibili">("netease");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [lyrics, setLyrics] = useState<string>("");
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState<"cover" | "lyrics">("cover");
   const [currentTime, setCurrentTime] = useState(0);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const userScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const tabSwitchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isTabSwitching, setIsTabSwitching] = useState(false);
+  const [lyricsScrollPosition, setLyricsScrollPosition] = useState(0);
+  const [autoFollowLyrics, setAutoFollowLyrics] = useState(true);
 
   const currentTrack = tracks[currentTrackIndex];
 
@@ -93,6 +105,20 @@ export function MusicPlayer() {
     // 添加到播放历史
     if (tracks[actualIndex]) {
       addToHistory(tracks[actualIndex]);
+    }
+  };
+
+  // 播放历史中的曲目
+  const playHistoryItem = (track: Track) => {
+    const existingIndex = tracks.findIndex(t => t.id === track.id);
+    if (existingIndex !== -1) {
+      setCurrentTrackIndex(existingIndex);
+      toast.success("歌曲切换成功");
+    } else {
+      // 如果曲目不在播放列表中，添加到播放列表
+      setTracks([...tracks, track]);
+      setCurrentTrackIndex(tracks.length);
+      toast.success("歌曲切换成功");
     }
   };
 
@@ -155,30 +181,81 @@ export function MusicPlayer() {
   };
 
   // 搜索音乐
-  const searchMusic = async (keyword: string) => {
+  const searchMusic = async (keyword: string, page: number = 1, append: boolean = false) => {
     if (!keyword.trim()) {
       setSearchResults([]);
+      setCurrentPage(1);
+      setHasMore(true);
       return;
     }
 
-    setIsSearching(true);
+    if (!append) {
+      setIsSearching(true);
+      setCurrentPage(1);
+    } else {
+      setIsLoadingMore(true);
+    }
+
     try {
       const response = await fetch(
-        `https://music-api.gdstudio.xyz/api.php?types=search&source=${musicSource}&name=${encodeURIComponent(keyword)}&count=20&pages=1`
+        `https://music-api.gdstudio.xyz/api.php?types=search&source=${musicSource}&name=${encodeURIComponent(keyword)}&count=20&pages=${page}`
       );
       const data = await response.json();
       if (data && Array.isArray(data)) {
-        setSearchResults(data);
+        if (append) {
+          setSearchResults(prev => [...prev, ...data]);
+        } else {
+          setSearchResults(data);
+        }
+        // 如果返回的数据少于 20 条，说明没有更多数据了
+        setHasMore(data.length === 20);
       } else {
-        setSearchResults([]);
+        if (!append) {
+          setSearchResults([]);
+        }
+        setHasMore(false);
       }
     } catch (error) {
       console.error("搜索失败:", error);
-      setSearchResults([]);
+      if (!append) {
+        setSearchResults([]);
+      }
+      setHasMore(false);
     } finally {
-      setIsSearching(false);
+      if (!append) {
+        setIsSearching(false);
+      } else {
+        setIsLoadingMore(false);
+      }
     }
   };
+
+  // 加载更多搜索结果
+  const loadMoreResults = useCallback(() => {
+    if (isLoadingMore || !hasMore || !searchQuery.trim()) return;
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    searchMusic(searchQuery, nextPage, true);
+  }, [isLoadingMore, hasMore, searchQuery, currentPage]);
+
+  // 监听搜索结果滚动，自动加载更多
+  useEffect(() => {
+    const scrollContainer = searchResultsRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      // 当滚动到距离底部 100px 时加载更多
+      if (scrollHeight - scrollTop - clientHeight < 100 && hasMore && !isLoadingMore) {
+        loadMoreResults();
+      }
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [hasMore, isLoadingMore, searchQuery, currentPage, loadMoreResults]);
 
   // 获取歌曲播放链接
   const getSongUrl = async (trackId: string, source: string): Promise<string | null> => {
@@ -256,19 +333,77 @@ export function MusicPlayer() {
     return -1;
   };
 
-  // 自动滚动到当前歌词
+  // 用户手动滚动检测
+  useEffect(() => {
+    const scrollContainer = lyricsScrollRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      // 保存当前滚动位置
+      setLyricsScrollPosition(scrollContainer.scrollTop);
+      
+      // 用户开始滚动
+      setIsUserScrolling(true);
+      
+      // 清除之前的定时器
+      if (userScrollTimeoutRef.current) {
+        clearTimeout(userScrollTimeoutRef.current);
+      }
+      
+      // 3秒后恢复自动滚动
+      userScrollTimeoutRef.current = setTimeout(() => {
+        setIsUserScrolling(false);
+      }, 3000);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+      if (userScrollTimeoutRef.current) {
+        clearTimeout(userScrollTimeoutRef.current);
+      }
+    };
+  }, [activeTab]);
+
+  // 切换 tab 时恢复滚动位置
   useEffect(() => {
     if (activeTab === "lyrics" && lyricsScrollRef.current) {
+      // 恢复之前保存的滚动位置
+      if (lyricsScrollPosition > 0) {
+        lyricsScrollRef.current.scrollTop = lyricsScrollPosition;
+      }
+    }
+  }, [activeTab, lyricsScrollPosition]);
+
+  // 自动滚动到当前歌词
+  useEffect(() => {
+    // 只在以下情况自动滚动：
+    // 1. 在歌词tab中
+    // 2. 用户没有在手动滚动
+    // 3. 有歌词内容
+    // 4. 歌曲进度发生变化
+    // 5. 自动跟随歌词已开启
+    if (activeTab === "lyrics" && lyricsScrollRef.current && !isUserScrolling && lyrics && autoFollowLyrics) {
       const currentLine = getCurrentLyricLine();
       if (currentLine >= 0) {
         const lyricsElements = lyricsScrollRef.current.querySelectorAll('p');
         const currentElement = lyricsElements[currentLine];
         if (currentElement) {
+          // 使用更平滑的滚动效果
           currentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
     }
-  }, [currentTime, activeTab, lyrics]);
+  }, [currentTime, activeTab, lyrics, isUserScrolling, autoFollowLyrics]);
+
+// 歌词内容变化时重置滚动位置
+  useEffect(() => {
+    if (lyrics) {
+      setLyricsScrollPosition(0);
+      setIsUserScrolling(false);
+    }
+  }, [lyrics]);
 
   // 播放搜索结果中的歌曲
   const playSearchResult = async (result: SearchResult) => {
@@ -444,7 +579,7 @@ export function MusicPlayer() {
 
                                         ) : searchResults.length > 0 ? (
 
-                                          <div className="space-y-0.5 max-h-[400px] overflow-y-auto">
+                                          <div ref={searchResultsRef} className="space-y-0.5 max-h-[400px] overflow-y-auto [&>div]:!scroll-smooth [&>div]:!overscroll-behavior-contain">
 
                                                                   {searchResults.map((result) => (
 
@@ -475,6 +610,20 @@ export function MusicPlayer() {
                                                                     </div>
 
                                                                   ))}
+
+                                                                  {/* 加载更多指示器 */}
+                                                                  {isLoadingMore && (
+                                                                    <div className="text-center py-4 text-zinc-500">
+                                                                      <div className="animate-spin h-6 w-6 border-2 border-cyan-400 border-t-transparent rounded-full mx-auto mb-2" />
+                                                                      <p className="text-xs">加载更多...</p>
+                                                                    </div>
+                                                                  )}
+
+                                                                  {!hasMore && searchResults.length > 0 && (
+                                                                    <div className="text-center py-4 text-zinc-600">
+                                                                      <p className="text-xs">没有更多结果了</p>
+                                                                    </div>
+                                                                  )}
 
                                                                 </div>
 
@@ -636,40 +785,51 @@ export function MusicPlayer() {
               {/* 歌词显示 */}
               {activeTab === "lyrics" && (
                 <div className="relative mx-auto w-full max-w-sm lg:max-w-md">
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/20 to-teal-400/20 rounded-xl blur-3xl" />
-                  <div className="relative w-full bg-zinc-900/80 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-zinc-800">
-                    <ScrollArea className="h-80 lg:h-96 p-4 lg:p-6">
-                      <div 
-                        ref={lyricsScrollRef}
-                        className="flex flex-col justify-center min-h-full space-y-3 lg:space-y-4"
-                      >
-                        {parseLyrics(lyrics).length > 0 ? (
-                          parseLyrics(lyrics).map((line, index) => {
-                            const currentLine = getCurrentLyricLine();
-                            return (
-                              <p
-                                key={index}
-                                className={cn(
-                                  "text-sm lg:text-base transition-all duration-300 py-1 text-center",
-                                  index === currentLine
-                                    ? "text-zinc-50 text-lg lg:text-xl font-bold scale-110 text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.4)]"
-                                    : "text-zinc-600 scale-100"
-                                )}
-                              >
-                                {line.text}
-                              </p>
-                            );
-                          })
-                        ) : (
-                          <div className="text-center text-zinc-600 flex items-center justify-center min-h-full">
-                            <div>
-                              <Music className="h-10 lg:h-12 w-10 lg:w-12 mx-auto mb-4 opacity-30" />
-                              <p className="text-xs lg:text-sm">暂无歌词</p>
-                            </div>
+                  {/* 标题栏 - 包含跟随歌词开关 */}
+                  <div className="flex items-center justify-between px-4 py-3 mb-2">
+                    <span className="text-sm font-medium text-zinc-300">歌词</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-zinc-500">跟随歌词</span>
+                      <Switch
+                        checked={autoFollowLyrics}
+                        onCheckedChange={setAutoFollowLyrics}
+                        className="data-[state=checked]:bg-cyan-500 data-[state=unchecked]:bg-zinc-700"
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-zinc-900/40 backdrop-blur-md rounded-2xl border border-zinc-800/30 shadow-lg overflow-hidden">
+                    <ScrollArea className="h-48 lg:h-60 p-4 lg:p-6 [&>div]:!scroll-smooth [&>div]:!overscroll-behavior-contain">
+                    <div 
+                      ref={lyricsScrollRef}
+                      className="flex flex-col justify-center min-h-full space-y-3 lg:space-y-4 scroll-smooth"
+                    >
+                      {parseLyrics(lyrics).length > 0 ? (
+                        parseLyrics(lyrics).map((line, index) => {
+                          const currentLine = getCurrentLyricLine();
+                          return (
+                            <p
+                              key={index}
+                              className={cn(
+                                "text-sm lg:text-base transition-all duration-300 py-1 text-center",
+                                index === currentLine
+                                  ? "text-zinc-50 text-lg lg:text-xl font-bold scale-110 text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.4)]"
+                                  : "text-zinc-600 scale-100"
+                              )}
+                            >
+                              {line.text}
+                            </p>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center text-zinc-600 flex items-center justify-center min-h-full">
+                          <div>
+                            <Music className="h-10 lg:h-12 w-10 lg:w-12 mx-auto mb-4 opacity-30" />
+                            <p className="text-xs lg:text-sm">暂无歌词</p>
                           </div>
-                        )}
-                      </div>
-                    </ScrollArea>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
                   </div>
                 </div>
               )}

@@ -18,6 +18,19 @@ const LOCAL_TOOLS = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    id: "local-music",
+    name: "本地音乐台",
+    description: "本地音乐播放器，支持播放本地音频文件",
+    icon: "Music",
+    version: "v1.0.0",
+    status: "NORMAL" as const,
+    type: "LOCAL" as const,
+    url: "/tools/music",
+    category: "娱乐工具",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ];
 
 export async function getPublicTools() {

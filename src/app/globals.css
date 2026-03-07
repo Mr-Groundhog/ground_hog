@@ -103,3 +103,127 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 专辑封面旋转动画 */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 10s linear infinite;
+}
+
+/* React H5 Audio Player 自定义样式 - 暗黑系主题 */
+.music-player-custom {
+  --rhap-theme-color: #22d3ee;
+  --rhap-background-color: transparent;
+  --rhap-bar-color: #27272a;
+  --rhap_bar-filled-color: #22d3ee;
+  --rhap_time-color: #71717a;
+  --rhap_font-family: 'Inter', sans-serif;
+}
+
+.music-player-custom .rhap_container {
+  background: transparent;
+}
+
+.music-player-custom .rhap_controls-section {
+  background: transparent;
+}
+
+/* 播放/暂停按钮 */
+.music-player-custom .rhap_play-pause-button {
+  background: rgba(34, 211, 238, 0.1);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.music-player-custom .rhap_play-pause-button:hover {
+  background: rgba(34, 211, 238, 0.2);
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+}
+
+/* 所有控制按钮 */
+.music-player-custom .rhap_button-clear {
+  color: #71717a;
+  transition: color 0.2s ease;
+}
+
+.music-player-custom .rhap_button-clear:hover {
+  color: #22d3ee;
+}
+
+/* 进度条背景 */
+.music-player-custom .rhap_progress-bar {
+  background: #27272a;
+  border-radius: 4px;
+}
+
+/* 进度条填充 */
+.music-player-custom .rhap_progress-filled {
+  background: linear-gradient(90deg, #22d3ee, #14b8a6);
+  border-radius: 4px;
+}
+
+/* 进度条指示器 */
+.music-player-custom .rhap_progress-indicator {
+  background: #22d3ee;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+}
+
+/* 音量条背景 */
+.music-player-custom .rhap_volume-bar {
+  background: #27272a;
+  border-radius: 4px;
+}
+
+/* 音量条填充 */
+.music-player-custom .rhap_volume-bar-fill {
+  background: linear-gradient(90deg, #22d3ee, #14b8a6);
+  border-radius: 4px;
+}
+
+/* 音量控制区域 */
+.music-player-custom .rhap_volume-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 时间显示 */
+.music-player-custom .rhap_time {
+  color: #71717a;
+  font-size: 12px;
+}
+
+/* 播放器容器 */
+.music-player-custom .rhap_additional-controls {
+  color: #71717a;
+}
+
+/* 下一首/上一首按钮 */
+.music-player-custom .rhap_skip-button {
+  color: #71717a;
+  transition: color 0.2s ease;
+}
+
+.music-player-custom .rhap_skip-button:hover {
+  color: #22d3ee;
+}
+
+/* 音量按钮 */
+.music-player-custom .rhap_volume-button {
+  color: #71717a;
+  transition: color 0.2s ease;
+}
+
+.music-player-custom .rhap_volume-button:hover {
+  color: #22d3ee;
+}

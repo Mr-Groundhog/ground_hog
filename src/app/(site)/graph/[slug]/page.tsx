@@ -54,30 +54,30 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const readTime = Math.ceil(post.content.length / 500) + " 分钟读完";
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
-      <div className="grid gap-12 lg:grid-cols-[1fr_320px]">
-        <div className="space-y-8">
-          <div className="space-y-4">
+    <div className="container mx-auto max-w-7xl px-4 py-6 md:py-8">
+      <div className="grid gap-8 lg:gap-12 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-6 md:space-y-8">
+          <div className="space-y-3 md:space-y-4">
             <div className="text-xs text-zinc-500">
               {post.category?.name || "未分类"}
             </div>
-            <h1 className="text-3xl font-bold leading-tight tracking-tight text-white md:text-4xl">
+            <h1 className="text-2xl font-bold leading-tight tracking-tight text-white md:text-3xl lg:text-4xl">
               {post.title}
             </h1>
             <p className="text-sm text-zinc-400 md:text-base">
               {post.excerpt}
             </p>
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-zinc-500 md:text-sm">
+            <div className="mt-3 md:mt-4 flex flex-wrap items-center gap-3 md:gap-4 text-xs text-zinc-500 md:text-sm">
               <span className="inline-flex items-center gap-1">
-                <CalendarDays className="h-4 w-4 text-cyan-400" />
+                <CalendarDays className="h-3.5 w-3.5 md:h-4 md:w-4 text-cyan-400" />
                 {new Date(post.createdAt).toLocaleDateString()}
               </span>
               <span className="inline-flex items-center gap-1">
-                <Clock className="h-4 w-4 text-cyan-400" />
+                <Clock className="h-3.5 w-3.5 md:h-4 md:w-4 text-cyan-400" />
                 {readTime}
               </span>
               <span className="inline-flex items-center gap-1">
-                <Eye className="h-4 w-4 text-cyan-400" />
+                <Eye className="h-3.5 w-3.5 md:h-4 md:w-4 text-cyan-400" />
                 {post.viewCount} 次浏览
               </span>
             </div>
@@ -88,12 +88,12 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
               <img
                 src={post.coverImage}
                 alt={post.title}
-                className="h-64 w-full object-cover md:h-80"
+                className="h-48 w-full object-cover md:h-64 lg:h-80"
               />
             </div>
           )}
 
-          <article className="prose prose-invert max-w-none prose-pre:rounded-lg prose-pre:bg-zinc-950/80 prose-pre:border prose-pre:border-zinc-800">
+          <article className="prose prose-invert prose-sm max-w-none prose-pre:rounded-lg prose-pre:bg-zinc-950/80 prose-pre:border prose-pre:border-zinc-800 md:prose-base">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeSlug]}
@@ -126,7 +126,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           </article>
           
           {/* 评论区 */}
-          <div className="pt-10">
+          <div className="pt-6 md:pt-10">
             <Suspense fallback={
               <div className="flex justify-center py-10">
                 <TechSpinner />
@@ -137,7 +137,8 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           </div>
         </div>
 
-        <div className="sticky top-24 space-y-6 self-start">
+        {/* 右侧边栏 - 移动端隐藏，桌面端显示 */}
+        <aside className="hidden lg:block sticky top-24 space-y-6 self-start">
           <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-5">
             <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
               作者信息
@@ -197,7 +198,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
               <InteractionWrapper postId={post.id} />
             </Suspense>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

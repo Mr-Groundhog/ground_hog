@@ -68,6 +68,7 @@ export function MusicPlayer() {
   const [lyrics, setLyrics] = useState<string>("");
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isHoveringCover, setIsHoveringCover] = useState(false);
   const [activeTab, setActiveTab] = useState<"cover" | "lyrics">("cover");
   const [currentTime, setCurrentTime] = useState(0);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
@@ -743,7 +744,7 @@ export function MusicPlayer() {
                       : "bg-zinc-900/50 text-zinc-300 border-zinc-800/30 hover:bg-zinc-900 hover:text-zinc-50"
                   )}
                 >
-                  歌手写真
+                  歌曲专辑图
                 </button>
                 <button
                   onClick={() => setActiveTab("lyrics")}
@@ -762,10 +763,14 @@ export function MusicPlayer() {
               {activeTab === "cover" && (
                 <div className="relative mx-auto w-64 h-64 lg:w-80 lg:h-80">
                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/20 to-teal-400/20 rounded-full blur-3xl" />
-                  <div className={cn(
-                    "relative w-full h-full bg-zinc-900 rounded-full shadow-2xl flex items-center justify-center overflow-hidden border border-zinc-800",
-                    isPlaying && "animate-spin-slow"
-                  )}>
+                  <div
+                    className={cn(
+                      "relative w-full h-full bg-zinc-900 rounded-full shadow-2xl flex items-center justify-center overflow-hidden border border-zinc-800",
+                      isPlaying && !isHoveringCover && "animate-spin-slow"
+                    )}
+                    onMouseEnter={() => setIsHoveringCover(true)}
+                    onMouseLeave={() => setIsHoveringCover(false)}
+                  >
                     {currentTrack?.coverUrl ? (
                       <img 
                         src={currentTrack.coverUrl} 
@@ -884,7 +889,7 @@ export function MusicPlayer() {
 {/* 右侧播放历史 - 移动端隐藏，桌面端显示 */}
         <aside className="hidden lg:flex w-80 border-l border-zinc-800/30 bg-zinc-950/30 flex-col">
           <div className="p-4 border-b border-zinc-800/30">
-            <h2 className="text-sm font-semibold text-zinc-50">播放历史</h2>
+            <h2 className="text-sm font-semibold text-zinc-50">播放列表</h2>
           </div>
 
           <ScrollArea className="flex-1 p-3 bg-transparent">
@@ -928,7 +933,7 @@ export function MusicPlayer() {
             ) : (
               <div className="text-center py-12 text-zinc-500">
                 <Music className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-sm">暂无播放历史</p>
+                <p className="text-sm">暂无播放列表</p>
               </div>
             )}
           </ScrollArea>

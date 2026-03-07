@@ -60,7 +60,8 @@ export async function createTool(data: ToolFormValues) {
 }
 
 export async function getDistinctToolCategories() {
-  const categories = await prisma.tool.findMany({
+  // 从数据库获取分类
+  const dbCategories = await prisma.tool.findMany({
     distinct: ['category'],
     select: {
       category: true,
@@ -72,7 +73,17 @@ export async function getDistinctToolCategories() {
     },
     orderBy: { category: "asc" },
   });
-  return categories.map(c => c.category);
+
+  // 本地工具的分类
+  const LOCAL_CATEGORIES = ["开发工具", "娱乐工具"];
+
+  // 合并并去重
+  const allCategories = new Set([
+    ...LOCAL_CATEGORIES,
+    ...dbCategories.map(c => c.category)
+  ]);
+
+  return Array.from(allCategories).sort();
 }
 
 export async function updateTool(id: string, data: ToolFormValues) {

@@ -206,15 +206,20 @@ export function ToolboxClient({ initialTools, categories: propCategories }: Tool
                       </h3>
                       
                       <div className="flex items-center justify-between mt-2">
-                         <span className={cn("text-[10px] font-mono transform scale-90 origin-left", 
-                           tool.status === 'NORMAL' ? "text-green-500" :
-                           tool.status === 'DEBUG' ? "text-yellow-500" :
-                           tool.status === 'UPDATE' ? "text-blue-500" :
-                           tool.status === 'MAINTENANCE' ? "text-red-500" :
-                           "text-zinc-500"
-                         )}>
-                           [{getStatusText(tool.status)}]
-                         </span>
+                         <div className="flex items-center gap-2">
+                           <span className={cn("text-[10px] font-mono transform scale-90 origin-left", 
+                             tool.status === 'NORMAL' ? "text-green-500" :
+                             tool.status === 'DEBUG' ? "text-yellow-500" :
+                             tool.status === 'UPDATE' ? "text-blue-500" :
+                             tool.status === 'MAINTENANCE' ? "text-red-500" :
+                             "text-zinc-500"
+                           )}>
+                             [{getStatusText(tool.status)}]
+                           </span>
+                           <span className="text-[9px] text-zinc-500 bg-zinc-800/50 px-1.5 py-0.5 rounded">
+                             {tool.category}
+                           </span>
+                         </div>
                          
                          <ArrowRight className="h-4 w-4 text-zinc-600 group-hover:text-cyan-400 transition-colors" />
                       </div>

@@ -7,10 +7,10 @@ export const revalidate = 3600;
 
 export default function FriendsPage() {
   return (
-    <div className="container py-10 max-w-5xl mx-auto min-h-screen">
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">友情链接</h1>
-        <p className="text-lg text-muted-foreground">
+    <div className="container px-4 py-8 md:py-10 max-w-5xl mx-auto min-h-screen">
+      <div className="mb-8 md:mb-10 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3 md:mb-4">友情链接</h1>
+        <p className="text-base md:text-lg text-muted-foreground px-2">
           与优秀的博主们建立连接，共同探索更广阔的世界。
         </p>
       </div>

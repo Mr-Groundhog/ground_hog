@@ -12,7 +12,7 @@ export function FriendLinkGrid({ links }: { links: any[] }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
       {links.map((link) => (
         <a 
           key={link.id} 
@@ -21,7 +21,7 @@ export function FriendLinkGrid({ links }: { links: any[] }) {
           rel="noopener noreferrer"
           className="block group h-full"
         >
-          <Card className="h-full transition-all hover:shadow-lg hover:border-cyan-500/50 overflow-hidden flex flex-col">
+          <Card className="h-full transition-all hover:shadow-lg hover:border-cyan-500/50 overflow-hidden flex flex-col cursor-pointer">
             {/* 封面图区域 - 如果有封面图则展示，否则展示默认占位图 */}
             <div className="h-32 w-full overflow-hidden border-b border-border bg-zinc-100 dark:bg-zinc-800 relative">
               {link.coverImage ? (
@@ -40,22 +40,22 @@ export function FriendLinkGrid({ links }: { links: any[] }) {
             </div>
             
             <div className="flex-1 flex flex-col">
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <Avatar className="h-12 w-12 border border-border">
+              <CardHeader className="flex flex-row items-center gap-3 md:gap-4 pb-2">
+                <Avatar className="h-10 w-10 md:h-12 md:w-12 border border-border flex-shrink-0">
                   <AvatarImage src={link.logo || ""} alt={link.name} className="object-cover" />
                   <AvatarFallback>{link.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="text-lg truncate group-hover:text-cyan-500 transition-colors flex items-center gap-2">
+                  <CardTitle className="text-base md:text-lg truncate group-hover:text-cyan-500 transition-colors flex items-center gap-2">
                     {link.name}
-                    <ExternalLink className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-cyan-500" />
+                    <ExternalLink className="h-3.5 w-3.5 md:h-4 md:w-4 opacity-0 group-hover:opacity-100 transition-opacity text-cyan-500 flex-shrink-0" />
                   </CardTitle>
                   <CardDescription className="truncate text-xs">
                     {new URL(link.url).hostname}
                   </CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="flex-1">
+              <CardContent className="flex-1 px-3 md:px-6 pb-3 md:pb-6">
                 <p className="text-sm text-muted-foreground line-clamp-2">
                   {link.description || "这个家伙很懒，什么都没写..."}
                 </p>

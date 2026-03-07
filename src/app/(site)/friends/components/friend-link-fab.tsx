@@ -75,7 +75,7 @@ export function FriendLinkFab() {
   return (
     <>
       <div 
-        className="fixed bottom-10 right-10 z-50 flex flex-col items-end gap-4"
+        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 flex flex-col items-end gap-3 md:gap-4"
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
       >
@@ -85,7 +85,7 @@ export function FriendLinkFab() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="flex flex-col gap-4 items-end"
+              className="flex flex-col gap-3 md:gap-4 items-end mb-2 md:mb-0"
             >
               {/* WeChat Button with QR Popover */}
               <div className="relative group flex items-center gap-2">
@@ -95,18 +95,18 @@ export function FriendLinkFab() {
                        微信二维码
                     </div>
                  </div>
-                 <Button size="icon" className="rounded-full h-12 w-12 bg-green-500 hover:bg-green-600 text-white shadow-lg">
-                    <MessageCircle className="h-6 w-6" />
+                 <Button size="icon" className="rounded-full h-11 w-11 md:h-12 md:w-12 bg-green-500 hover:bg-green-600 text-white shadow-lg cursor-pointer">
+                    <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
                  </Button>
               </div>
 
               {/* Apply Link Button */}
               <Button 
                 size="icon" 
-                className="rounded-full h-12 w-12 bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
+                className="rounded-full h-11 w-11 md:h-12 md:w-12 bg-blue-500 hover:bg-blue-600 text-white shadow-lg cursor-pointer"
                 onClick={() => setDialogOpen(true)}
               >
-                <LinkIcon className="h-6 w-6" />
+                <LinkIcon className="h-5 w-5 md:h-6 md:w-6" />
               </Button>
             </motion.div>
           )}
@@ -115,9 +115,9 @@ export function FriendLinkFab() {
         {/* Main Trigger Button */}
         <Button 
           size="icon" 
-          className={`rounded-full h-14 w-14 shadow-xl transition-transform duration-300 bg-cyan-500 hover:bg-cyan-600 text-white ${open ? 'rotate-45' : ''}`}
+          className={`rounded-full h-14 w-14 md:h-16 md:w-16 shadow-xl transition-transform duration-300 bg-cyan-500 hover:bg-cyan-600 text-white cursor-pointer ${open ? 'rotate-45' : ''}`}
         >
-          <Plus className="h-8 w-8" />
+          <Plus className="h-7 w-7 md:h-8 md:w-8" />
         </Button>
       </div>
 

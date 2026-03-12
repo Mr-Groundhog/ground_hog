@@ -14,71 +14,114 @@ interface LotteryWheelProps {
 }
 
 export function LotteryWheel({ participants, isSpinning }: LotteryWheelProps) {
-  const [rotationX, setRotationX] = useState(0);
-  const [rotationY, setRotationY] = useState(0);
+  const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
     if (isSpinning) {
-      const finalRotationX = rotationX + 1440 + Math.random() * 360;
-      const finalRotationY = rotationY + 2160 + Math.random() * 360;
-      setRotationX(finalRotationX);
-      setRotationY(finalRotationY);
+      // 旋转至少 5 圈（1800 度）+ 随机角度
+      const finalRotation = rotation + 1800 + Math.random() * 360;
+      setRotation(finalRotation);
     }
   }, [isSpinning]);
 
-  const itemsPerRow = Math.max(4, Math.ceil(Math.sqrt(participants.length)));
-  const radius = 200; // 减小半径，防止超出边界
-
-  const positions = participants.map((_, index) => {
-    const phi = Math.acos(-1 + (2 * index) / participants.length);
-    const theta = Math.sqrt(participants.length * Math.PI) * phi;
-
-    return {
-      x: radius * Math.cos(theta) * Math.sin(phi),
-      y: radius * Math.sin(theta) * Math.sin(phi),
-      z: radius * Math.cos(phi),
-    };
-  });
+  const count = participants.length;
+  const angleStep = 360 / count;
+  const cardSize = 100;
+  // 根据卡片数量动态计算半径，保证卡片不重叠
+  const radius = Math.max(180, (count * (cardSize + 20)) / (2 * Math.PI));
 
   return (
-    <div className="relative w-full h-96 flex items-center justify-center overflow-hidden" style={{ perspective: '1200px', pointerEvents: 'none' }}>
-      <div className="absolute -inset-32 bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 rounded-full blur-3xl opacity-20 animate-pulse" style={{ pointerEvents: 'none' }} />
-
+    <div
+      className="relative w-full h-[520px]"
+      style={{ perspective: '1200px', pointerEvents: 'none' }}
+    >
+      {/* 背景光晕 - 从顶部中枢向下扩散 */}
       <div
-        className="relative w-96 h-96"
+        className="absolute left-1/2 -translate-x-1/2 top-0 w-[400px] h-[400px] rounded-full blur-3xl animate-pulse"
         style={{
-          transformStyle: 'preserve-3d',
-          transform: `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`,
-          transition: isSpinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+          background: 'radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, rgba(255, 150, 50, 0.08) 40%, transparent 70%)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* 顶部黄色中枢 - 吊灯顶座 */}
+      <div
+        className="absolute top-[16px] left-1/2 -translate-x-1/2 w-24 h-24 rounded-full z-20 flex items-center justify-center"
+        style={{
+          background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 70%)',
+          boxShadow: '0 0 60px rgba(255, 193, 7, 0.6), 0 8px 40px rgba(255, 193, 7, 0.3), inset 0 0 20px rgba(255, 193, 7, 0.3)',
+          border: '3px solid rgba(255, 193, 7, 0.5)',
           pointerEvents: 'none',
         }}
       >
+        <div
+          className="w-12 h-12 rounded-full animate-pulse"
+          style={{
+            background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+            boxShadow: '0 0 30px rgba(255, 215, 0, 0.8)',
+          }}
+        />
+      </div>
+
+      {/* 连接杆 - 吊灯臂 */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 z-10"
+        style={{
+          top: '100px',
+          width: '3px',
+          height: '120px',
+          background: 'linear-gradient(to bottom, rgba(255, 215, 0, 0.7), rgba(255, 215, 0, 0.15))',
+          boxShadow: '0 0 8px rgba(255, 215, 0, 0.3)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* 连接点装饰 - 杆底部小环 */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 z-10 w-5 h-5 rounded-full"
+        style={{
+          top: '212px',
+          background: 'radial-gradient(circle, rgba(255, 215, 0, 0.6), rgba(255, 215, 0, 0.1))',
+          boxShadow: '0 0 12px rgba(255, 215, 0, 0.4)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* 3D 旋转容器 - 吊灯下方旋转 */}
+      <div
+        className="absolute left-1/2 z-0"
+        style={{
+          top: '260px',
+          transformStyle: 'preserve-3d',
+          transform: `rotateY(${rotation}deg)`,
+          transition: isSpinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+          pointerEvents: 'none',
+          width: '0px',
+          height: '0px',
+        }}
+      >
         {participants.map((participant, index) => {
-          const pos = positions[index];
-          const angle = Math.atan2(pos.y, pos.x);
-          const size = 140;
+          const angle = angleStep * index;
 
           return (
             <div
               key={participant.id}
-              className="absolute rounded-2xl shadow-2xl flex flex-col items-center justify-center text-white font-bold text-center p-2 border-4 border-white/40 overflow-hidden"
+              className="absolute rounded-xl shadow-2xl flex flex-col items-center justify-center text-white font-bold text-center px-2 border-4 border-white/40"
               style={{
                 background: `linear-gradient(135deg, ${participant.color}, ${participant.color}dd)`,
-                backfaceVisibility: 'hidden',
-                transformStyle: 'preserve-3d',
-                transform: `translateX(${pos.x}px) translateY(${pos.y}px) translateZ(${pos.z}px) rotateY(${angle}rad)`,
-                width: `${size}px`,
-                height: `${size}px`,
+                transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
+                width: `${cardSize}px`,
+                height: `${cardSize}px`,
+                marginLeft: `-${cardSize / 2}px`,
+                marginTop: `-${cardSize / 2}px`,
               }}
             >
-              <div className="text-sm md:text-base font-bold truncate max-w-full">{participant.name}</div>
+              <div className="text-base md:text-lg font-bold leading-tight break-words max-w-full">
+                {participant.name}
+              </div>
             </div>
           );
         })}
-      </div>
-
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white rounded-full shadow-2xl z-20 flex items-center justify-center border-4 border-yellow-400" style={{ boxShadow: '0 0 40px rgba(255, 193, 7, 0.8)' }}>
-        <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full animate-pulse" />
       </div>
     </div>
   );

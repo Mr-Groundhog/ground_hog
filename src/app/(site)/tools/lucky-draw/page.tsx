@@ -228,45 +228,51 @@ export default function LuckyDrawPage() {
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 左侧：抽奖区域 */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="text-center mb-4">
-            <h2 className="text-2xl font-bold">🎊 年会抽奖</h2>
-            <p className="text-muted-foreground">
-              参加者：{participants.length} 人
-            </p>
-          </div>
-          
-          <div className="flex flex-col items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-h-[calc(100vh-120px)]">
+        {/* 左侧：抽奖区域 - 只保留抽奖动画 */}
+        <div className="lg:col-span-2 flex flex-col items-center overflow-hidden justify-center">
+          {/* 抽奖轮盘容器 */}
+          <div className="relative w-full max-w-[500px] h-[520px] flex items-start justify-center flex-shrink-0">
             <LotteryWheel participants={participants} isSpinning={isSpinning} />
-
-            <div className="flex gap-4 mt-6">
-              <Button
-                onClick={handleSpin}
-                disabled={isSpinning}
-                size="lg"
-                className="min-w-[160px] h-14 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold"
-              >
-                {isSpinning ? "抽奖中..." : "开始抽奖"}
-              </Button>
-
-              <Button
-                onClick={() => setParticipants([])}
-                disabled={isSpinning}
-                variant="outline"
-                size="lg"
-                className="min-w-[160px] h-14 border-2 hover:bg-secondary/50"
-              >
-                重新导入
-              </Button>
-            </div>
           </div>
         </div>
 
-        {/* 右侧：中奖名单 */}
-        <div className="lg:col-span-1">
-          <Card className="h-full">
+        {/* 右侧：标题、参与者人数和中奖名单 */}
+        <div className="lg:col-span-1 flex flex-col gap-4">
+          {/* 标题和参与者人数 */}
+          <div className="text-center flex-shrink-0">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              🎊 年会抽奖
+            </h2>
+            <p className="text-muted-foreground mt-2">
+              参加者：<span className="font-bold text-lg">{participants.length}</span> 人
+            </p>
+          </div>
+
+          {/* 控制按钮组 */}
+          <div className="flex flex-row gap-3 flex-shrink-0">
+            <Button
+              onClick={handleSpin}
+              disabled={isSpinning}
+              size="lg"
+              className="flex-1 h-14 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              {isSpinning ? "🎲 抽奖中..." : "🎯 开始抽奖"}
+            </Button>
+
+            <Button
+              onClick={() => setParticipants([])}
+              disabled={isSpinning}
+              variant="outline"
+              size="lg"
+              className="flex-1 h-14 border-2 hover:bg-accent hover:text-accent-foreground shadow-md hover:shadow-lg transition-all duration-300"
+            >
+              🔄 重新导入
+            </Button>
+          </div>
+
+          {/* 中奖名单卡片 - 固定高度，超出可滚动 */}
+          <Card className="flex-1 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 300px)', minHeight: '400px' }}>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
@@ -296,7 +302,7 @@ export default function LuckyDrawPage() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
               {winners.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
                   <Trophy className="h-12 w-12 mx-auto mb-4 opacity-20" />
@@ -304,7 +310,7 @@ export default function LuckyDrawPage() {
                   <p className="text-sm">点击"开始抽奖"产生幸运儿</p>
                 </div>
               ) : (
-                <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                <div className="space-y-3">
                   {winners.map((w, i) => (
                     <div
                       key={i}

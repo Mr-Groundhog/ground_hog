@@ -82,7 +82,7 @@ export function MainNav() {
               />
             </div>
             <span className="font-mono text-lg font-bold tracking-tighter text-white whitespace-nowrap">
-              ground_hog
+              一梦五千年
             </span>
           </Link>
 

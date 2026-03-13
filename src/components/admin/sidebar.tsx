@@ -27,7 +27,7 @@ export function AdminSidebar({ routes }: AdminSidebarProps) {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden">
             <Image src="/static/logo/hog.png" alt="Logo" width={32} height={32} className="object-contain" />
           </div>
-          <span>ground_hog</span>
+          <span>一梦五千年</span>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto py-4">

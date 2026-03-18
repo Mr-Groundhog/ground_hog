@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mailer";
 import { render } from '@react-email/render';
 import { FriendApproveTemplate } from "@/app/dashboard/friend-links/components/contact-template";
+import { unstable_cache } from "next/cache";
 
 // 确保 React Email 组件可以在服务器端渲染
 import { createElement } from 'react';
@@ -123,24 +124,35 @@ export async function sendFriendApproveEmail(
 
 // 获取邮件发送记录
 export async function getEmailLogs(page = 1, limit = 10) {
-  const skip = (page - 1) * limit;
-  
-  const [data, total] = await Promise.all([
-    prisma.emailLog.findMany({
-      skip,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.emailLog.count(),
-  ]);
+  const getCachedEmailLogs = unstable_cache(
+    async (currentPage: number, currentLimit: number) => {
+      const skip = (currentPage - 1) * currentLimit;
 
-  return {
-    data,
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
-  };
+      const [data, total] = await Promise.all([
+        prisma.emailLog.findMany({
+          skip,
+          take: currentLimit,
+          orderBy: { createdAt: "desc" },
+        }),
+        prisma.emailLog.count(),
+      ]);
+
+      return {
+        data,
+        total,
+        page: currentPage,
+        limit: currentLimit,
+        totalPages: Math.ceil(total / currentLimit),
+      };
+    },
+    ["dashboard-email-logs"],
+    {
+      revalidate: 30,
+      tags: ["dashboard-email-logs"],
+    }
+  );
+
+  return getCachedEmailLogs(page, limit);
 }
 
 // 重试失败的邮件

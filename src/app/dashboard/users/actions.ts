@@ -1,57 +1,69 @@
 "use server";
 
-import { prisma } from "@/lib/db";
-import { userSchema, UserFormValues } from "./schema";
 import argon2 from "argon2";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { prisma } from "@/lib/db";
+import { userSchema, type UserFormValues } from "./schema";
+
+const USERS_TAG = "dashboard-users";
+
+const getCachedUsers = unstable_cache(
+  async (page: number, pageSize: number, query: string) => {
+    const skip = (page - 1) * pageSize;
+    const where = {
+      isDelete: 0,
+      OR: query
+        ? [
+            { username: { contains: query } },
+            { email: { contains: query } },
+            { nickname: { contains: query } },
+          ]
+        : undefined,
+    };
+
+    const [data, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          nickname: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          avatar: true,
+          bio: true,
+        },
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  },
+  [USERS_TAG],
+  {
+    revalidate: 60,
+    tags: [USERS_TAG],
+  }
+);
 
 export async function getUsers(page = 1, pageSize = 10, query = "") {
-  const skip = (page - 1) * pageSize;
-  const where = {
-    isDelete: 0,
-    OR: query
-      ? [
-          { username: { contains: query } },
-          { email: { contains: query } },
-          { nickname: { contains: query } },
-        ]
-      : undefined,
-  };
-
-  const [data, total] = await Promise.all([
-    prisma.user.findMany({
-      where,
-      skip,
-      take: pageSize,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        nickname: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        avatar: true,
-        bio: true,
-      },
-    }),
-    prisma.user.count({ where }),
-  ]);
-
-  return {
-    data,
-    total,
-    page,
-    pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  };
+  return getCachedUsers(page, pageSize, query);
 }
 
 export async function createUser(data: UserFormValues) {
   const validated = userSchema.parse(data);
-  
-  // 检查用户名或邮箱是否存在
+
   const exist = await prisma.user.findFirst({
     where: {
       OR: [{ username: validated.username }, { email: validated.email }],
@@ -60,12 +72,12 @@ export async function createUser(data: UserFormValues) {
   });
 
   if (exist) {
-    throw new Error("用户名或邮箱已存在");
+    throw new Error("Username or email already exists");
   }
 
-  const hashedPassword = validated.password 
-    ? await argon2.hash(validated.password) 
-    : await argon2.hash("123456"); // 默认密码
+  const hashedPassword = validated.password
+    ? await argon2.hash(validated.password)
+    : await argon2.hash("123456");
 
   await prisma.user.create({
     data: {
@@ -79,6 +91,7 @@ export async function createUser(data: UserFormValues) {
     },
   });
 
+  revalidateTag(USERS_TAG);
   revalidatePath("/dashboard/users");
   return { success: true };
 }
@@ -86,7 +99,6 @@ export async function createUser(data: UserFormValues) {
 export async function updateUser(id: string, data: UserFormValues) {
   const validated = userSchema.parse(data);
 
-  // 检查是否存在冲突 (排除自己)
   const exist = await prisma.user.findFirst({
     where: {
       OR: [{ username: validated.username }, { email: validated.email }],
@@ -96,10 +108,18 @@ export async function updateUser(id: string, data: UserFormValues) {
   });
 
   if (exist) {
-    throw new Error("用户名或邮箱已存在");
+    throw new Error("Username or email already exists");
   }
 
-  const updateData = {
+  const updateData: {
+    username: string;
+    email: string;
+    nickname?: string | null;
+    role: UserFormValues["role"];
+    isActive: boolean;
+    bio?: string | null;
+    password?: string;
+  } = {
     username: validated.username,
     email: validated.email,
     nickname: validated.nickname,
@@ -117,20 +137,21 @@ export async function updateUser(id: string, data: UserFormValues) {
     data: updateData,
   });
 
+  revalidateTag(USERS_TAG);
   revalidatePath("/dashboard/users");
   return { success: true };
 }
 
 export async function deleteUser(id: string) {
-  // 软删除
   await prisma.user.update({
     where: { id },
-    data: { 
-      isDelete: 2, // 2: 被删除
-      deletedAt: new Date()
-    }, 
+    data: {
+      isDelete: 2,
+      deletedAt: new Date(),
+    },
   });
 
+  revalidateTag(USERS_TAG);
   revalidatePath("/dashboard/users");
   return { success: true };
 }
@@ -141,6 +162,7 @@ export async function toggleUserStatus(id: string, isActive: boolean) {
     data: { isActive },
   });
 
+  revalidateTag(USERS_TAG);
   revalidatePath("/dashboard/users");
   return { success: true };
 }

@@ -10,22 +10,23 @@ export async function ToolsWrapper({
   limit: number;
   search: string;
 }) {
-  const { data, total, totalPages } = await getTools({
-    page,
-    limit,
-    search,
-  });
-
-  const categories = await getDistinctToolCategories();
+  const [{ data, total, totalPages }, categories] = await Promise.all([
+    getTools({
+      page,
+      limit,
+      search,
+    }),
+    getDistinctToolCategories(),
+  ]);
 
   return (
     <ToolList
-      data={data}
-      total={total}
-      page={page}
-      limit={limit}
-      totalPages={totalPages}
       categories={categories}
+      data={data}
+      limit={limit}
+      page={page}
+      total={total}
+      totalPages={totalPages}
     />
   );
 }

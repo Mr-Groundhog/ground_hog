@@ -1,35 +1,48 @@
 "use server";
 
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+
+const COMMENTS_TAG = "dashboard-comments";
+
+const getCachedComments = unstable_cache(
+  async (page: number, pageSize: number) => {
+    const skip = (page - 1) * pageSize;
+
+    const [data, total] = await Promise.all([
+      prisma.comment.findMany({
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: "desc" },
+        include: {
+          post: {
+            select: { title: true, slug: true },
+          },
+          user: {
+            select: { username: true, nickname: true, avatar: true },
+          },
+        },
+      }),
+      prisma.comment.count(),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  },
+  [COMMENTS_TAG],
+  {
+    revalidate: 30,
+    tags: [COMMENTS_TAG],
+  }
+);
 
 export async function getComments(page = 1, pageSize = 20) {
-  const skip = (page - 1) * pageSize;
-
-  const [data, total] = await Promise.all([
-    prisma.comment.findMany({
-      skip,
-      take: pageSize,
-      orderBy: { createdAt: "desc" },
-      include: {
-        post: {
-          select: { title: true, slug: true },
-        },
-        user: {
-          select: { username: true, nickname: true, avatar: true },
-        },
-      },
-    }),
-    prisma.comment.count(),
-  ]);
-
-  return {
-    data,
-    total,
-    page,
-    pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  };
+  return getCachedComments(page, pageSize);
 }
 
 export async function deleteComment(id: string) {
@@ -37,7 +50,7 @@ export async function deleteComment(id: string) {
     where: { id },
   });
 
+  revalidateTag(COMMENTS_TAG);
   revalidatePath("/dashboard/comments");
-  // 详情页也需要刷新，这里暂时不指定具体 slug，可能需要全局 revalidate 或者客户端更新
   return { success: true };
 }

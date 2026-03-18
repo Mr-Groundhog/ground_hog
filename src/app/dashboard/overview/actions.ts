@@ -1,7 +1,20 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
+import { startOfDay, subDays, subMonths, subYears } from "date-fns";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
-import { startOfDay, startOfMonth, startOfYear, subDays, subMonths, subYears } from "date-fns";
+
+export type TrendType = "day" | "month" | "year";
+
+export type AnalyticsSummary = {
+  totalPV: number;
+  totalUV: number;
+  todayPV: number;
+  todayUV: number;
+  yesterdayPV: number;
+  yesterdayUV: number;
+};
 
 export type TrendData = {
   name: string;
@@ -15,158 +28,149 @@ export type PageViewData = {
   uv: number;
 };
 
-export async function getAnalyticsSummary() {
-  const now = new Date();
-  const todayStart = startOfDay(now);
-  const yesterdayStart = startOfDay(subDays(now, 1));
-  const yesterdayEnd = todayStart;
+const OVERVIEW_TAG = "dashboard-overview";
+const EMPTY_SUMMARY: AnalyticsSummary = {
+  totalPV: 0,
+  totalUV: 0,
+  todayPV: 0,
+  todayUV: 0,
+  yesterdayPV: 0,
+  yesterdayUV: 0,
+};
 
-  // 1. Total Stats
-  const totalPV = await prisma.siteVisit.count();
-  // For total UV, we need distinct count. Prisma count distinct is supported.
-  const totalUVGroup = await prisma.siteVisit.groupBy({
-    by: ['uv'],
-    _count: { uv: true } // just to make typescript happy, we count groups length
-  });
-  const totalUV = totalUVGroup.length;
-
-  // 2. Today Stats
-  const todayPV = await prisma.siteVisit.count({
-    where: {
-      createdAt: { gte: todayStart }
-    }
-  });
-  const todayUVGroup = await prisma.siteVisit.groupBy({
-    by: ['uv'],
-    where: {
-      createdAt: { gte: todayStart }
-    }
-  });
-  const todayUV = todayUVGroup.length;
-
-  // 3. Yesterday Stats (for comparison)
-  const yesterdayPV = await prisma.siteVisit.count({
-    where: {
-      createdAt: { gte: yesterdayStart, lt: yesterdayEnd }
-    }
-  });
-  const yesterdayUVGroup = await prisma.siteVisit.groupBy({
-    by: ['uv'],
-    where: {
-      createdAt: { gte: yesterdayStart, lt: yesterdayEnd }
-    }
-  });
-  const yesterdayUV = yesterdayUVGroup.length;
-
-  return {
-    totalPV,
-    totalUV,
-    todayPV,
-    todayUV,
-    yesterdayPV,
-    yesterdayUV,
-  };
+function getTrendExpression(type: TrendType) {
+  switch (type) {
+    case "month":
+      return Prisma.raw("TO_CHAR(created_at, 'YYYY-MM')");
+    case "year":
+      return Prisma.raw("TO_CHAR(created_at, 'YYYY')");
+    case "day":
+    default:
+      return Prisma.raw("TO_CHAR(created_at, 'MM-DD')");
+  }
 }
 
-export async function getTrafficTrend(type: 'day' | 'month' | 'year' = 'day'): Promise<TrendData[]> {
-  // Use raw query for efficient date truncation and grouping
-  let sql;
+function getTrendStartDate(type: TrendType) {
   const now = new Date();
 
-  if (type === 'day') {
-    // Last 30 days
-    const startDate = subDays(now, 30);
-    // Postgres syntax
-    sql = `
-      SELECT 
-        TO_CHAR(created_at, 'MM-DD') as name,
-        COUNT(*) as pv,
-        COUNT(DISTINCT uv) as uv
-      FROM site_visits
-      WHERE created_at >= '${startDate.toISOString()}'
-      GROUP BY TO_CHAR(created_at, 'MM-DD')
-      ORDER BY name ASC
-    `;
-  } else if (type === 'month') {
-    // Last 12 months
-    const startDate = subMonths(now, 12);
-    sql = `
-      SELECT 
-        TO_CHAR(created_at, 'YYYY-MM') as name,
-        COUNT(*) as pv,
-        COUNT(DISTINCT uv) as uv
-      FROM site_visits
-      WHERE created_at >= '${startDate.toISOString()}'
-      GROUP BY TO_CHAR(created_at, 'YYYY-MM')
-      ORDER BY name ASC
-    `;
-  } else {
-    // Last 5 years
-    const startDate = subYears(now, 5);
-    sql = `
-      SELECT 
-        TO_CHAR(created_at, 'YYYY') as name,
-        COUNT(*) as pv,
-        COUNT(DISTINCT uv) as uv
-      FROM site_visits
-      WHERE created_at >= '${startDate.toISOString()}'
-      GROUP BY TO_CHAR(created_at, 'YYYY')
-      ORDER BY name ASC
-    `;
+  switch (type) {
+    case "month":
+      return subMonths(now, 12);
+    case "year":
+      return subYears(now, 5);
+    case "day":
+    default:
+      return subDays(now, 30);
   }
+}
 
-  try {
-    const result = await prisma.$queryRawUnsafe<any[]>(sql);
-    // Convert BigInt to Number if necessary (Prisma returns BigInt for count)
-    return result.map(row => ({
+const getCachedAnalyticsSummary = unstable_cache(
+  async (): Promise<AnalyticsSummary> => {
+    const now = new Date();
+    const todayStart = startOfDay(now);
+    const yesterdayStart = startOfDay(subDays(now, 1));
+
+    const rows = await prisma.$queryRaw<AnalyticsSummary[]>(Prisma.sql`
+      SELECT
+        COUNT(*)::int AS "totalPV",
+        COUNT(DISTINCT uv)::int AS "totalUV",
+        COUNT(*) FILTER (WHERE created_at >= ${todayStart})::int AS "todayPV",
+        COUNT(DISTINCT uv) FILTER (WHERE created_at >= ${todayStart})::int AS "todayUV",
+        COUNT(*) FILTER (
+          WHERE created_at >= ${yesterdayStart} AND created_at < ${todayStart}
+        )::int AS "yesterdayPV",
+        COUNT(DISTINCT uv) FILTER (
+          WHERE created_at >= ${yesterdayStart} AND created_at < ${todayStart}
+        )::int AS "yesterdayUV"
+      FROM site_visits
+    `);
+
+    return rows[0] ?? EMPTY_SUMMARY;
+  },
+  ["dashboard-overview-summary"],
+  {
+    revalidate: 60,
+    tags: [OVERVIEW_TAG],
+  }
+);
+
+const getCachedTrafficTrend = unstable_cache(
+  async (type: TrendType): Promise<TrendData[]> => {
+    const startDate = getTrendStartDate(type);
+    const trendExpression = getTrendExpression(type);
+
+    const rows = await prisma.$queryRaw<TrendData[]>(Prisma.sql`
+      SELECT
+        ${trendExpression} AS name,
+        COUNT(*)::int AS pv,
+        COUNT(DISTINCT uv)::int AS uv
+      FROM site_visits
+      WHERE created_at >= ${startDate}
+      GROUP BY 1
+      ORDER BY MIN(created_at) ASC
+    `);
+
+    return rows.map((row) => ({
       name: row.name,
       pv: Number(row.pv),
       uv: Number(row.uv),
     }));
-  } catch (error) {
-    console.error("Error fetching traffic trend:", error);
-    return [];
+  },
+  ["dashboard-overview-trend"],
+  {
+    revalidate: 300,
+    tags: [OVERVIEW_TAG],
   }
-}
+);
 
-export async function getTopPages(limit: number = 10): Promise<PageViewData[]> {
-  const result = await prisma.siteVisit.groupBy({
-    by: ['pageUrl'],
-    _count: {
-      _all: true, // PV
-      uv: true // This is not distinct UV count in groupBy!
-      // Prisma groupBy doesn't support distinct count on other fields directly effectively for this shape
-    },
-    orderBy: {
-      _count: {
-        pageUrl: 'desc'
-      }
-    },
-    take: limit,
-  });
+const getCachedTopPages = unstable_cache(
+  async (limit: number): Promise<PageViewData[]> => {
+    const rows = await prisma.$queryRaw<PageViewData[]>(Prisma.sql`
+      SELECT
+        page_url AS url,
+        COUNT(*)::int AS pv,
+        COUNT(DISTINCT uv)::int AS uv
+      FROM site_visits
+      GROUP BY page_url
+      ORDER BY pv DESC
+      LIMIT ${limit}
+    `);
 
-  // To get accurate UV per page, we might need a different approach or raw query.
-  // Raw query is safer for complex aggregation.
-  const sql = `
-    SELECT 
-      page_url as url,
-      COUNT(*) as pv,
-      COUNT(DISTINCT uv) as uv
-    FROM site_visits
-    GROUP BY page_url
-    ORDER BY pv DESC
-    LIMIT ${limit}
-  `;
-
-  try {
-    const rawResult = await prisma.$queryRawUnsafe<any[]>(sql);
-    return rawResult.map(row => ({
+    return rows.map((row) => ({
       url: row.url,
       pv: Number(row.pv),
       uv: Number(row.uv),
     }));
-  } catch (error) {
-    console.error("Error fetching top pages:", error);
-    return [];
+  },
+  ["dashboard-overview-top-pages"],
+  {
+    revalidate: 300,
+    tags: [OVERVIEW_TAG],
   }
+);
+
+export async function getAnalyticsSummary() {
+  return getCachedAnalyticsSummary();
+}
+
+export async function getTrafficTrend(type: TrendType = "day") {
+  return getCachedTrafficTrend(type);
+}
+
+export async function getTopPages(limit = 10) {
+  return getCachedTopPages(limit);
+}
+
+export async function getDashboardOverviewData(initialTrendType: TrendType = "day") {
+  const [summary, trendData, topPages] = await Promise.all([
+    getAnalyticsSummary(),
+    getTrafficTrend(initialTrendType),
+    getTopPages(),
+  ]);
+
+  return {
+    summary,
+    trendData,
+    topPages,
+  };
 }

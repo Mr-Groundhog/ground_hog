@@ -1,22 +1,33 @@
 "use server";
 
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
-import { categorySchema, CategoryFormValues } from "./schema";
-import { revalidatePath } from "next/cache";
+import { categorySchema, type CategoryFormValues } from "./schema";
+
+const CATEGORIES_TAG = "dashboard-categories";
+
+const getCachedCategories = unstable_cache(
+  async (query: string) =>
+    prisma.category.findMany({
+      where: {
+        name: { contains: query },
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+    }),
+  [CATEGORIES_TAG],
+  {
+    revalidate: 60,
+    tags: [CATEGORIES_TAG],
+  }
+);
 
 export async function getCategories(query = "") {
-  const categories = await prisma.category.findMany({
-    where: {
-      name: { contains: query },
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: {
-        select: { posts: true },
-      },
-    },
-  });
-  return categories;
+  return getCachedCategories(query);
 }
 
 export async function createCategory(data: CategoryFormValues) {
@@ -29,13 +40,14 @@ export async function createCategory(data: CategoryFormValues) {
   });
 
   if (exist) {
-    throw new Error("分类名称或路径已存在");
+    throw new Error("Category name or slug already exists");
   }
 
   await prisma.category.create({
     data: validated,
   });
 
+  revalidateTag(CATEGORIES_TAG);
   revalidatePath("/dashboard/categories");
   return { success: true };
 }
@@ -51,7 +63,7 @@ export async function updateCategory(id: string, data: CategoryFormValues) {
   });
 
   if (exist) {
-    throw new Error("分类名称或路径已存在");
+    throw new Error("Category name or slug already exists");
   }
 
   await prisma.category.update({
@@ -59,24 +71,25 @@ export async function updateCategory(id: string, data: CategoryFormValues) {
     data: validated,
   });
 
+  revalidateTag(CATEGORIES_TAG);
   revalidatePath("/dashboard/categories");
   return { success: true };
 }
 
 export async function deleteCategory(id: string) {
-  // 检查是否有文章关联
   const count = await prisma.post.count({
     where: { categoryId: id },
   });
 
   if (count > 0) {
-    throw new Error("该分类下还有文章，无法删除");
+    throw new Error("Category still has posts");
   }
 
   await prisma.category.delete({
     where: { id },
   });
 
+  revalidateTag(CATEGORIES_TAG);
   revalidatePath("/dashboard/categories");
   return { success: true };
 }

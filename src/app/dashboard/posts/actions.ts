@@ -1,58 +1,74 @@
 "use server";
 
-import { prisma } from "@/lib/db";
-import { postSchema, PostFormValues } from "./schema";
-import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { prisma } from "@/lib/db";
+import { postSchema, type PostFormValues } from "./schema";
 
-export async function getPosts(page = 1, pageSize = 10, query = "", categoryId?: string) {
-  const skip = (page - 1) * pageSize;
+const POSTS_TAG = "dashboard-posts";
+
+function buildPostsWhere(query: string, categoryId?: string): Prisma.PostWhereInput {
   const where: Prisma.PostWhereInput = {};
 
   if (query) {
-    where.OR = [
-      { title: { contains: query } },
-      { excerpt: { contains: query } },
-    ];
+    where.OR = [{ title: { contains: query } }, { excerpt: { contains: query } }];
   }
 
   if (categoryId) {
     where.categoryId = categoryId;
   }
 
-  const [data, total] = await Promise.all([
-    prisma.post.findMany({
-      where,
-      skip,
-      take: pageSize,
-      orderBy: { createdAt: "desc" },
-      include: {
-        category: true,
-        user: {
-          select: {
-            username: true,
-            nickname: true,
-            avatar: true, // 前台展示头像
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            interactions: true,
-          },
-        },
-      },
-    }),
-    prisma.post.count({ where }),
-  ]);
+  return where;
+}
 
-  return {
-    data,
-    total,
-    page,
-    pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  };
+const getCachedPosts = unstable_cache(
+  async (page: number, pageSize: number, query: string, categoryId?: string) => {
+    const skip = (page - 1) * pageSize;
+    const where = buildPostsWhere(query, categoryId);
+
+    const [data, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: "desc" },
+        include: {
+          category: true,
+          user: {
+            select: {
+              username: true,
+              nickname: true,
+              avatar: true,
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
+              interactions: true,
+            },
+          },
+        },
+      }),
+      prisma.post.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  },
+  [POSTS_TAG],
+  {
+    revalidate: 60,
+    tags: [POSTS_TAG],
+  }
+);
+
+export async function getPosts(page = 1, pageSize = 10, query = "", categoryId?: string) {
+  return getCachedPosts(page, pageSize, query, categoryId);
 }
 
 export async function createPost(data: PostFormValues, authorId: string) {
@@ -63,7 +79,7 @@ export async function createPost(data: PostFormValues, authorId: string) {
   });
 
   if (exist) {
-    throw new Error("URL 路径已存在");
+    throw new Error("Slug already exists");
   }
 
   await prisma.post.create({
@@ -73,6 +89,7 @@ export async function createPost(data: PostFormValues, authorId: string) {
     },
   });
 
+  revalidateTag(POSTS_TAG);
   revalidatePath("/dashboard/posts");
   revalidatePath("/graph");
   return { success: true };
@@ -89,7 +106,7 @@ export async function updatePost(id: string, data: PostFormValues) {
   });
 
   if (exist) {
-    throw new Error("URL 路径已存在");
+    throw new Error("Slug already exists");
   }
 
   await prisma.post.update({
@@ -97,6 +114,7 @@ export async function updatePost(id: string, data: PostFormValues) {
     data: validated,
   });
 
+  revalidateTag(POSTS_TAG);
   revalidatePath("/dashboard/posts");
   revalidatePath("/graph");
   return { success: true };
@@ -107,13 +125,14 @@ export async function deletePost(id: string) {
     where: { id },
   });
 
+  revalidateTag(POSTS_TAG);
   revalidatePath("/dashboard/posts");
   revalidatePath("/graph");
   return { success: true };
 }
 
 export async function getPost(id: string) {
-  return await prisma.post.findUnique({
+  return prisma.post.findUnique({
     where: { id },
     include: {
       category: true,
@@ -122,7 +141,7 @@ export async function getPost(id: string) {
 }
 
 export async function getPostBySlug(slug: string) {
-  return await prisma.post.findUnique({
+  return prisma.post.findUnique({
     where: { slug },
     include: {
       category: true,

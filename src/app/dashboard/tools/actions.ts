@@ -1,9 +1,85 @@
 "use server";
 
+import { Prisma, ToolStatus } from "@prisma/client";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
-import { toolSchema, ToolFormValues } from "./schema";
-import { revalidatePath } from "next/cache";
-import { ToolStatus } from "@prisma/client";
+import { toolSchema, type ToolFormValues } from "./schema";
+
+const TOOLS_TAG = "dashboard-tools";
+
+function buildToolWhere(search?: string): Prisma.ToolWhereInput {
+  if (!search) {
+    return {};
+  }
+
+  return {
+    OR: [
+      { name: { contains: search } },
+      { description: { contains: search } },
+      { category: { contains: search } },
+    ],
+  };
+}
+
+const getCachedTools = unstable_cache(
+  async (page: number, limit: number, search?: string) => {
+    const skip = (page - 1) * limit;
+    const where = buildToolWhere(search);
+
+    const [data, total] = await Promise.all([
+      prisma.tool.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      }),
+      prisma.tool.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  },
+  [TOOLS_TAG],
+  {
+    revalidate: 60,
+    tags: [TOOLS_TAG],
+  }
+);
+
+const getCachedToolCategories = unstable_cache(
+  async () => {
+    const dbCategories = await prisma.tool.findMany({
+      distinct: ["category"],
+      select: {
+        category: true,
+      },
+      where: {
+        status: {
+          not: "PENDING",
+        },
+      },
+      orderBy: { category: "asc" },
+    });
+
+    const localCategories = ["Development", "Entertainment"];
+    const allCategories = new Set([
+      ...localCategories,
+      ...dbCategories.map((item) => item.category),
+    ]);
+
+    return Array.from(allCategories).sort();
+  },
+  [`${TOOLS_TAG}-categories`],
+  {
+    revalidate: 300,
+    tags: [TOOLS_TAG],
+  }
+);
 
 export async function getTools({
   page = 1,
@@ -14,76 +90,24 @@ export async function getTools({
   limit?: number;
   search?: string;
 } = {}) {
-  const skip = (page - 1) * limit;
-  
-  const where: any = {};
-  if (search) {
-    where.OR = [
-      { name: { contains: search } },
-      { description: { contains: search } },
-      { category: { contains: search } },
-    ];
-  }
-
-  const [data, total] = await Promise.all([
-    prisma.tool.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: [
-        { status: 'asc' }, // Pending first (if PENDING is 'PENDING' string order might not be ideal but okay)
-        { createdAt: 'desc' }
-      ],
-    }),
-    prisma.tool.count({ where }),
-  ]);
-
-  return {
-    data,
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
-  };
+  return getCachedTools(page, limit, search);
 }
 
 export async function createTool(data: ToolFormValues) {
   const validated = toolSchema.parse(data);
-  
+
   await prisma.tool.create({
     data: validated,
   });
 
+  revalidateTag(TOOLS_TAG);
   revalidatePath("/dashboard/tools");
   revalidatePath("/tools");
   return { success: true };
 }
 
 export async function getDistinctToolCategories() {
-  // 从数据库获取分类
-  const dbCategories = await prisma.tool.findMany({
-    distinct: ['category'],
-    select: {
-      category: true,
-    },
-    where: {
-      status: {
-        not: "PENDING", // Only show non-pending tools to public
-      }
-    },
-    orderBy: { category: "asc" },
-  });
-
-  // 本地工具的分类
-  const LOCAL_CATEGORIES = ["开发工具", "娱乐工具"];
-
-  // 合并并去重
-  const allCategories = new Set([
-    ...LOCAL_CATEGORIES,
-    ...dbCategories.map(c => c.category)
-  ]);
-
-  return Array.from(allCategories).sort();
+  return getCachedToolCategories();
 }
 
 export async function updateTool(id: string, data: ToolFormValues) {
@@ -94,6 +118,7 @@ export async function updateTool(id: string, data: ToolFormValues) {
     data: validated,
   });
 
+  revalidateTag(TOOLS_TAG);
   revalidatePath("/dashboard/tools");
   revalidatePath("/tools");
   return { success: true };
@@ -105,6 +130,7 @@ export async function updateToolStatus(id: string, status: ToolStatus) {
     data: { status },
   });
 
+  revalidateTag(TOOLS_TAG);
   revalidatePath("/dashboard/tools");
   revalidatePath("/tools");
   return { success: true };
@@ -115,6 +141,7 @@ export async function deleteTool(id: string) {
     where: { id },
   });
 
+  revalidateTag(TOOLS_TAG);
   revalidatePath("/dashboard/tools");
   revalidatePath("/tools");
   return { success: true };

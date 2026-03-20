@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { CalendarDays, Clock, Eye } from "lucide-react";
@@ -12,6 +11,43 @@ import { CommentsWrapper } from "./components/comments-wrapper";
 import { InteractionWrapper } from "./components/interaction-wrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TechSpinner } from "@/components/common/loading";
+import { visit } from "unist-util-visit";
+import type { Element, Root } from "hast";
+
+// 生成标题 id 的辅助函数
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{Letter}\p{Number}\u4e00-\u9fa5]+/gu, "-")
+    .replace(/^-+|-+$/g, "") || "section";
+}
+
+// 自定义 rehype plugin，为标题添加 id
+function rehypeCustomSlug() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName.match(/^h[1-6]$/)) {
+        const textContent = getTextContent(node);
+        if (textContent) {
+          node.properties = node.properties || {};
+          node.properties.id = slugify(textContent);
+        }
+      }
+    });
+  };
+}
+
+function getTextContent(node: Element): string {
+  let text = "";
+  for (const child of node.children) {
+    if (child.type === "text") {
+      text += child.value;
+    } else if (child.type === "element") {
+      text += getTextContent(child as Element);
+    }
+  }
+  return text;
+}
 
 // 获取标题的辅助函数
 function getHeadings(markdown: string) {
@@ -23,11 +59,7 @@ function getHeadings(markdown: string) {
     if (match) {
       const level = match[1].length;
       const text = match[2].replace(/`/g, "").trim();
-      const baseId = text
-        .toLowerCase()
-        .replace(/[^\p{Letter}\p{Number}\u4e00-\u9fa5]+/gu, "-")
-        .replace(/^-+|-+$/g, "");
-      const id = baseId || "section";
+      const id = slugify(text);
       headings.push({ id, text, level });
     }
   }
@@ -96,7 +128,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           <article className="prose prose-invert prose-sm max-w-none prose-pre:rounded-lg prose-pre:bg-zinc-950/80 prose-pre:border prose-pre:border-zinc-800 md:prose-base">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeSlug]}
+              rehypePlugins={[rehypeCustomSlug]}
               components={{
                 code({ inline, className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className || "");

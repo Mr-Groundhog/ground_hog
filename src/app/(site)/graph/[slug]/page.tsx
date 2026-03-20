@@ -1,71 +1,18 @@
- 
+
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { CalendarDays, Clock, Eye } from "lucide-react";
 import { getPostBySlug } from "@/app/dashboard/posts/actions";
 import { CommentsWrapper } from "./components/comments-wrapper";
 import { InteractionWrapper } from "./components/interaction-wrapper";
+import { TableOfContents } from "./components/table-of-contents";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TechSpinner } from "@/components/common/loading";
-import { visit } from "unist-util-visit";
-import type { Element, Root } from "hast";
-
-// 生成标题 id 的辅助函数
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\p{Letter}\p{Number}\u4e00-\u9fa5]+/gu, "-")
-    .replace(/^-+|-+$/g, "") || "section";
-}
-
-// 自定义 rehype plugin，为标题添加 id
-function rehypeCustomSlug() {
-  return (tree: Root) => {
-    visit(tree, "element", (node: Element) => {
-      if (node.tagName.match(/^h[1-6]$/)) {
-        const textContent = getTextContent(node);
-        if (textContent) {
-          node.properties = node.properties || {};
-          node.properties.id = slugify(textContent);
-        }
-      }
-    });
-  };
-}
-
-function getTextContent(node: Element): string {
-  let text = "";
-  for (const child of node.children) {
-    if (child.type === "text") {
-      text += child.value;
-    } else if (child.type === "element") {
-      text += getTextContent(child as Element);
-    }
-  }
-  return text;
-}
-
-// 获取标题的辅助函数
-function getHeadings(markdown: string) {
-  const lines = markdown.split("\n");
-  const headings: { id: string; text: string; level: number }[] = [];
-
-  for (const line of lines) {
-    const match = /^(#{1,3})\s+(.*)/.exec(line.trim());
-    if (match) {
-      const level = match[1].length;
-      const text = match[2].replace(/`/g, "").trim();
-      const id = slugify(text);
-      headings.push({ id, text, level });
-    }
-  }
-
-  return headings;
-}
 
 interface BlogDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -80,8 +27,6 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     notFound();
   }
 
-  const headings = getHeadings(post.content);
-  
   // 估算阅读时间
   const readTime = Math.ceil(post.content.length / 500) + " 分钟读完";
 
@@ -125,10 +70,10 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             </div>
           )}
 
-          <article className="prose prose-invert prose-sm max-w-none prose-pre:rounded-lg prose-pre:bg-zinc-950/80 prose-pre:border prose-pre:border-zinc-800 md:prose-base">
+          <article id="article-content" className="prose prose-invert prose-sm max-w-none prose-pre:rounded-lg prose-pre:bg-zinc-950/80 prose-pre:border prose-pre:border-zinc-800 md:prose-base">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeCustomSlug]}
+              rehypePlugins={[rehypeSlug]}
               components={{
                 code({ inline, className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className || "");
@@ -204,22 +149,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
               目录
             </h2>
-            <div className="space-y-2 text-xs text-zinc-400 max-h-[calc(100vh-12rem)] overflow-y-auto pr-2 custom-scrollbar">
-              {headings.map((heading) => (
-                <a
-                  key={heading.id + heading.text}
-                  href={`#${heading.id}`}
-                  className={`block cursor-pointer rounded px-2 py-1 hover:bg-zinc-900 hover:text-cyan-300 transition-colors ${
-                    heading.level === 1 ? "font-semibold text-zinc-200" : ""
-                  } ${heading.level === 3 ? "pl-4 text-zinc-500" : ""}`}
-                >
-                  {heading.text}
-                </a>
-              ))}
-              {headings.length === 0 && (
-                <p className="text-zinc-500">暂无可提取的标题</p>
-              )}
-            </div>
+            <TableOfContents />
           </div>
 
           <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-5">

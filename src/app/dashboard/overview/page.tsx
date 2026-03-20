@@ -23,8 +23,8 @@ export default async function DashboardOverviewPage() {
           color="bg-blue-500"
           icon={Eye}
           iconColor="text-blue-500"
-          subValue={`Total: ${summary.totalPV.toLocaleString()}`}
-          title="Today PV"
+          subValue={`总计: ${summary.totalPV.toLocaleString()}`}
+          title="今日 PV"
           trend={pvTrend}
           value={summary.todayPV.toLocaleString()}
         />
@@ -32,8 +32,8 @@ export default async function DashboardOverviewPage() {
           color="bg-purple-500"
           icon={Users}
           iconColor="text-purple-500"
-          subValue={`Total: ${summary.totalUV.toLocaleString()}`}
-          title="Today UV"
+          subValue={`总计: ${summary.totalUV.toLocaleString()}`}
+          title="今日 UV"
           trend={uvTrend}
           value={summary.todayUV.toLocaleString()}
         />
@@ -41,7 +41,7 @@ export default async function DashboardOverviewPage() {
           color="bg-cyan-500"
           icon={MousePointerClick}
           iconColor="text-cyan-500"
-          title="Avg. Session"
+          title="平均会话时长"
           trend={{ label: "0%", up: true }}
           value="0m 0s"
         />
@@ -49,7 +49,7 @@ export default async function DashboardOverviewPage() {
           color="bg-orange-500"
           icon={FileBarChart}
           iconColor="text-orange-500"
-          title="Bounce Rate"
+          title="跳出率"
           trend={{ label: "0%", up: true }}
           value="0%"
         />
@@ -60,7 +60,7 @@ export default async function DashboardOverviewPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="col-span-2">
           <CardHeader>
-            <CardTitle className="text-base font-medium">Top Pages</CardTitle>
+            <CardTitle className="text-base font-medium">热门页面</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -74,28 +74,28 @@ export default async function DashboardOverviewPage() {
                   </div>
                   <div className="flex shrink-0 items-center gap-4 text-sm">
                     <span className="text-muted-foreground">
-                      PV: <span className="font-medium text-foreground">{page.pv}</span>
+                      访问量: <span className="font-medium text-foreground">{page.pv}</span>
                     </span>
                     <span className="text-muted-foreground">
-                      UV: <span className="font-medium text-foreground">{page.uv}</span>
+                      访客数: <span className="font-medium text-foreground">{page.uv}</span>
                     </span>
                   </div>
                 </div>
               ))}
-              {topPages.length === 0 ? <div className="py-8 text-center text-muted-foreground">No data</div> : null}
+              {topPages.length === 0 ? <div className="py-8 text-center text-muted-foreground">暂无数据</div> : null}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium">Quick Links</CardTitle>
+            <CardTitle className="text-base font-medium">快捷链接</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4 py-4">
-            <QuickNavItem color="text-blue-500" icon={Users} label="Users" />
-            <QuickNavItem color="text-green-500" icon={FileBarChart} label="Reports" />
-            <QuickNavItem color="text-purple-500" icon={Settings} label="Settings" />
-            <QuickNavItem color="text-orange-500" icon={KeyRound} label="Permissions" />
+            <QuickNavItem color="text-blue-500" icon={Users} label="用户" />
+            <QuickNavItem color="text-green-500" icon={FileBarChart} label="报告" />
+            <QuickNavItem color="text-purple-500" icon={Settings} label="设置" />
+            <QuickNavItem color="text-orange-500" icon={KeyRound} label="权限" />
           </CardContent>
         </Card>
       </div>
@@ -149,7 +149,7 @@ function StatCard({
             <span className={trend.up ? "text-green-500" : "text-red-500"}>
               {trend.up ? "+" : "-"} {trend.label}
             </span>
-            <span className="ml-1 text-muted-foreground">vs yesterday</span>
+            <span className="ml-1 text-muted-foreground">较昨日</span>
           </div>
           {subValue ? <div className="text-xs text-muted-foreground">{subValue}</div> : null}
         </div>

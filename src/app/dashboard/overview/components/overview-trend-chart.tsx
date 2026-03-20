@@ -65,26 +65,26 @@ export function OverviewTrendChart({
     <Card className="col-span-4">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-1">
-          <CardTitle className="text-base font-medium">Traffic Trend</CardTitle>
-          <p className="text-xs text-muted-foreground">Traffic overview</p>
+          <CardTitle className="text-base font-medium">流量趋势</CardTitle>
+          <p className="text-xs text-muted-foreground">流量概览</p>
         </div>
         <div className="flex items-center gap-2">
           <TrendButton
             active={activeType === "day"}
             disabled={isPending}
-            label="Day"
+            label="日"
             onClick={() => handleTrendChange("day")}
           />
           <TrendButton
             active={activeType === "month"}
             disabled={isPending}
-            label="Month"
+            label="月"
             onClick={() => handleTrendChange("month")}
           />
           <TrendButton
             active={activeType === "year"}
             disabled={isPending}
-            label="Year"
+            label="年"
             onClick={() => handleTrendChange("year")}
           />
         </div>
@@ -121,7 +121,7 @@ export function OverviewTrendChart({
                 dataKey="uv"
                 fill="url(#overview-uv)"
                 fillOpacity={1}
-                name="UV"
+                name="访客数"
                 stroke="#3b82f6"
                 strokeWidth={3}
                 type="monotone"
@@ -130,7 +130,7 @@ export function OverviewTrendChart({
                 dataKey="pv"
                 fill="url(#overview-pv)"
                 fillOpacity={1}
-                name="PV"
+                name="访问量"
                 stroke="#10b981"
                 strokeWidth={3}
                 type="monotone"

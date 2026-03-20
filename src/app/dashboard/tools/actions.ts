@@ -66,13 +66,7 @@ const getCachedToolCategories = unstable_cache(
       orderBy: { category: "asc" },
     });
 
-    const localCategories = ["Development", "Entertainment"];
-    const allCategories = new Set([
-      ...localCategories,
-      ...dbCategories.map((item) => item.category),
-    ]);
-
-    return Array.from(allCategories).sort();
+    return dbCategories.map((item) => item.category).sort();
   },
   [`${TOOLS_TAG}-categories`],
   {

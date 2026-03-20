@@ -3,6 +3,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PostListWrapper } from "./components/post-list-wrapper";
 import { CategoryFilterWrapper } from "./components/category-filter-wrapper";
 
+export const dynamic = "force-dynamic";
+
 export default function LifeFeedPage({
   searchParams,
 }: {

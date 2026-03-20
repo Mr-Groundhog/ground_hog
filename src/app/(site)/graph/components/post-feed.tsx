@@ -47,10 +47,10 @@ export function PostFeed({ initialPosts, initialPage, totalPages: initialTotalPa
   };
 
   useEffect(() => {
-    if (inView) {
+    if (inView && hasMore && !loading) {
       loadMore();
     }
-  }, [inView]);
+  }, [inView, hasMore, loading]);
 
   return (
     <>

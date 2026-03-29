@@ -109,8 +109,8 @@ async function uploadToQiniu(file: File): Promise<string> {
   formData.append('token', token);
   formData.append('key', key);
 
-  // 上传到七牛云 (华北机房)
-  const uploadUrl = 'https://upload.qiniup.com';
+  // 上传到七牛云 (xinjiapo机房)
+  const uploadUrl = 'https://upload-z1.qiniup.com';
   
   const response = await fetch(uploadUrl, {
     method: 'POST',

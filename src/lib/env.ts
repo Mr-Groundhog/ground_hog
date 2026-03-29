@@ -16,4 +16,12 @@ export const env = {
   
   // JWT 密钥
   JWT_SECRET: process.env.JWT_SECRET || '',
+
+  // 七牛云配置
+  QINIU: {
+    accessKey: process.env.QINIU_AK || '',
+    secretKey: process.env.QINIU_SK || '',
+    bucket: process.env.QINIU_BUCKET || '',
+    domain: process.env.NEXT_PUBLIC_QINIU_DOMAIN || '',
+  },
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +31,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createPost, updatePost } from "@/app/dashboard/posts/actions";
+import { env } from "@/lib/env";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
@@ -63,10 +64,96 @@ interface EditorUIProps {
 
 import { useLoadingStore } from "@/store/loading-store";
 
+// 图片上传配置
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
+
+// 生成唯一文件名（私有空间用）- 原始文件名 + 随机六位数
+function generateKey(fileName: string): string {
+  // 获取文件扩展名
+  const ext = fileName.split('.').pop() || 'png';
+  // 获取不带扩展名的文件名
+  const nameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
+  // 生成随机六位数
+  const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+  // 清理文件名中的特殊字符，只保留字母、数字、中文、下划线和连字符
+  const cleanName = nameWithoutExt.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_');
+  return `blog/${cleanName}_${random}.${ext}`;
+}
+
+// 获取上传 token（私有空间需要传入 key）
+async function getUploadToken(key: string): Promise<string> {
+  const response = await fetch(`/api/upload/token?key=${encodeURIComponent(key)}`);
+  const data = await response.json();
+  if (!data.success) {
+    throw new Error(data.message || '获取上传凭证失败');
+  }
+  return data.token;
+}
+
+// 上传单个文件到七牛云（私有空间）
+async function uploadToQiniu(file: File): Promise<string> {
+  // 检查文件大小
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`文件大小超过 4MB 限制，当前文件: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+  }
+
+  // 生成 key
+  const key = generateKey(file.name);
+  
+  // 获取上传 token（私有空间需要 bucket:key 格式）
+  const token = await getUploadToken(key);
+
+  // 构建表单数据
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('token', token);
+  formData.append('key', key);
+
+  // 上传到七牛云 (华北机房)
+  const uploadUrl = 'https://upload.qiniup.com';
+  
+  const response = await fetch(uploadUrl, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`上传失败: ${response.status}`);
+  }
+
+  const result = await response.json();
+  
+  if (result.error) {
+    throw new Error(result.error || '上传失败');
+  }
+
+  // 返回完整的图片 URL
+  return `${env.QINIU.domain}/${result.key}`;
+}
+
+// MDEditor 图片上传回调
+async function handleImageUpload(files: File[], callback: (urls: string[]) => void) {
+  try {
+    const uploadPromises = files.map(async (file) => {
+      const url = await uploadToQiniu(file);
+      return url;
+    });
+
+    const urls = await Promise.all(uploadPromises);
+    callback(urls);
+  } catch (error) {
+    console.error('Image upload failed:', error);
+    toast.error(error instanceof Error ? error.message : '图片上传失败');
+    // 返回空数组表示上传失败
+    callback([]);
+  }
+}
+
 export function EditorUI({ initialData, currentUserId, categories }: EditorUIProps) {
   const router = useRouter();
   const { startLoading, stopLoading } = useLoadingStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const isEdit = !!initialData;
 
@@ -166,6 +253,7 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
           <MDEditor
             value={content}
             onChange={(val) => setValue("content", val || "")}
+            onUploadImg={handleImageUpload}
             height="100%"
             visibleDragbar={false}
             preview="live"

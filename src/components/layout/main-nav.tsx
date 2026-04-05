@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -17,7 +17,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 
-// 天气数据类型
+// 澶╂皵鏁版嵁绫诲瀷
 interface WeatherData {
   city: string;
   temperature: string | number;
@@ -36,7 +36,7 @@ export function MainNav() {
     setMounted(true);
   }, []);
 
-  // 获取天气数据
+  // 鑾峰彇澶╂皵鏁版嵁
   React.useEffect(() => {
     const fetchWeather = async () => {
       try {
@@ -57,18 +57,25 @@ export function MainNav() {
   }, []);
 
   const navItems = [
-    { href: "/tools", label: "工具箱" },
-    { href: "/ai-platform", label: "AI 平台" },
-    // { href: "/history", label: "个人简历" },
-    { href: "/graph", label: "生活随笔" },
-    { href: "/friends", label: "友链" },
+    { href: "/tools", label: "宸ュ叿绠? },
+    { href: "/ai-platform", label: "AI 骞冲彴" },
+    // { href: "/history", label: "涓汉绠€鍘? },
+    { href: "/graph", label: "鐢熸椿闅忕瑪" },
+    { href: "/friends", label: "鍙嬮摼" },
   ];
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
+  const loginTarget = React.useMemo(() => {
+    if (!pathname) return "/login";
+    if (pathname.startsWith("/login") || pathname.startsWith("/register")) {
+      return "/login";
+    }
+    return `/login?from=${encodeURIComponent(pathname)}`;
+  }, [pathname]);
 
   return (
     <>
-      {/* PC端导航栏 */}
+      {/* PC绔鑸爮 */}
       <div className="flex w-full items-center justify-between px-6 h-16 bg-[#09090b]">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -82,7 +89,7 @@ export function MainNav() {
               />
             </div>
             <span className="font-mono text-lg font-bold tracking-tighter text-white whitespace-nowrap">
-              一梦五千年
+              涓€姊︿簲鍗冨勾
             </span>
           </Link>
 
@@ -114,18 +121,18 @@ export function MainNav() {
           </NavigationMenu>
         </div>
         <div className="flex items-center gap-4 shrink-0">
-          {/* PC端天气显示 */}
+          {/* PC绔ぉ姘旀樉绀?*/}
           <div className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-zinc-800/30 rounded-full whitespace-nowrap">
             {weatherLoading ? (
               <>
                 <Loader2 className="h-3 w-3 animate-spin" />
-                <span>获取天气...</span>
+                <span>鑾峰彇澶╂皵...</span>
               </>
             ) : weather ? (
               <>
                 <span>{weather.city}</span>
                 <span className="text-zinc-600">|</span>
-                <span>{weather.temperature}°C</span>
+                <span>{weather.temperature}掳C</span>
                 <span className="text-white/80">{weather.weather}</span>
               </>
             ) : null}
@@ -166,10 +173,10 @@ export function MainNav() {
               className="h-9 rounded-md bg-zinc-100 px-4 text-xs font-semibold text-zinc-950 hover:bg-white whitespace-nowrap"
               asChild
             >
-              <Link href="/login">登录</Link>
+              <Link href={loginTarget}>鐧诲綍</Link>
             </Button>
           )}
-          {/* 手机端汉堡菜单按钮 */}
+          {/* 鎵嬫満绔眽鍫¤彍鍗曟寜閽?*/}
           <Button
             variant="ghost"
             size="sm"
@@ -185,7 +192,7 @@ export function MainNav() {
         </div>
       </div>
 
-      {/* 手机端移动菜单 */}
+      {/* 鎵嬫満绔Щ鍔ㄨ彍鍗?*/}
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 top-16 z-50 bg-[#09090b]/95 backdrop-blur-sm">
           <nav className="flex flex-col gap-2 p-4">
@@ -210,7 +217,7 @@ export function MainNav() {
                 </Link>
               );
             })}
-            {/* 手机端登录状态 */}
+            {/* 鎵嬫満绔櫥褰曠姸鎬?*/}
             {mounted && (
               <div className="mt-4 pt-4 border-t border-zinc-800">
                 {isAuthenticated ? (
@@ -236,16 +243,16 @@ export function MainNav() {
                       className="flex w-full items-center gap-2 px-4 py-3 rounded-md text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-red-400"
                     >
                       <LogOut className="h-4 w-4" />
-                      <span>退出登录</span>
+                      <span>閫€鍑虹櫥褰?/span>
                     </button>
                   </div>
                 ) : (
                   <Link
-                    href="/login"
+                    href={loginTarget}
                     onClick={closeMobileMenu}
                     className="flex items-center justify-center w-full px-4 py-3 rounded-md bg-zinc-100 text-sm font-semibold text-zinc-950 hover:bg-white"
                   >
-                    登录
+                    鐧诲綍
                   </Link>
                 )}
               </div>
@@ -256,3 +263,4 @@ export function MainNav() {
     </>
   );
 }
+

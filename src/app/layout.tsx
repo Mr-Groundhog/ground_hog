@@ -25,8 +25,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  authModal,
 }: Readonly<{
   children: React.ReactNode;
+  authModal?: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="dark">
@@ -36,6 +38,7 @@ export default function RootLayout({
         <QueryProvider>
           <LoadingProvider>
             {children}
+            {authModal}
             <Suspense fallback={null}>
               <AnalyticsTracker />
             </Suspense>

@@ -15,7 +15,7 @@ export const metadata = {
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const { id } = await params;
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) redirect(`/login?from=/editor/${id}`);
 
   const [post, categories] = await Promise.all([
     getPost(id),

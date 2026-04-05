@@ -243,7 +243,7 @@ export function MainNav() {
                       className="flex w-full items-center gap-2 px-4 py-3 rounded-md text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-red-400"
                     >
                       <LogOut className="h-4 w-4" />
-                      <span>閫€鍑虹櫥褰?/span>
+                      <span>退出登录</span>
                     </button>
                   </div>
                 ) : (

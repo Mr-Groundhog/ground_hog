@@ -1,8 +1,9 @@
 ﻿"use client";
 
 import { ReactNode, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { resolveRedirect } from "@/app/(auth)/safe-redirect";
 
 interface AuthModalProps {
   children: ReactNode;
@@ -10,17 +11,15 @@ interface AuthModalProps {
 
 export function AuthModal({ children }: AuthModalProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const targetPath = resolveRedirect(searchParams.get("from")) ?? "/";
 
   const handleClose = useCallback(
     (open: boolean) => {
       if (open) return;
-      if (typeof window !== "undefined" && window.history.length > 1) {
-        router.back();
-      } else {
-        router.push("/");
-      }
+      router.push(targetPath);
     },
-    [router],
+    [router, targetPath],
   );
 
   return (

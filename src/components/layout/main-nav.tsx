@@ -57,7 +57,7 @@ export function MainNav() {
   }, []);
 
   const navItems = [
-    { href: "/tools", label: "宸ュ叿绠? },
+    { href: "/tools", label: "工具箱" },
     { href: "/ai-platform", label: "AI 骞冲彴" },
     // { href: "/history", label: "涓汉绠€鍘? },
     { href: "/graph", label: "鐢熸椿闅忕瑪" },

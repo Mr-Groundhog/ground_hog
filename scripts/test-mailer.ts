@@ -13,7 +13,7 @@ async function testMailer() {
     console.log('1. 测试发送普通邮件...')
     const result1 = await sendMail({
       to: 'test@example.com', // 请替换为实际的测试邮箱
-      subject: '测试邮件 - Ground Hog',
+      subject: '测试邮件 - 一梦五千年',
       html: '<h1>Hello World!</h1><p>这是一封测试邮件。</p>',
     })
     console.log('✅ 普通邮件发送成功:', result1.messageId)

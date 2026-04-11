@@ -41,7 +41,7 @@ export async function sendMail(options: MailOptions) {
     await transporter.verify()
 
     const mailOptions = {
-      from: `"${env.SITE_NAME || 'Ground Hog'}" <${env.GMAIL_USER}>`,
+      from: `"${env.SITE_NAME || '一梦五千年'}" <${env.GMAIL_USER}>`,
       to: Array.isArray(options.to) ? options.to.join(', ') : options.to,
       subject: options.subject,
       text: options.text,
@@ -68,7 +68,7 @@ export async function sendVerificationCode(to: string, code: string) {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <h1 style="margin: 0; font-size: 28px;">${env.SITE_NAME || 'Ground Hog'}</h1>
+        <h1 style="margin: 0; font-size: 28px;">${env.SITE_NAME || '一梦五千年'}</h1>
         <p style="margin: 10px 0 0; opacity: 0.9;">邮箱验证码</p>
       </div>
       
@@ -108,14 +108,14 @@ export async function sendVerificationCode(to: string, code: string) {
       </div>
       
       <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-        © ${new Date().getFullYear()} ${env.SITE_NAME || 'Ground Hog'}. All rights reserved.
+        © ${new Date().getFullYear()} ${env.SITE_NAME || '一梦五千年'}. All rights reserved.
       </div>
     </div>
   `
 
   return await sendMail({
     to,
-    subject: `[${env.SITE_NAME || 'Ground Hog'}] 邮箱验证码`,
+    subject: `[${env.SITE_NAME || '一梦五千年'}] 邮箱验证码`,
     html,
   })
 }
@@ -125,7 +125,7 @@ export async function sendNotification(to: string, title: string, content: strin
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <h1 style="margin: 0; font-size: 28px;">${env.SITE_NAME || 'Ground Hog'}</h1>
+        <h1 style="margin: 0; font-size: 28px;">${env.SITE_NAME || '一梦五千年'}</h1>
         <p style="margin: 10px 0 0; opacity: 0.9;">系统通知</p>
       </div>
       
@@ -144,14 +144,14 @@ export async function sendNotification(to: string, title: string, content: strin
       </div>
       
       <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-        © ${new Date().getFullYear()} ${env.SITE_NAME || 'Ground Hog'}. All rights reserved.
+        © ${new Date().getFullYear()} ${env.SITE_NAME || '一梦五千年'}. All rights reserved.
       </div>
     </div>
   `
 
   return await sendMail({
     to,
-    subject: `[${env.SITE_NAME || 'Ground Hog'}] ${title}`,
+    subject: `[${env.SITE_NAME || '一梦五千年'}] ${title}`,
     html,
   })
 }

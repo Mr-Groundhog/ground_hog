@@ -40,7 +40,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                    <Image src="/static/logo/hog.png" alt="Logo" width={32} height={32} className="object-contain" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Ground Hog</span>
+                  <span className="truncate font-semibold">一梦五千年</span>
                   <span className="truncate text-xs">Admin Platform</span>
                 </div>
               </Link>

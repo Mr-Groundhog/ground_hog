@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUploadToken } from '@/lib/qiniu';
+import { env } from '@/lib/env';
 
 /**
  * 获取七牛云上传凭证 API（私有空间专用）
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
       success: true,
       token,
       key,
+      domain: env.QINIU.domain,
     });
   } catch (error) {
     console.error('Failed to generate upload token:', error);

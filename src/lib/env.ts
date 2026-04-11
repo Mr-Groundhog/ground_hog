@@ -5,7 +5,7 @@ export const env = {
   GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD || '',
   
   // 网站配置
-  SITE_NAME: process.env.SITE_NAME || 'Ground Hog',
+  SITE_NAME: process.env.SITE_NAME || '一梦五千年',
   SITE_URL: process.env.SITE_URL || 'http://localhost:9527',
   
   // 数据库配置
@@ -24,4 +24,16 @@ export const env = {
     bucket: process.env.QINIU_BUCKET || '',
     domain: process.env.NEXT_PUBLIC_QINIU_DOMAIN || '',
   },
+
+  // Cloudflare R2 配置
+  R2: {
+    accountId: process.env.R2_ACCOUNT_ID || '',
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    bucket: process.env.R2_BUCKET || '',
+    domain: process.env.R2_DOMAIN || '',
+  },
+
+  // 上传配置
+  UPLOAD_PROVIDER: (process.env.UPLOAD_PROVIDER || 'r2') as 'qiniu' | 'r2',
 }

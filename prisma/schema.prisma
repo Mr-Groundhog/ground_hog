@@ -224,6 +224,18 @@ model SiteVisit {
   @@map("site_visits")
 }
 
+model VerificationCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime @db.Timestamptz
+  createdAt DateTime @db.Timestamptz @default(now())
+  used      Boolean  @default(false)
+
+  @@index([email, createdAt])
+  @@map("verification_codes")
+}
+
 model EmailLog {
   id           String      @id @default(cuid())
   fromEmail    String      @map("from_email")

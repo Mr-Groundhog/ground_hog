@@ -82,21 +82,20 @@ export async function sendVerificationCode(to: string, code: string) {
         <div style="text-align: center; margin: 30px 0;">
           <span style="
             display: inline-block;
-            font-size: 32px;
+            font-size: 24px;
             font-weight: bold;
-            letter-spacing: 5px;
-            color: #667eea;
-            background: #f8f9fa;
-            padding: 15px 25px;
+            letter-spacing: 4px;
+            color: #ff0000;
+            background: #fff0f0;
+            padding: 12px 20px;
             border-radius: 8px;
-            border: 2px dashed #667eea;
           ">
             ${code}
           </span>
         </div>
         
-        <p style="color: #666; line-height: 1.6;">
-          该验证码将在 <strong>10分钟</strong> 后失效，请尽快使用。
+        <p style="color: #333; font-weight: bold; line-height: 1.6;">
+          验证码有效期 <strong style="color: #ff0000;">5</strong> 分钟，请尽快使用。
         </p>
         
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">

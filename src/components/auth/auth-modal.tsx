@@ -1,9 +1,8 @@
 ﻿"use client";
 
-import { ReactNode, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { resolveRedirect } from "@/app/(auth)/safe-redirect";
+import { useRouter } from "next/navigation";
+import { ReactNode } from "react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface AuthModalProps {
   children: ReactNode;
@@ -11,20 +10,11 @@ interface AuthModalProps {
 
 export function AuthModal({ children }: AuthModalProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const targetPath = resolveRedirect(searchParams.get("from")) ?? "/";
-
-  const handleClose = useCallback(
-    (open: boolean) => {
-      if (open) return;
-      router.push(targetPath);
-    },
-    [router, targetPath],
-  );
 
   return (
-    <Dialog open onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-3xl border-cyan-500/30 bg-[#020817] text-zinc-50" showCloseButton>
+    <Dialog open onOpenChange={(open) => !open && router.back()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogTitle className="sr-only">登录</DialogTitle>
         {children}
       </DialogContent>
     </Dialog>

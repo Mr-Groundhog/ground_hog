@@ -65,13 +65,7 @@ export function MainNav() {
   ];
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
-  const loginTarget = React.useMemo(() => {
-    if (!pathname) return "/login";
-    if (pathname.startsWith("/login") || pathname.startsWith("/register")) {
-      return "/login";
-    }
-    return `/login?from=${encodeURIComponent(pathname)}`;
-  }, [pathname]);
+  const loginTarget = "/login";
 
   return (
     <>

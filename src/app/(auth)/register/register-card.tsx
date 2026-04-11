@@ -1,17 +1,20 @@
 ﻿"use client";
 
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useMemo } from "react";
-import { UserCheck, User, Mail, Lock, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  UserCheck,
+  User,
+  Mail,
+  Lock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
+import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useLoadingStore } from "@/store/loading-store";
-import { resolveRedirect } from "@/app/(auth)/safe-redirect";
 
 const validatePasswordComplexity = (password: string) => {
   let count = 0;
@@ -44,13 +47,6 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function RegisterCard() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectParam = searchParams.get("from");
-  const redirectTo = useMemo(
-    () => resolveRedirect(redirectParam),
-    [redirectParam],
-  );
-
   const { isLoading, startLoading, stopLoading } = useLoadingStore();
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -88,10 +84,7 @@ export function RegisterCard() {
       const result = await res.json();
 
       if (res.ok && result.code === 201) {
-        const loginUrl = redirectTo
-          ? `/login?from=${encodeURIComponent(redirectTo)}`
-          : "/login";
-        router.push(loginUrl);
+        router.push("/login");
       } else {
         setErrorMsg(result.message || "注册失败");
       }
@@ -103,96 +96,50 @@ export function RegisterCard() {
     }
   };
 
-  const loginLink = redirectTo
-    ? `/login?from=${encodeURIComponent(redirectTo)}`
-    : "/login";
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col items-center"
-    >
-      <div className="w-full rounded-xl border border-cyan-500/20 bg-[#0A0A0A] p-8 shadow-[0_0_40px_-10px_rgba(6,182,212,0.15)] backdrop-blur-sm">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-cyan-500/30 bg-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-            <UserCheck className="h-8 w-8 text-cyan-400" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-wider text-white">创建数字身份</h1>
-          <p className="mt-2 font-mono text-xs text-cyan-500/70">
-            INITIALIZING IDENTITY PROTOCOL_
+    <div className="flex flex-col items-center">
+      <div className="w-full space-y-6">
+        <div className="flex flex-col items-center text-center">
+          <UserCheck className="h-12 w-12 text-cyan-500 mb-4" />
+          <h1 className="text-2xl font-bold">创建账号</h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            填写以下信息完成注册
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-zinc-500">
-              <span>用户名</span>
-              <span className="font-mono">UID_ALLOC: AUTO</span>
-            </div>
-            <div className="relative">
-              <User className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-              <Input
-                {...register("username")}
-                placeholder="输入身份标识"
-                className="border-zinc-800 bg-zinc-900/50 pl-9 text-zinc-200 placeholder:text-zinc-600 focus-visible:border-cyan-500/50 focus-visible:ring-cyan-500/20"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label>用户名</Label>
+            <Input {...register("username")} placeholder="请输入用户名" />
             {errors.username && (
               <p className="text-xs text-red-500">{errors.username.message}</p>
             )}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs text-zinc-500">电子邮箱</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-              <Input
-                {...register("email")}
-                placeholder="mail@neural.link"
-                className="border-zinc-800 bg-zinc-900/50 pl-9 text-zinc-200 placeholder:text-zinc-600 focus-visible:border-cyan-500/50 focus-visible:ring-cyan-500/20"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label>邮箱</Label>
+            <Input {...register("email")} type="email" placeholder="请输入邮箱" />
             {errors.email && (
               <p className="text-xs text-red-500">{errors.email.message}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-1">
-              <label className="text-xs text-zinc-500">设置密码</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-                <Input
-                  type="password"
-                  {...register("password")}
-                  placeholder="••••••••"
-                  className="border-zinc-800 bg-zinc-900/50 pl-9 text-zinc-200 placeholder:text-zinc-600 focus-visible:border-cyan-500/50 focus-visible:ring-cyan-500/20"
-                />
-              </div>
-              {errors.password && (
-                <p className="text-xs text-red-500">{errors.password.message}</p>
-              )}
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-zinc-500">确认密码</label>
-              <div className="relative">
-                <ShieldCheck className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-                <Input
-                  type="password"
-                  {...register("confirmPassword")}
-                  placeholder="••••••••"
-                  className="border-zinc-800 bg-zinc-900/50 pl-9 text-zinc-200 placeholder:text-zinc-600 focus-visible:border-cyan-500/50 focus-visible:ring-cyan-500/20"
-                />
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-xs text-red-500">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label>密码</Label>
+            <Input type="password" {...register("password")} placeholder="请输入密码" />
+            {errors.password && (
+              <p className="text-xs text-red-500">{errors.password.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>确认密码</Label>
+            <Input type="password" {...register("confirmPassword")} placeholder="请再次输入密码" />
+            {errors.confirmPassword && (
+              <p className="text-xs text-red-500">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
 
           {errorMsg && (
@@ -202,19 +149,26 @@ export function RegisterCard() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="mt-6 w-full bg-cyan-500 text-black hover:bg-cyan-400 font-bold tracking-wide shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+            className="w-full"
           >
             {isLoading ? "注册中..." : "确认注册"}
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-xs text-zinc-500">
-          已有账号? {" "}
-          <Link href={loginLink} className="text-cyan-400 hover:underline">
+        <p className="text-center text-xs text-muted-foreground">
+          已有账号?{" "}
+          <button
+            type="button"
+            onClick={() => {
+              router.back();
+              setTimeout(() => router.push("/login"), 0);
+            }}
+            className="text-primary hover:underline"
+          >
             立即登录
-          </Link>
-        </div>
+          </button>
+        </p>
       </div>
-    </motion.div>
+    </div>
   );
 }

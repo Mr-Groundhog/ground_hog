@@ -84,7 +84,7 @@ export function RegisterCard() {
       const result = await res.json();
 
       if (res.ok && result.code === 201) {
-        router.push("/login");
+        router.push("/");
       } else {
         setErrorMsg(result.message || "注册失败");
       }
@@ -159,10 +159,7 @@ export function RegisterCard() {
           已有账号?{" "}
           <button
             type="button"
-            onClick={() => {
-              router.back();
-              setTimeout(() => router.push("/login"), 0);
-            }}
+            onClick={() => router.push("/login")}
             className="text-primary hover:underline"
           >
             立即登录

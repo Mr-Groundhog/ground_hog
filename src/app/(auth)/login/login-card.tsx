@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Fingerprint,
   User,
@@ -13,7 +13,7 @@ import {
   Check,
   AlertCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -36,7 +36,6 @@ import {
 } from "@/components/ui/dialog";
 import { useUserStore } from "@/store/user-store";
 import { useLoadingStore } from "@/store/loading-store";
-import { resolveRedirect } from "@/app/(auth)/safe-redirect";
 
 const loginSchema = z.object({
   username: z.string().min(1, "请输入账号"),
@@ -55,12 +54,6 @@ type EmailLoginFormValues = z.infer<typeof emailLoginSchema>;
 
 export function LoginCard() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectParam = searchParams.get("from");
-  const redirectTo = useMemo(
-    () => resolveRedirect(redirectParam),
-    [redirectParam],
-  );
 
   const login = useUserStore((state) => state.login);
   const { isLoading, startLoading, stopLoading } = useLoadingStore();
@@ -176,7 +169,7 @@ export function LoginCard() {
           });
           setShowSuccessDialog(true);
         } else {
-          router.replace(redirectTo || "/");
+          window.location.assign("/");
         }
       } else {
         setEmailErrorMsg(result.message || "登录失败");
@@ -222,7 +215,7 @@ export function LoginCard() {
       if (res.ok && result.code === 200) {
         const { user, token } = result.data;
         login(user, token);
-        router.replace(redirectTo || "/");
+        window.location.assign("/");
       } else {
         setErrorMsg(result.message || "登录失败");
       }
@@ -353,10 +346,7 @@ export function LoginCard() {
           还没有账号?{" "}
           <button
             type="button"
-            onClick={() => {
-              router.back();
-              setTimeout(() => router.push("/register"), 0);
-            }}
+            onClick={() => router.push("/register")}
             className="text-primary hover:underline"
           >
             立即注册

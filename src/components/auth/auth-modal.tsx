@@ -11,8 +11,16 @@ interface AuthModalProps {
 export function AuthModal({ children }: AuthModalProps) {
   const router = useRouter();
 
+  const handleClose = () => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push("/");
+  };
+
   return (
-    <Dialog open onOpenChange={(open) => !open && router.back()}>
+    <Dialog open onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogTitle className="sr-only">登录</DialogTitle>
         {children}

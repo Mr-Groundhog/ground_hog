@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { createFriendLink, updateFriendLink } from "../actions";
 import { toast } from "sonner";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface FriendLinkDialogProps {
   open: boolean;
@@ -150,34 +151,44 @@ export function FriendLinkDialog({ open, onOpenChange, friendLink }: FriendLinkD
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="logo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Logo URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="coverImage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>封面图 URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="logo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Logo (可选)</FormLabel>
+                  <FormControl>
+                    <ImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      folder="friends"
+                      placeholder="点击上传 Logo"
+                      maxSize={2}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="coverImage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>封面图 (可选)</FormLabel>
+                  <FormControl>
+                    <ImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      folder="friends"
+                      placeholder="点击上传封面图"
+                      maxSize={5}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="email"

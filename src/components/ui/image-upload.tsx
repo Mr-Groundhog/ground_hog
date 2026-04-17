@@ -12,6 +12,7 @@ interface ImageUploadProps {
   accept?: string;
   maxSize?: number; // MB
   placeholder?: string;
+  compact?: boolean; // 紧凑模式，用于小尺寸上传
 }
 
 export function ImageUpload({
@@ -22,6 +23,7 @@ export function ImageUpload({
   accept = 'image/*',
   maxSize = 5,
   placeholder = '点击或拖拽上传图片',
+  compact = false,
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -33,7 +35,6 @@ export function ImageUpload({
       setError(null);
 
       try {
-        // 使用统一上传 API，根据 .env 中的 UPLOAD_PROVIDER 自动选择存储
         const formData = new FormData();
         formData.append('file', file);
         formData.append('folder', folder);
@@ -98,21 +99,25 @@ export function ImageUpload({
           <img
             src={value}
             alt="Uploaded"
-            className="w-full h-40 object-cover rounded-lg border"
+            className={cn(
+              'object-cover rounded-lg border',
+              compact ? 'w-full h-full min-h-[80px]' : 'w-full h-40'
+            )}
           />
           <button
             type="button"
             onClick={() => onChange?.('')}
-            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3 h-3" />
           </button>
         </div>
       ) : (
         /* 上传区域 */
         <div
           className={cn(
-            'border-2 border-dashed rounded-lg p-6 text-center transition-colors',
+            'border-2 border-dashed rounded-lg text-center transition-colors cursor-pointer',
+            compact ? 'p-3 min-h-[80px]' : 'p-6',
             dragActive
               ? 'border-primary bg-primary/5'
               : 'border-muted-foreground/25 hover:border-primary/50',
@@ -127,23 +132,25 @@ export function ImageUpload({
         >
           {isUploading ? (
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">上传中...</span>
+              <Loader2 className={cn('animate-spin text-primary', compact ? 'w-5 h-5' : 'w-8 h-8')} />
+              <span className="text-xs text-muted-foreground">上传中...</span>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-1">
               {error ? (
                 <>
-                  <ImageIcon className="w-8 h-8 text-destructive" />
-                  <span className="text-sm text-destructive">{error}</span>
+                  <ImageIcon className={cn('text-destructive', compact ? 'w-5 h-5' : 'w-8 h-8')} />
+                  <span className={cn('text-destructive', compact ? 'text-xs' : 'text-sm')}>{error}</span>
                 </>
               ) : (
                 <>
-                  <Upload className="w-8 h-8 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{placeholder}</span>
-                  <span className="text-xs text-muted-foreground/60">
-                    支持 PNG, JPG, WEBP，最大 {maxSize}MB
-                  </span>
+                  <Upload className={cn('text-muted-foreground', compact ? 'w-5 h-5' : 'w-8 h-8')} />
+                  <span className={cn('text-muted-foreground', compact ? 'text-xs' : 'text-sm')}>{placeholder}</span>
+                  {!compact && (
+                    <span className="text-xs text-muted-foreground/60">
+                      支持 PNG, JPG, WEBP，最大 {maxSize}MB
+                    </span>
+                  )}
                 </>
               )}
             </div>

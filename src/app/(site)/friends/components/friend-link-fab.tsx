@@ -27,19 +27,19 @@ import { z } from "zod";
 import { applyFriendLink } from "../actions";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { ImageUpload } from "@/components/ui/image-upload";
+
+import { useLoadingStore } from "@/store/loading-store";
 
 const applySchema = z.object({
   name: z.string().min(1, "名称不能为空"),
   url: z.string().url("请输入有效的URL"),
   description: z.string().optional(),
-  logo: z.string().url("请输入有效的图片URL").optional().or(z.literal("")),
-  coverImage: z.string().url("请输入有效的图片URL").optional().or(z.literal("")),
+  logo: z.string().optional().or(z.literal("")),
   email: z.string().email("请输入有效的邮箱").optional().or(z.literal("")),
 });
 
 type ApplyFormValues = z.infer<typeof applySchema>;
-
-import { useLoadingStore } from "@/store/loading-store";
 
 export function FriendLinkFab() {
   const [open, setOpen] = useState(false); // Controls FAB expansion
@@ -53,7 +53,6 @@ export function FriendLinkFab() {
       url: "",
       description: "",
       logo: "",
-      coverImage: "",
       email: "",
     },
   });
@@ -157,46 +156,45 @@ export function FriendLinkFab() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-zinc-900 dark:text-zinc-50">描述 (申请理由)</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="简短介绍您的网站..." {...field} className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="logo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-zinc-900 dark:text-zinc-50">Logo URL (可选)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://..." {...field} className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="coverImage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-zinc-900 dark:text-zinc-50">封面图 URL (可选)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://..." {...field} className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="grid grid-cols-4 gap-4">
+                <div className="col-span-1">
+                  <FormField
+                    control={form.control}
+                    name="logo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-zinc-900 dark:text-zinc-50">Logo</FormLabel>
+                        <FormControl>
+                          <ImageUpload
+                            value={field.value}
+                            onChange={field.onChange}
+                            folder="friends"
+                            placeholder="Logo"
+                            maxSize={2}
+                            compact
+                            className="h-20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="col-span-3">
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-zinc-900 dark:text-zinc-50">描述 (申请理由)</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="简短介绍您的网站..." {...field} className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
               <FormField
                 control={form.control}

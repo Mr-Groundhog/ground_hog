@@ -53,7 +53,6 @@ export function FriendLinkDialog({ open, onOpenChange, friendLink }: FriendLinkD
       url: "",
       description: "",
       logo: "",
-      coverImage: "",
       email: "",
       status: "PENDING",
     },
@@ -66,7 +65,6 @@ export function FriendLinkDialog({ open, onOpenChange, friendLink }: FriendLinkD
         url: friendLink.url,
         description: friendLink.description || "",
         logo: friendLink.logo || "",
-        coverImage: friendLink.coverImage || "",
         email: friendLink.email || "",
         status: friendLink.status,
       });
@@ -76,9 +74,8 @@ export function FriendLinkDialog({ open, onOpenChange, friendLink }: FriendLinkD
         url: "",
         description: "",
         logo: "",
-        coverImage: "",
         email: "",
-        status: "APPROVED", // Default to APPROVED for admin creation
+        status: "APPROVED",
       });
     }
   }, [friendLink, form, open]);
@@ -138,57 +135,46 @@ export function FriendLinkDialog({ open, onOpenChange, friendLink }: FriendLinkD
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>描述</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="简短描述..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="logo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Logo (可选)</FormLabel>
-                  <FormControl>
-                    <ImageUpload
-                      value={field.value}
-                      onChange={field.onChange}
-                      folder="friends"
-                      placeholder="点击上传 Logo"
-                      maxSize={2}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="coverImage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>封面图 (可选)</FormLabel>
-                  <FormControl>
-                    <ImageUpload
-                      value={field.value}
-                      onChange={field.onChange}
-                      folder="friends"
-                      placeholder="点击上传封面图"
-                      maxSize={5}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-4 gap-4">
+              <div className="col-span-1">
+                <FormField
+                  control={form.control}
+                  name="logo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Logo</FormLabel>
+                      <FormControl>
+                        <ImageUpload
+                          value={field.value}
+                          onChange={field.onChange}
+                          folder="friends"
+                          placeholder="Logo"
+                          maxSize={2}
+                          compact
+                          className="h-20"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-3">
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>描述</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="简短描述..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
             <FormField
               control={form.control}
               name="email"

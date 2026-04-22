@@ -31,7 +31,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createPost, updatePost } from "@/app/dashboard/posts/actions";
-import { env } from "@/lib/env";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
@@ -67,53 +66,19 @@ import { useLoadingStore } from "@/store/loading-store";
 // 图片上传配置
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
 
-// 生成唯一文件名（私有空间用）- 原始文件名 + 随机六位数
-function generateKey(fileName: string): string {
-  // 获取文件扩展名
-  const ext = fileName.split('.').pop() || 'png';
-  // 获取不带扩展名的文件名
-  const nameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
-  // 生成随机六位数
-  const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-  // 清理文件名中的特殊字符，只保留字母、数字、中文、下划线和连字符
-  const cleanName = nameWithoutExt.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_');
-  return `blog/${cleanName}_${random}.${ext}`;
-}
-
-// 获取上传 token（私有空间需要传入 key）
-async function getUploadToken(key: string): Promise<string> {
-  const response = await fetch(`/api/upload/token?key=${encodeURIComponent(key)}`);
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.message || '获取上传凭证失败');
-  }
-  return data.token;
-}
-
-// 上传单个文件到七牛云（私有空间）
-async function uploadToQiniu(file: File): Promise<string> {
+// 统一文件上传：调用 /api/upload，后端根据 UPLOAD_PROVIDER 自动选择 R2 / 七牛云
+async function uploadFile(file: File): Promise<string> {
   // 检查文件大小
   if (file.size > MAX_FILE_SIZE) {
     throw new Error(`文件大小超过 4MB 限制，当前文件: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
   }
 
-  // 生成 key
-  const key = generateKey(file.name);
-  
-  // 获取上传 token（私有空间需要 bucket:key 格式）
-  const token = await getUploadToken(key);
-
-  // 构建表单数据
   const formData = new FormData();
-  formData.append('file', file);
-  formData.append('token', token);
-  formData.append('key', key);
+  formData.append("file", file);
+  formData.append("folder", "blog");
 
-  // 上传到七牛云 (xinjiapo机房)
-  const uploadUrl = 'https://upload-z1.qiniup.com';
-  
-  const response = await fetch(uploadUrl, {
-    method: 'POST',
+  const response = await fetch("/api/upload", {
+    method: "POST",
     body: formData,
   });
 
@@ -122,29 +87,26 @@ async function uploadToQiniu(file: File): Promise<string> {
   }
 
   const result = await response.json();
-  
-  if (result.error) {
-    throw new Error(result.error || '上传失败');
+  if (!result.success) {
+    throw new Error(result.message || "上传失败");
   }
 
-  // 返回完整的图片 URL
-  return `${env.QINIU.domain}/${result.key}`;
+  return result.url as string;
 }
 
-// MDEditor 图片上传回调
+// MDEditor 图片上传回调（拖拽 / 工具栏）
 async function handleImageUpload(files: File[], callback: (urls: string[]) => void) {
   try {
     const uploadPromises = files.map(async (file) => {
-      const url = await uploadToQiniu(file);
+      const url = await uploadFile(file);
       return url;
     });
 
     const urls = await Promise.all(uploadPromises);
     callback(urls);
   } catch (error) {
-    console.error('Image upload failed:', error);
-    toast.error(error instanceof Error ? error.message : '图片上传失败');
-    // 返回空数组表示上传失败
+    console.error("Image upload failed:", error);
+    toast.error(error instanceof Error ? error.message : "图片上传失败");
     callback([]);
   }
 }
@@ -223,6 +185,56 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
     form.handleSubmit(onSubmit)();
   };
 
+  // 在光标处插入文本
+  const insertTextAtCursor = useCallback((textarea: HTMLTextAreaElement, text: string) => {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentValue = textarea.value;
+
+    const newValue = currentValue.substring(0, start) + text + currentValue.substring(end);
+    setValue("content", newValue);
+
+    // 需要在 DOM 更新后设置光标位置
+    requestAnimationFrame(() => {
+      const newCursorPos = start + text.length;
+      textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      textarea.focus();
+    });
+  }, [setValue]);
+
+  // 粘贴事件处理：拦截图片粘贴并自动上传
+  const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.files;
+    if (!items || items.length === 0) return;
+
+    const imageFiles = Array.from(items).filter((file) => file.type.startsWith("image/"));
+    if (imageFiles.length === 0) return;
+
+    e.preventDefault();
+
+    if (isUploading) {
+      toast.info("正在上传图片，请稍候...");
+      return;
+    }
+
+    const textarea = e.currentTarget;
+    setIsUploading(true);
+
+    try {
+      for (const file of imageFiles) {
+        const url = await uploadFile(file);
+        const markdown = `![${file.name}](${url})\n`;
+        insertTextAtCursor(textarea, markdown);
+      }
+      toast.success(`成功上传 ${imageFiles.length} 张图片`);
+    } catch (error) {
+      console.error("Paste upload failed:", error);
+      toast.error(error instanceof Error ? error.message : "图片上传失败");
+    } finally {
+      setIsUploading(false);
+    }
+  }, [insertTextAtCursor, isUploading]);
+
   return (
     <div className="flex h-full w-full flex-col">
       {/* Header */}
@@ -251,16 +263,19 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
       <main className="flex-1 overflow-hidden">
         <div className="h-full w-full" data-color-mode="dark">
           <MDEditor
-            value={content}
-            onChange={(val) => setValue("content", val || "")}
-            onUploadImg={handleImageUpload}
-            height="100%"
-            visibleDragbar={false}
-            preview="live"
-            enableScroll={true}
-            textareaProps={{
-              placeholder: "开始创作...",
-            }}
+            {...({
+              value: content,
+              onChange: (val: string | undefined) => setValue("content", val || ""),
+              onUploadImg: handleImageUpload,
+              height: "100%",
+              visibleDragbar: false,
+              preview: "live",
+              enableScroll: true,
+              textareaProps: {
+                placeholder: "开始创作...",
+                onPaste: handlePaste,
+              },
+            } as any)}
           />
         </div>
       </main>

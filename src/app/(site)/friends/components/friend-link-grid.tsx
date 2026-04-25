@@ -21,45 +21,31 @@ export function FriendLinkGrid({ links }: { links: any[] }) {
           rel="noopener noreferrer"
           className="block group h-full"
         >
-          <Card className="h-full transition-all hover:shadow-lg hover:border-cyan-500/50 overflow-hidden flex flex-col cursor-pointer">
-            {/* 封面图区域 - 如果有封面图则展示，否则展示默认占位图 */}
-            <div className="h-32 w-full overflow-hidden border-b border-border bg-zinc-100 dark:bg-zinc-800 relative">
-              {link.coverImage ? (
-                <img 
-                  src={link.coverImage} 
-                  alt={`${link.name} cover`} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 transition-transform duration-500 group-hover:scale-105">
-                   <span className="text-4xl font-bold text-zinc-300 dark:text-zinc-700 select-none">
-                      {link.name.charAt(0).toUpperCase()}
-                   </span>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex-1 flex flex-col">
-              <CardHeader className="flex flex-row items-center gap-3 md:gap-4 pb-2">
-                <Avatar className="h-10 w-10 md:h-12 md:w-12 border border-border flex-shrink-0">
+          <Card className="h-full transition-all hover:shadow-lg hover:border-cyan-500/50 overflow-hidden cursor-pointer">
+            <div className="p-4 md:p-5 flex flex-col gap-3 md:gap-4">
+              {/* 头部：头像 + 名称 + URL */}
+              <div className="flex items-center gap-3 md:gap-4">
+                <Avatar className="h-12 w-12 md:h-14 md:w-14 border border-border flex-shrink-0">
                   <AvatarImage src={link.logo || ""} alt={link.name} className="object-cover" />
-                  <AvatarFallback>{link.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="text-sm">{link.name.substring(0, 2)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="text-base md:text-lg truncate group-hover:text-cyan-500 transition-colors flex items-center gap-2">
-                    {link.name}
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-base md:text-lg font-semibold group-hover:text-cyan-500 transition-colors truncate">
+                      {link.name}
+                    </CardTitle>
                     <ExternalLink className="h-3.5 w-3.5 md:h-4 md:w-4 opacity-0 group-hover:opacity-100 transition-opacity text-cyan-500 flex-shrink-0" />
-                  </CardTitle>
-                  <CardDescription className="truncate text-xs">
+                  </div>
+                  <CardDescription className="text-xs md:text-sm truncate mt-0.5">
                     {new URL(link.url).hostname}
                   </CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent className="flex-1 px-3 md:px-6 pb-3 md:pb-6">
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {link.description || "这个家伙很懒，什么都没写..."}
-                </p>
-              </CardContent>
+              </div>
+              
+              {/* 简介 */}
+              <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                {link.description || "这个家伙很懒，什么都没写..."}
+              </p>
             </div>
           </Card>
         </a>

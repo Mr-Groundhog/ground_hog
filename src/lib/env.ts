@@ -36,4 +36,8 @@ export const env = {
 
   // 上传配置
   UPLOAD_PROVIDER: (process.env.UPLOAD_PROVIDER || 'r2') as 'qiniu' | 'r2',
+
+  // Open API 配置
+  OPEN_API_KEYS: process.env.OPEN_API_KEYS || '',
+  OPEN_API_USER_ID: process.env.OPEN_API_USER_ID || '',
 }

@@ -219,6 +219,7 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
 
     const textarea = e.currentTarget;
     setIsUploading(true);
+    startLoading();
 
     try {
       for (const file of imageFiles) {
@@ -232,6 +233,7 @@ export function EditorUI({ initialData, currentUserId, categories }: EditorUIPro
       toast.error(error instanceof Error ? error.message : "图片上传失败");
     } finally {
       setIsUploading(false);
+      stopLoading();
     }
   }, [insertTextAtCursor, isUploading]);
 

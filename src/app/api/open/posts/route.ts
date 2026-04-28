@@ -136,13 +136,13 @@ export async function POST(request: NextRequest) {
   const { data: body, error: parseError } =
     await RequestHelper.safeParse<Record<string, unknown>>(request);
   if (parseError || !body) {
-    return Result.error(HttpCode.BAD_REQUEST, parseError || "请求体为空");
+    return Result.error(HttpCode.INTERNAL_SERVER_ERROR, parseError || "请求体为空");
   }
 
   // 校验字段
   const validation = postSchema.safeParse(body);
   if (!validation.success) {
-    return Result.error(HttpCode.BAD_REQUEST, validation.error.issues[0].message);
+    return Result.error(HttpCode.INTERNAL_SERVER_ERROR, validation.error.issues[0].message);
   }
 
   const { slug, ...rest } = validation.data;
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
   // 检查 slug 唯一性
   const exist = await prisma.post.findUnique({ where: { slug: finalSlug } });
   if (exist) {
-    return Result.error(HttpCode.CONFLICT, `Slug "${finalSlug}" 已存在`);
+    return Result.error(HttpCode.INTERNAL_SERVER_ERROR, `Slug "${finalSlug}" 已存在`);
   }
 
   // 获取文章归属的用户 ID 并验证权限
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
   const adminValidation = await validateAdminUser(userId);
   if (!adminValidation.valid) {
     return Result.error(
-      HttpCode.FORBIDDEN,
+      HttpCode.INTERNAL_SERVER_ERROR,
       `Open API 配置错误：${adminValidation.message}`
     );
   }
@@ -187,7 +187,6 @@ export async function POST(request: NextRequest) {
       status: post.status,
       createdAt: post.createdAt,
     },
-    "文章发布成功",
-    HttpCode.CREATED
+    "文章发布成功"
   );
 }

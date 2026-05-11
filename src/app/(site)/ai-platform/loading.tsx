@@ -1,13 +1,9 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { TechSpinner } from "@/components/common/loading";
 
 export default function Loading() {
   return (
-    <div className="min-h-screen text-zinc-100 relative">
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
-        <TechSpinner />
-      </div>
-      <div className="container mx-auto px-4 py-8 flex gap-8 opacity-50">
+    <div className="min-h-screen text-zinc-100">
+      <div className="container mx-auto px-4 py-8 flex gap-8">
         {/* Sidebar Skeleton */}
         <div className="w-full lg:w-64 hidden lg:block space-y-8">
           <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-4 space-y-4">
@@ -27,7 +23,7 @@ export default function Loading() {
             </div>
           </div>
         </div>
-        
+
         {/* Content Skeleton */}
         <div className="flex-1 space-y-6">
           <div className="flex items-center justify-between">

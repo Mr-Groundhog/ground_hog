@@ -1,18 +1,27 @@
-
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import dynamic from "next/dynamic";
 import { CalendarDays, Clock, Eye } from "lucide-react";
 import { getPostBySlug } from "@/app/dashboard/posts/actions";
 import { CommentsWrapper } from "./components/comments-wrapper";
 import { InteractionWrapper } from "./components/interaction-wrapper";
-import { TableOfContents } from "./components/table-of-contents";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TechSpinner } from "@/components/common/loading";
+
+const TableOfContents = dynamic(
+  () =>
+    import("./components/table-of-contents").then((m) => m.TableOfContents),
+);
+
+const MarkdownContent = dynamic(() => import("./components/markdown-content"), {
+  loading: () => (
+    <div className="space-y-3">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-5/6" />
+      <Skeleton className="h-4 w-4/6" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  ),
+});
 
 interface BlogDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -27,7 +36,6 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     notFound();
   }
 
-  // 估算阅读时间
   const readTime = Math.ceil(post.content.length / 500) + " 分钟读完";
 
   return (
@@ -71,50 +79,26 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           )}
 
           <article id="article-content" className="prose prose-invert prose-sm max-w-none prose-pre:rounded-lg prose-pre:bg-zinc-950/80 prose-pre:border prose-pre:border-zinc-800 md:prose-base">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeSlug]}
-              components={{
-                code({ inline, className, children, ...props }) {
-                  const match = /language-(\w+)/.exec(className || "");
-                  if (!inline && match) {
-                    return (
-                      <SyntaxHighlighter
-                        style={oneDark}
-                        language={match[1]}
-                        PreTag="div"
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, "")}
-                      </SyntaxHighlighter>
-                    );
-                  }
-
-                  return (
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
-                  );
-                },
-              }}
-            >
-              {post.content}
-            </ReactMarkdown>
+            <MarkdownContent content={post.content} />
           </article>
-          
+
           {/* 评论区 */}
           <div className="pt-6 md:pt-10">
-            <Suspense fallback={
-              <div className="flex justify-center py-10">
-                <TechSpinner />
-              </div>
-            }>
+            <Suspense
+              fallback={
+                <div className="space-y-4">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              }
+            >
               <CommentsWrapper postId={post.id} />
             </Suspense>
           </div>
         </div>
 
-        {/* 右侧边栏 - 移动端隐藏，桌面端显示 */}
+        {/* 右侧边栏 */}
         <aside className="hidden lg:block sticky top-24 space-y-6 self-start">
           <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-5">
             <h2 className="mb-4 text-xs font-semibold tracking-[0.18em] text-zinc-500">
@@ -122,11 +106,17 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             </h2>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500 text-sm font-bold text-black overflow-hidden">
-                 {post.user.avatar ? (
-                    <img src={post.user.avatar} alt={post.user.nickname || post.user.username} className="h-full w-full object-cover" />
-                 ) : (
-                    (post.user.nickname || post.user.username).slice(0, 2).toUpperCase()
-                 )}
+                {post.user.avatar ? (
+                  <img
+                    src={post.user.avatar}
+                    alt={post.user.nickname || post.user.username}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  (post.user.nickname || post.user.username)
+                    .slice(0, 2)
+                    .toUpperCase()
+                )}
               </div>
               <div>
                 <div className="text-sm font-semibold text-white">

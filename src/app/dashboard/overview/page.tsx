@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import dynamic from "next/dynamic";
 import {
   Eye,
   FileBarChart,
@@ -8,8 +9,18 @@ import {
   Users,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getDashboardOverviewData } from "./actions";
-import { OverviewTrendChart } from "./components/overview-trend-chart";
+
+const OverviewTrendChart = dynamic(
+  () =>
+    import("./components/overview-trend-chart").then(
+      (m) => m.OverviewTrendChart
+    ),
+  {
+    loading: () => <Skeleton className="col-span-4 h-[370px] w-full" />,
+  }
+);
 
 export default async function DashboardOverviewPage() {
   const { summary, trendData, topPages } = await getDashboardOverviewData("day");

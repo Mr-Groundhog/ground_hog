@@ -1,6 +1,3 @@
-"use client";
-
-import { useState, useCallback } from "react";
 import { TextDiffTool } from "./components/text-diff-tool";
 
 export default function TextDiffToolPage() {

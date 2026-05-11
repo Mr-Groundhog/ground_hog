@@ -1,6 +1,3 @@
-"use client";
-
-import { useState, useCallback } from "react";
 import { RandomDataGenerator } from "./components/random-data-generator";
 
 export default function RandomDataGeneratorPage() {

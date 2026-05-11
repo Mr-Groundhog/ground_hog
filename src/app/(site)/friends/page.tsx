@@ -1,7 +1,7 @@
 import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { FriendLinkFab } from "./components/friend-link-fab";
 import { FriendLinksWrapper } from "./components/friend-links-wrapper";
-import { TechSpinner } from "@/components/common/loading";
 
 export const revalidate = 3600;
 
@@ -16,8 +16,10 @@ export default function FriendsPage() {
       </div>
 
       <Suspense fallback={
-        <div className="flex h-64 w-full items-center justify-center">
-          <TechSpinner />
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-48 rounded-xl" />
+          ))}
         </div>
       }>
         <FriendLinksWrapper />

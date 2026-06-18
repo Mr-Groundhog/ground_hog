@@ -4,9 +4,10 @@ import { logtoConfig } from '@/lib/logto';
 import { prisma } from '@/lib/db';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const requestUrl = new URL(request.url);
+  const { origin } = requestUrl;
 
-  await handleSignIn(logtoConfig, searchParams);
+  await handleSignIn(logtoConfig, requestUrl);
 
   const context = await getLogtoContext(logtoConfig);
 

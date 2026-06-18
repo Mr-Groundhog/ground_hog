@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import LogtoClient from '@logto/next/edge';
 import { logtoConfig } from '@/lib/logto';
-import { prisma } from '@/lib/db';
 
 const logtoClient = new LogtoClient(logtoConfig);
 
@@ -23,15 +22,6 @@ export async function middleware(request: NextRequest) {
 
   if (!context.isAuthenticated || !context.claims?.sub) {
     return NextResponse.redirect(new URL('/api/logto/sign-in', request.url));
-  }
-
-  const account = await prisma.account.findFirst({
-    where: { provider: 'logto', providerAccountId: context.claims.sub },
-    select: { user: { select: { role: true } } },
-  });
-
-  if (!account || account.user.role !== 'ADMIN') {
-    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();

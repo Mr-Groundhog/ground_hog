@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b \"C:\\\\Users\\\\Ferry\\\\Desktop\\\\Project\\\\ground_hog\\\\src\\\\app\\\\\\(auth\\)\" 2>nul || echo \"DIRECTORY_NOT_FOUND\")",
+      "Bash(dir /s /b \"C:\\\\Users\\\\Ferry\\\\Desktop\\\\Project\\\\ground_hog\\\\src\\\\app\\\\admin\\\\login\" 2>nul || echo \"DIRECTORY_NOT_FOUND\")",
+      "Bash(dir /s /b \"C:\\\\Users\\\\Ferry\\\\Desktop\\\\Project\\\\ground_hog\\\\src\\\\app\\\\api\\\\auth\" 2>nul || echo \"DIRECTORY_NOT_FOUND\")",
+      "Bash(dir /s /b \"C:\\\\Users\\\\Ferry\\\\Desktop\\\\Project\\\\ground_hog\\\\.env*\" 2>nul || echo \"NO_ENV_FILES\")",
+      "Bash(dir /s /b \"C:\\\\Users\\\\Ferry\\\\Desktop\\\\Project\\\\ground_hog\\\\src\\\\app\\\\api\\\\logto\" 2>nul || echo \"DIRECTORY_NOT_FOUND\")",
+      "Bash(dir:*)"
+    ]
+  }
+}

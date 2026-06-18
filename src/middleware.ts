@@ -1,41 +1,37 @@
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { decodeToken } from '@/lib/token';
+import LogtoClient from '@logto/next/edge';
+import { logtoConfig } from '@/lib/logto';
+import { prisma } from '@/lib/db';
 
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get('admin-token')?.value;
+const logtoClient = new LogtoClient(logtoConfig);
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Paths that require authentication
-  
   if (pathname === '/dashboard') {
     return NextResponse.redirect(new URL('/dashboard/overview', request.url));
   }
-  
-  if (pathname.startsWith('/dashboard')) {
-    if (!token) {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
 
-    const payload = decodeToken<{ role: string }>(token);
-    if (!payload || payload.role !== 'ADMIN') {
-       // If not admin, redirect to home or show error. 
-       // Redirecting to home seems appropriate for normal users.
-       return NextResponse.redirect(new URL('/', request.url));
-    }
+  const isProtected = pathname.startsWith('/dashboard') || (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login'));
+
+  if (!isProtected) {
+    return NextResponse.next();
   }
 
-  // If we want to protect /admin routes but allow /admin/login
-  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
-      if (!token) {
-        return NextResponse.redirect(new URL('/admin/login', request.url));
-      }
-      
-      const payload = decodeToken<{ role: string }>(token);
-      if (!payload || payload.role !== 'ADMIN') {
-         return NextResponse.redirect(new URL('/', request.url));
-      }
+  const context = await logtoClient.getLogtoContext(request);
+
+  if (!context.isAuthenticated || !context.claims?.sub) {
+    return NextResponse.redirect(new URL('/api/logto/sign-in', request.url));
+  }
+
+  const account = await prisma.account.findFirst({
+    where: { provider: 'logto', providerAccountId: context.claims.sub },
+    select: { user: { select: { role: true } } },
+  });
+
+  if (!account || account.user.role !== 'ADMIN') {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();

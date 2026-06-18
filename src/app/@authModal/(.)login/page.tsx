@@ -1,10 +1,5 @@
-﻿import { LoginCard } from "@/app/(auth)/login/login-card";
-import { AuthModal } from "@/components/auth/auth-modal";
+import { redirect } from 'next/navigation';
 
 export default function LoginInterceptPage() {
-  return (
-    <AuthModal>
-      <LoginCard />
-    </AuthModal>
-  );
+  redirect('/api/logto/sign-in');
 }

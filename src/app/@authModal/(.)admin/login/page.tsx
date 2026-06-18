@@ -1,11 +1,5 @@
-import AdminLoginPage from "@/app/admin/login/page";
-import { AuthModal } from "@/components/auth/auth-modal";
+import { redirect } from 'next/navigation';
 
 export default function AdminLoginInterceptPage() {
-  return (
-    <AuthModal>
-      <AdminLoginPage />
-    </AuthModal>
-  );
+  redirect('/api/logto/sign-in');
 }
-

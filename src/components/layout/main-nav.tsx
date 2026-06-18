@@ -26,7 +26,7 @@ interface WeatherData {
 
 export function MainNav() {
   const pathname = usePathname();
-  const { user, isAuthenticated, logout } = useUserStore();
+  const { user, isAuthenticated, isLoaded, fetchUser, logout } = useUserStore();
   const [mounted, setMounted] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [weather, setWeather] = React.useState<WeatherData | null>(null);
@@ -34,7 +34,8 @@ export function MainNav() {
 
   React.useEffect(() => {
     setMounted(true);
-  }, []);
+    fetchUser();
+  }, [fetchUser]);
 
   // 获取天气数据
   React.useEffect(() => {
@@ -65,7 +66,7 @@ export function MainNav() {
   ];
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
-  const loginTarget = "/login";
+  const loginTarget = "/api/logto/sign-in";
 
   return (
     <>
@@ -132,7 +133,7 @@ export function MainNav() {
             ) : null}
           </div>
 
-          {mounted && isAuthenticated ? (
+          {mounted && isLoaded && isAuthenticated ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-zinc-400 hidden sm:inline-block">
                 {user?.username || user?.email}
@@ -167,7 +168,7 @@ export function MainNav() {
               className="h-9 rounded-md bg-zinc-100 px-4 text-xs font-semibold text-zinc-950 hover:bg-white whitespace-nowrap"
               asChild
             >
-              <Link href={loginTarget}>登录</Link>
+              <a href={loginTarget}>登录</a>
             </Button>
           )}
           {/* 手机端汉堡菜单按钮 */}
@@ -212,7 +213,7 @@ export function MainNav() {
               );
             })}
             {/* 手机端登录状态 */}
-            {mounted && (
+            {mounted && isLoaded && (
               <div className="mt-4 pt-4 border-t border-zinc-800">
                 {isAuthenticated ? (
                   <div className="space-y-2">
@@ -241,13 +242,13 @@ export function MainNav() {
                     </button>
                   </div>
                 ) : (
-                  <Link
+                  <a
                     href={loginTarget}
                     onClick={closeMobileMenu}
                     className="flex items-center justify-center w-full px-4 py-3 rounded-md bg-zinc-100 text-sm font-semibold text-zinc-950 hover:bg-white"
                   >
                     登录
-                  </Link>
+                  </a>
                 )}
               </div>
             )}

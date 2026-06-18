@@ -5,7 +5,8 @@
       "WebFetch(domain:minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com)",
       "Bash(npm install:*)",
       "Bash(npx next *)",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

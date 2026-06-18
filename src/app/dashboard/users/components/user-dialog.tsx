@@ -70,7 +70,6 @@ export function UserDialog({
     defaultValues: {
       username: "",
       email: "",
-      password: "",
       nickname: "",
       role: "USER",
       isActive: true,
@@ -87,13 +86,11 @@ export function UserDialog({
         role: user.role,
         isActive: user.isActive,
         bio: user.bio || "",
-        password: "", // 密码不回显
       });
     } else {
       form.reset({
         username: "",
         email: "",
-        password: "",
         nickname: "",
         role: "USER",
         isActive: true,
@@ -162,21 +159,6 @@ export function UserDialog({
                 </FormItem>
               )}
             />
-            {!isView && (
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{isEdit ? "密码 (留空则不修改)" : "密码"}</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
             <FormField
               control={form.control}
               name="nickname"

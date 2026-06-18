@@ -1,45 +1,48 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { cookieUtils } from '@/lib/cookies';
 
 interface User {
   id: string;
   username: string;
   email: string;
   role: string;
-  token?: string;
+  nickname: string | null;
+  avatar: string | null;
 }
 
 interface UserState {
   user: User | null;
   isAuthenticated: boolean;
-  login: (user: User, token: string) => void;
+  isLoaded: boolean;
+  fetchUser: () => Promise<void>;
   logout: () => void;
   updateUser: (data: Partial<User>) => void;
 }
 
-export const useUserStore = create<UserState>()(
-  persist(
-    (set) => ({
-      user: null,
-      isAuthenticated: false,
-      login: (user, token) => {
-        // Set token to cookie
-        cookieUtils.setToken(token);
-        set({ user: { ...user, token }, isAuthenticated: true });
-      },
-      logout: () => {
-        // Remove token from cookie
-        cookieUtils.removeToken();
-        set({ user: null, isAuthenticated: false });
-      },
-      updateUser: (data) =>
-        set((state) => ({
-          user: state.user ? { ...state.user, ...data } : null,
-        })),
-    }),
-    {
-      name: 'user-storage', // name of the item in the storage (must be unique)
+export const useUserStore = create<UserState>()((set) => ({
+  user: null,
+  isAuthenticated: false,
+  isLoaded: false,
+
+  fetchUser: async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const result = await res.json();
+        set({ user: result.data, isAuthenticated: true, isLoaded: true });
+      } else {
+        set({ user: null, isAuthenticated: false, isLoaded: true });
+      }
+    } catch {
+      set({ user: null, isAuthenticated: false, isLoaded: true });
     }
-  )
-);
+  },
+
+  logout: () => {
+    window.location.href = '/api/logto/sign-out';
+  },
+
+  updateUser: (data) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...data } : null,
+    })),
+}));

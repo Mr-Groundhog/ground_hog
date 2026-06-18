@@ -1,10 +1,5 @@
-﻿import { RegisterCard } from "@/app/(auth)/register/register-card";
-import { AuthModal } from "@/components/auth/auth-modal";
+import { redirect } from 'next/navigation';
 
 export default function RegisterInterceptPage() {
-  return (
-    <AuthModal>
-      <RegisterCard />
-    </AuthModal>
-  );
+  redirect('/api/logto/sign-in');
 }

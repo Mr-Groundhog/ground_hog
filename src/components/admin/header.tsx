@@ -2,6 +2,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Bell, Globe, Settings, Home } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -22,11 +23,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 export function AdminHeader() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useUserStore();
+  const { user, fetchUser, logout } = useUserStore();
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   const handleLogout = () => {
     logout();
-    router.push("/admin/login");
   };
 
   const handleGoHome = () => {

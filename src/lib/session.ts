@@ -1,12 +1,6 @@
-import { cookies } from "next/headers";
-import { prisma } from "@/lib/db";
-import { verifyToken } from "@/lib/token";
-
-interface TokenPayload {
-  userId?: string;
-  role?: string;
-  [key: string]: unknown;
-}
+import { getLogtoContext } from '@logto/next/server-actions';
+import { logtoConfig } from '@/lib/logto';
+import { prisma } from '@/lib/db';
 
 export interface CurrentUser {
   id: string;
@@ -17,38 +11,28 @@ export interface CurrentUser {
   avatar: string | null;
 }
 
-const AUTH_COOKIE_NAME = "admin-token";
-
 export async function getCurrentUser(): Promise<CurrentUser | null> {
-  const cookieStore =await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  const context = await getLogtoContext(logtoConfig);
 
-  if (!token) {
+  if (!context.isAuthenticated || !context.claims?.sub) {
     return null;
   }
 
-  const decoded = verifyToken(token) as TokenPayload | null;
-
-  if (!decoded?.userId) {
-    return null;
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: decoded.userId },
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      role: true,
-      nickname: true,
-      avatar: true,
+  const account = await prisma.account.findFirst({
+    where: { provider: 'logto', providerAccountId: context.claims.sub },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          nickname: true,
+          avatar: true,
+        },
+      },
     },
   });
 
-  if (!user) {
-    return null;
-  }
-
-  return user;
+  return account?.user ?? null;
 }
-

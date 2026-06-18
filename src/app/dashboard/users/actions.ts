@@ -1,6 +1,5 @@
 "use server";
 
-import argon2 from "argon2";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import { userSchema, type UserFormValues } from "./schema";
@@ -75,15 +74,10 @@ export async function createUser(data: UserFormValues) {
     throw new Error("Username or email already exists");
   }
 
-  const hashedPassword = validated.password
-    ? await argon2.hash(validated.password)
-    : await argon2.hash("123456");
-
   await prisma.user.create({
     data: {
       username: validated.username,
       email: validated.email,
-      password: hashedPassword,
       nickname: validated.nickname,
       role: validated.role,
       isActive: validated.isActive,
@@ -111,30 +105,16 @@ export async function updateUser(id: string, data: UserFormValues) {
     throw new Error("Username or email already exists");
   }
 
-  const updateData: {
-    username: string;
-    email: string;
-    nickname?: string | null;
-    role: UserFormValues["role"];
-    isActive: boolean;
-    bio?: string | null;
-    password?: string;
-  } = {
-    username: validated.username,
-    email: validated.email,
-    nickname: validated.nickname,
-    role: validated.role,
-    isActive: validated.isActive,
-    bio: validated.bio,
-  };
-
-  if (validated.password) {
-    updateData.password = await argon2.hash(validated.password);
-  }
-
   await prisma.user.update({
     where: { id },
-    data: updateData,
+    data: {
+      username: validated.username,
+      email: validated.email,
+      nickname: validated.nickname,
+      role: validated.role,
+      isActive: validated.isActive,
+      bio: validated.bio,
+    },
   });
 
   revalidateTag(USERS_TAG);

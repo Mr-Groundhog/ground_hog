@@ -1,6 +1,5 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { verifyToken } from '@/lib/token';
+import { getCurrentUser } from '@/lib/session';
 import { AdminLayoutClient } from './components/admin-layout-client';
 
 export default async function AdminLayout({
@@ -8,16 +7,13 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('admin-token')?.value;
+  const user = await getCurrentUser();
 
-  if (!token) {
-    redirect('/admin/login');
+  if (!user) {
+    redirect('/api/logto/sign-in');
   }
 
-  const payload = verifyToken<{ role: string }>(token);
-
-  if (!payload || payload.role !== 'ADMIN') {
+  if (user.role !== 'ADMIN') {
     redirect('/');
   }
 

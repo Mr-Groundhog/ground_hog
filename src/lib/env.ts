@@ -13,9 +13,6 @@ export const env = {
   
   // Redis 配置
   REDIS_URL: process.env.REDIS_URL || '',
-  
-  // JWT 密钥
-  JWT_SECRET: process.env.JWT_SECRET || '',
 
   // 七牛云配置
   QINIU: {

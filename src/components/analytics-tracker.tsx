@@ -3,7 +3,16 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
-import Cookies from "js-cookie";
+
+function getCookie(name: string): string | undefined {
+  return document.cookie.split('; ').find(row => row.startsWith(`${name}=`))?.split('=')[1];
+}
+
+function setCookie(name: string, value: string, days: number) {
+  const d = new Date();
+  d.setTime(d.getTime() + days * 864e5);
+  document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/`;
+}
 
 export function AnalyticsTracker() {
   const pathname = usePathname();
@@ -11,8 +20,6 @@ export function AnalyticsTracker() {
   const initialized = useRef(false);
 
   useEffect(() => {
-    // Only track in production or if explicitly enabled
-    // You can change this condition based on your needs
     if (process.env.NODE_ENV === "development") {
       console.log("[Analytics] Dev mode: Skipping tracking");
       return;
@@ -20,11 +27,10 @@ export function AnalyticsTracker() {
 
     const trackPageView = async () => {
       try {
-        // 1. Get or create UV ID
-        let uv = Cookies.get("site_uv");
+        let uv = getCookie("site_uv");
         if (!uv) {
           uv = uuidv4();
-          Cookies.set("site_uv", uv, { expires: 365 });
+          setCookie("site_uv", uv, 365);
         }
 
         // 2. Detect Device

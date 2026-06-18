@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/db";
-import { hashPassword } from "@/lib/auth";
 import { Result, HttpCode, RequestHelper } from "@/lib/http";
 
 export async function GET(req: Request) {
@@ -48,24 +47,21 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const { data: body, error: parseError } = await RequestHelper.safeParse<any>(req);
-    
+
     if (parseError || !body) {
       return Result.error(HttpCode.BAD_REQUEST, parseError || "Invalid JSON body");
     }
 
-    const { username, email, password, role } = body;
+    const { username, email, role } = body;
 
-    if (!username || !email || !password) {
+    if (!username || !email) {
       return Result.error(HttpCode.BAD_REQUEST, "Missing required fields");
     }
-
-    const hashedPassword = await hashPassword(password);
 
     const user = await prisma.user.create({
       data: {
         username,
         email,
-        password: hashedPassword,
         role: role || "USER",
       },
     });

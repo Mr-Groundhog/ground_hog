@@ -119,6 +119,7 @@ export function VariableNamingTool() {
       if (prefixValue) {
         setCookie(COOKIE_KEY, prefixValue, 1);
         setPrefixLocked(true);
+        toast.success("前缀已存入本地");
       } else {
         toast.info("请先输入前缀内容再锁定");
       }
@@ -131,6 +132,9 @@ export function VariableNamingTool() {
       if (prefixLocked) {
         removeCookie(COOKIE_KEY);
         setPrefixLocked(false);
+      }
+      if (prefixValue) {
+        toast.info("前缀已自动清除");
       }
       setPrefixValue("");
     }
@@ -178,8 +182,8 @@ export function VariableNamingTool() {
               <Input
                 value={prefixValue}
                 onChange={(e) => setPrefixValue(e.target.value)}
-                placeholder="如 field_"
-                className="h-9 flex-1"
+                placeholder="点击复制自动拼接变量名，如field_hello"
+                className="h-9 flex-1 placeholder:text-muted-foreground/40"
                 disabled={prefixLocked}
               />
               <Button

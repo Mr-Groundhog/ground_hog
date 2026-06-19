@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Eye, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getPosts } from "@/app/dashboard/posts/actions";
+import { TechLoaderMini } from "@/components/common/loading";
 
 interface PostFeedProps {
   initialPosts: any[];

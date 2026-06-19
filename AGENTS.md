@@ -19,12 +19,12 @@ Ground Hog（my-tool-platform）是一个基于 Next.js 的多功能工具平台
 - **框架**: Next.js 16.1.4 (App Router)
 - **语言**: TypeScript 5
 - **UI 组件**: Radix UI + Tailwind CSS 4
-- **数据库**: PostgreSQL (使用 Prisma ORM)
-- **缓存**: Redis (ioredis)
+- **数据库**: Supabase PostgreSQL（Prisma ORM，连接走 Supavisor 连接池）
+- **缓存**: Next.js 数据缓存（unstable_cache + revalidateTag），无外部 Redis
 - **状态管理**: Zustand
-- **数据获取**: TanStack Query
+- **数据获取**: 以 Server Actions / RSC 为主，客户端辅以 TanStack Query
 - **表单**: React Hook Form + Zod 验证
-- **认证**: JWT + Argon2 密码哈希
+- **认证**: Logto（OIDC，@logto/next）
 - **编辑器**: @uiw/react-md-editor (Markdown 编辑器)
 - **主题**: next-themes (支持深色/浅色模式)
 
@@ -57,10 +57,10 @@ ground_hog/
     │   └── admin-menu.ts   # 后台菜单配置
     ├── hooks/               # 自定义 Hooks
     ├── lib/                 # 工具库
-    │   ├── auth.ts         # 认证相关
-    │   ├── db.ts           # 数据库连接
-    │   ├── redis.ts        # Redis 连接
-    │   └── token.ts        # Token 处理
+    │   ├── db.ts           # Prisma 数据库连接
+    │   ├── logto.ts        # Logto 认证配置
+    │   ├── session.ts      # 当前用户会话（getCurrentUser，请求级缓存）
+    │   └── ...             # r2 / qiniu / mailer / email-service / api-key 等
     └── store/              # 状态管理
         ├── user-store.ts   # 用户状态
         └── loading-store.ts # 加载状态
@@ -71,14 +71,15 @@ ground_hog/
 项目需要配置以下环境变量（创建 `.env` 文件）：
 
 ```env
-# 数据库连接（PostgreSQL）
-DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+# 数据库（Supabase）：运行时走连接池(6543 事务模式)，迁移走直连(5432 会话模式)
+DATABASE_URL="postgresql://postgres.[ref]:[pwd]@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+DIRECT_URL="postgresql://postgres.[ref]:[pwd]@aws-1-ap-south-1.pooler.supabase.com:5432/postgres"
 
-# Redis 连接（可选）
-REDIS_URL="redis://localhost:6379"
-
-# JWT 密钥
-JWT_SECRET="your-jwt-secret-key"
+# Logto 认证
+LOGTO_ENDPOINT="https://xxx.logto.app"
+LOGTO_APP_ID="your-app-id"
+LOGTO_BASE_URL="http://localhost:9527"
+LOGTO_COOKIE_SECRET="your-cookie-secret"
 
 # 应用端口（可选，默认 9527）
 PORT=9527
@@ -154,16 +155,17 @@ pnpm lint
 ### 数据库操作
 
 - 使用 Prisma ORM 进行数据库操作
-- 数据库连接配置在 `src/lib/db.ts`
+- 数据库连接配置在 `src/lib/db.ts`（运行时连接池 + `directUrl` 直连用于迁移）
 - 数据模型定义在 `prisma/schema.prisma`
+- 已开启 `relationJoins` preview：`include` 查询合并为单条 JOIN；保留 `relationMode = "prisma"`（应用层逻辑外键）
 - 使用 `@map` 指定数据库字段名（snake_case）
 
 ### 认证和授权
 
-- 使用 JWT 进行用户认证
-- 密码使用 Argon2 进行哈希存储
-- 中间件保护管理后台路由（`src/middleware.ts`）
-- Token 存储在 HTTP-only Cookie 中
+- 使用 Logto（OIDC）进行用户认证，配置见 `src/lib/logto.ts`
+- 当前用户通过 `getCurrentUser()`（`src/lib/session.ts`，已用 React cache 做请求级去重）获取
+- 中间件在 Edge 运行时校验 Logto 会话，保护后台路由（`src/middleware.ts`）
+- 会话由 Logto 加密 Cookie 维护
 
 ### UI 组件开发
 
@@ -188,9 +190,9 @@ pnpm lint
 
 ### 1. 用户认证
 
-- 位置: `src/app/(auth)/`、`src/lib/auth.ts`
-- 功能: 用户注册、登录、密码加密
-- 路由: `/login`、`/register`
+- 位置: `src/app/(auth)/`、`src/lib/logto.ts`、`src/lib/session.ts`
+- 功能: 基于 Logto 的注册 / 登录 / 会话校验
+- 路由: `/login`、`/register`，回调 `/api/logto/*`
 
 ### 2. 博客系统
 
@@ -228,36 +230,40 @@ pnpm lint
 
 ### 7. 数据统计
 
-- 位置: `src/lib/redis.ts`、`src/components/analytics-tracker.tsx`
-- 功能: 网站访问量统计、用户行为追踪
+- 位置: `src/components/analytics-tracker.tsx`、`src/app/api/analytics/track/route.ts`
+- 功能: PV/UV 统计、用户行为追踪（写库用 after() 异步执行，不阻塞响应）
 
 ## 特殊注意事项
 
 1. **端口配置**: 开发环境使用 9527 端口，生产环境使用 9526 端口
 2. **构建配置**: 生产构建会忽略 ESLint 和 TypeScript 错误
 3. **数据库**: 当前使用 PostgreSQL，支持软删除（isDelete 字段）
-4. **缓存**: 可选使用 Redis 进行缓存，配置在 `src/lib/redis.ts`
+4. **缓存**: 使用 Next.js 数据缓存（unstable_cache + revalidateTag），无外部 Redis 依赖
 5. **深色模式**: 默认启用深色主题（在 RootLayout 中设置）
 6. **图标库**: 使用 Lucide React 作为图标库
 7. **字体**: 使用 Geist 和 Geist_Mono 字体
 8. **表单验证**: 使用 Zod 进行表单验证
 9. **图片**: Logo 位于 `public/static/logo/hog.png`
 
-## 测试
+## 测试 / 诊断脚本
 
-项目包含多个测试脚本用于数据库诊断：
-- `scripts/diagnose-db.ts` - 数据库诊断
-- `scripts/test-prisma-simplified.ts` - Prisma 简化测试
-- `scripts/test-prisma-standard.ts` - Prisma 标准测试
+- `scripts/test-prisma-standard.ts` - Prisma 连接测试
+- `scripts/set-db-timezone.ts` - 设置数据库时区
+- `scripts/test-mailer.ts` - 邮件发送测试
 
 ## 部署建议
 
-1. 使用 Vercel 进行部署（Next.js 官方推荐）
-2. 配置生产环境的环境变量
-3. 确保数据库和 Redis 可访问
-4. 运行数据库迁移: `npx prisma migrate deploy`
-5. 构建: `pnpm build`
-6. 启动: `pnpm start`
+1. 使用 Vercel 部署（Next.js 官方推荐）
+2. **区域对齐**：Vercel 函数区域必须与 Supabase 区域一致（本项目均为孟买 / ap-south-1），否则跨区往返会拖慢每个查询
+3. 配置生产环境变量（含 `DATABASE_URL` 6543 连接池 + `DIRECT_URL` 5432 直连）
+4. 运行数据库迁移: `npx prisma migrate deploy`（使用 `DIRECT_URL`）
+5. 构建: `pnpm build`；启动: `pnpm start`
+
+### 性能要点
+- Vercel 函数与 Supabase 同区（孟买），单次 DB 往返从跨区 ~200ms 降到个位数 ms
+- 运行时走 Supavisor 事务模式连接池（6543，`connection_limit=1`），避免 Serverless 连接耗尽
+- Prisma 开启 `relationJoins`：`include` 查询合并为单条 LATERAL JOIN，减少往返次数
+- 列表读用 `unstable_cache`（revalidate 300s）+ `revalidateTag`，写操作时精准失效
 
 ## 开发工作流
 

@@ -159,22 +159,6 @@ export function RandomDataGenerator() {
     });
   }, [generatedData, selectedType, showToast]);
 
-  // 切换数据类型选择
-  const toggleDataType = (type: DataType) => {
-    setSelectedTypes(prev => 
-      prev.includes(type) 
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
-    );
-  };
-
-  // 全选/取消全选
-  const toggleAllTypes = () => {
-    setSelectedTypes(prev => 
-      prev.length === DATA_TYPES.length ? [] : DATA_TYPES.map(t => t.id)
-    );
-  };
-
   // 更新密码选项
   const updatePasswordOption = (option: keyof PasswordOptions, value: boolean | number) => {
     setPasswordOptions(prev => ({

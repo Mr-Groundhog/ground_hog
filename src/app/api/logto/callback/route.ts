@@ -15,6 +15,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/`);
   }
 
+ 
   const { sub, username, email, name, picture } = context.claims;
 
   let account = await prisma.account.findFirst({

@@ -7,7 +7,8 @@
       "Bash(dir /s /b \"C:\\\\Users\\\\Ferry\\\\Desktop\\\\Project\\\\ground_hog\\\\.env*\" 2>nul || echo \"NO_ENV_FILES\")",
       "Bash(dir /s /b \"C:\\\\Users\\\\Ferry\\\\Desktop\\\\Project\\\\ground_hog\\\\src\\\\app\\\\api\\\\logto\" 2>nul || echo \"DIRECTORY_NOT_FOUND\")",
       "Bash(dir:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(if exist \"C:\\\\Users\\\\Ferry\\\\Desktop\\\\Project\\\\ground_hog\\\\node_modules\\\\lucide-react\\\\dist\\\\esm\\\\icons\\\\lock.js\" \\(echo FOUND: lock.js\\) else \\(echo NOT FOUND: lock.js\\) & if exist \"C:\\\\Users\\\\Ferry\\\\Desktop\\\\Project\\\\ground_hog\\\\node_modules\\\\lucide-react\\\\dist\\\\esm\\\\icons\\\\lock-keyhole.js\" \\(echo FOUND: lock-keyhole.js\\) else \\(echo NOT FOUND: lock-keyhole.js\\))"
     ]
   }
 }

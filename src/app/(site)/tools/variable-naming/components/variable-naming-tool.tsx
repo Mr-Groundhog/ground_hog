@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Search, Copy, Check, Loader2, Code2 } from "lucide-react";
+import { Search, Copy, Check, Loader2, Code2, Lock, LockOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 interface NamingItem {
@@ -22,6 +24,9 @@ export function VariableNamingTool() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<NamingGroup[]>([]);
   const [copiedValue, setCopiedValue] = useState<string | null>(null);
+  const [prefixEnabled, setPrefixEnabled] = useState(false);
+  const [prefixValue, setPrefixValue] = useState("");
+  const [prefixLocked, setPrefixLocked] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -62,12 +67,13 @@ export function VariableNamingTool() {
   };
 
   const handleCopy = async (value: string) => {
+    const finalValue = prefixEnabled && prefixValue ? `${prefixValue}${value}` : value;
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(value);
+        await navigator.clipboard.writeText(finalValue);
       } else {
         const input = document.createElement("input");
-        input.value = value;
+        input.value = finalValue;
         document.body.appendChild(input);
         input.select();
         document.execCommand("copy");
@@ -75,7 +81,7 @@ export function VariableNamingTool() {
       }
       setCopiedValue(value);
       toast("复制成功", {
-        description: value,
+        description: finalValue,
         action: {
           label: "关闭",
           onClick: () => {},
@@ -89,7 +95,54 @@ export function VariableNamingTool() {
     }
   };
 
+  const COOKIE_KEY = "var_naming_prefix";
+
+  const getCookie = (name: string) => {
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  };
+
+  const setCookie = (name: string, value: string, days: number) => {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+  };
+
+  const removeCookie = (name: string) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  };
+
+  const handleToggleLock = () => {
+    if (prefixLocked) {
+      removeCookie(COOKIE_KEY);
+      setPrefixLocked(false);
+    } else {
+      if (prefixValue) {
+        setCookie(COOKIE_KEY, prefixValue, 1);
+        setPrefixLocked(true);
+      } else {
+        toast.info("请先输入前缀内容再锁定");
+      }
+    }
+  };
+
+  const handlePrefixEnabledChange = (checked: boolean) => {
+    setPrefixEnabled(checked);
+    if (!checked) {
+      if (prefixLocked) {
+        removeCookie(COOKIE_KEY);
+        setPrefixLocked(false);
+      }
+      setPrefixValue("");
+    }
+  };
+
   useEffect(() => {
+    const saved = getCookie(COOKIE_KEY);
+    if (saved) {
+      setPrefixValue(saved);
+      setPrefixEnabled(true);
+      setPrefixLocked(true);
+    }
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -104,6 +157,47 @@ export function VariableNamingTool() {
         <p className="text-muted-foreground text-center text-xs sm:text-sm md:text-base max-w-2xl mx-auto">
           输入中文或英文描述，一键生成 46 种程序员常用变量命名格式
         </p>
+      </div>
+
+      {/* 前缀控制 */}
+      <div className="max-w-xl mx-auto mb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
+            <Switch
+              id="prefix-toggle"
+              checked={prefixEnabled}
+              onCheckedChange={handlePrefixEnabledChange}
+              className="data-[state=checked]:bg-blue-500"
+            />
+            <Label htmlFor="prefix-toggle" className="text-sm cursor-pointer whitespace-nowrap">
+              前缀
+            </Label>
+          </div>
+          {prefixEnabled && (
+            <div className="flex items-center gap-2 flex-1">
+              <Input
+                value={prefixValue}
+                onChange={(e) => setPrefixValue(e.target.value)}
+                placeholder="如 field_"
+                className="h-9 flex-1"
+                disabled={prefixLocked}
+              />
+              <Button
+                variant={prefixLocked ? "default" : "outline"}
+                size="icon"
+                className={`h-9 w-9 shrink-0 ${prefixLocked ? "bg-blue-500 hover:bg-blue-600 text-white" : ""}`}
+                onClick={handleToggleLock}
+                title={prefixLocked ? "解锁前缀" : "锁定前缀"}
+              >
+                {prefixLocked ? (
+                  <Lock className="h-4 w-4" />
+                ) : (
+                  <LockOpen className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 搜索栏 */}
@@ -122,7 +216,7 @@ export function VariableNamingTool() {
         <Button
           onClick={handleSearch}
           disabled={loading || !query.trim()}
-          className="h-10 sm:h-11 px-5"
+          className="h-10 sm:h-11 px-5 bg-blue-500 hover:bg-blue-600 text-white"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin mr-1" />

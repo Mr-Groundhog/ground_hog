@@ -62,7 +62,7 @@ const getCachedPosts = unstable_cache(
   },
   [POSTS_TAG],
   {
-    revalidate: 60,
+    revalidate: 300,
     tags: [POSTS_TAG],
   }
 );

@@ -36,7 +36,7 @@ const getCachedComments = unstable_cache(
   },
   [COMMENTS_TAG],
   {
-    revalidate: 30,
+    revalidate: 120,
     tags: [COMMENTS_TAG],
   }
 );

@@ -51,7 +51,7 @@ const getCachedUsers = unstable_cache(
   },
   [USERS_TAG],
   {
-    revalidate: 60,
+    revalidate: 300,
     tags: [USERS_TAG],
   }
 );

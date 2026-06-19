@@ -46,7 +46,7 @@ const getCachedTools = unstable_cache(
   },
   [TOOLS_TAG],
   {
-    revalidate: 60,
+    revalidate: 300,
     tags: [TOOLS_TAG],
   }
 );

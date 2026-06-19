@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
@@ -25,14 +25,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await prisma.siteVisit.create({
-      data: {
-        uv,
-        pageUrl,
-        device,
-        referrer: referrer || null,
-        ip: ip as string,
-      },
+    // 埋点写库不阻塞响应：先把 200 返回给客户端，DB 写入在响应发出后用 after() 异步完成
+    after(async () => {
+      try {
+        await prisma.siteVisit.create({
+          data: {
+            uv,
+            pageUrl,
+            device,
+            referrer: referrer || null,
+            ip: ip as string,
+          },
+        });
+      } catch (err) {
+        console.error("Analytics write (after) error:", err);
+      }
     });
 
     return NextResponse.json({ success: true });

@@ -35,7 +35,7 @@ const getCachedFriendLinks = unstable_cache(
   },
   [FRIEND_LINKS_TAG],
   {
-    revalidate: 60,
+    revalidate: 300,
     tags: [FRIEND_LINKS_TAG],
   }
 );

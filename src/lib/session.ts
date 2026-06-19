@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { getLogtoContext } from '@logto/next/server-actions';
 import { logtoConfig } from '@/lib/logto';
 import { prisma } from '@/lib/db';
@@ -11,7 +12,9 @@ export interface CurrentUser {
   avatar: string | null;
 }
 
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+// 用 React cache() 做请求级去重：同一次请求里 layout / page / actions
+// 多次调用 getCurrentUser 只会触发一次 Logto 校验 + 一次数据库查询。
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const context = await getLogtoContext(logtoConfig);
 
   if (!context.isAuthenticated || !context.claims?.sub) {
@@ -35,4 +38,4 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   });
 
   return account?.user ?? null;
-}
+});

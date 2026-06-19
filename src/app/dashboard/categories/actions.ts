@@ -21,7 +21,7 @@ const getCachedCategories = unstable_cache(
     }),
   [CATEGORIES_TAG],
   {
-    revalidate: 60,
+    revalidate: 300,
     tags: [CATEGORIES_TAG],
   }
 );

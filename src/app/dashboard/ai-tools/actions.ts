@@ -58,7 +58,7 @@ const getCachedAiTools = unstable_cache(
   },
   [AI_TOOLS_TAG],
   {
-    revalidate: 60,
+    revalidate: 300,
     tags: [AI_TOOLS_TAG],
   }
 );

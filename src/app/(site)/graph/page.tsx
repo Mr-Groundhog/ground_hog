@@ -5,12 +5,12 @@ import { CategoryFilterWrapper } from "./components/category-filter-wrapper";
 
 export const dynamic = "force-dynamic";
 
-export default function LifeFeedPage({
+export default async function LifeFeedPage({
   searchParams,
 }: {
-  searchParams: { categoryId?: string };
+  searchParams: Promise<{ categoryId?: string }>;
 }) {
-  const categoryId = searchParams.categoryId;
+  const { categoryId } = await searchParams;
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">

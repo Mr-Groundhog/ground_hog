@@ -1,10 +1,14 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // relationJoins：用单条 LATERAL JOIN 取关联数据，避免每个 include 各发一次往返
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
   provider     = "postgresql"
+  // 运行时走 6543 连接池(DATABASE_URL)；迁移走 5432 直连(DIRECT_URL)
   url          = env("DATABASE_URL")
+  directUrl    = env("DIRECT_URL")
   relationMode = "prisma"
 }
 

@@ -6,7 +6,8 @@
       "Bash(npm install:*)",
       "Bash(npx next *)",
       "Bash(npx prisma *)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "WebFetch(domain:www.prisma.io)"
     ]
   }
 }

@@ -31,6 +31,19 @@ const LOCAL_TOOLS = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    id: "local-variable-naming",
+    name: "变量命名工具",
+    description: "输入中文/英文描述，一键生成 46 种程序员常用变量命名格式",
+    icon: "Code2",
+    version: "v1.0.0",
+    status: "NORMAL" as const,
+    type: "LOCAL" as const,
+    url: "/tools/variable-naming",
+    category: "开发工具",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ];
 
 export async function getPublicTools() {

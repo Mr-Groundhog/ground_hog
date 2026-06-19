@@ -44,7 +44,7 @@ export default function RootLayout({
             </Suspense>
           </LoadingProvider>
         </QueryProvider>
-        <Toaster />
+        <Toaster position="top-center" duration={1000} />
       </body>
     </html>
   );

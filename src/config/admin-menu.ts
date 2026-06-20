@@ -1,5 +1,5 @@
 
-import { LucideIcon, LayoutDashboard, Airplay, Settings, FileText, Users, Shield, Activity, Briefcase, Layers, Coffee, BookOpen, Tag, MessageSquare, Link, Mail } from "lucide-react";
+import { LucideIcon, LayoutDashboard, Airplay, Settings, FileText, Users, Shield, Activity, Briefcase, Layers, Coffee, BookOpen, Tag, MessageSquare, Link, Mail, Eye } from "lucide-react";
 
 export type MenuType = "CATALOG" | "MENU" | "BUTTON";
 
@@ -127,6 +127,16 @@ export const adminRoutes: AdminRoute[] = [
     icon: Mail,
     type: "MENU",
     sort: 8,
+    visible: true,
+    status: "NORMAL",
+    isExternal: false,
+  },
+  {
+    name: "访问记录",
+    path: "/dashboard/site-visits",
+    icon: Eye,
+    type: "MENU",
+    sort: 9,
     visible: true,
     status: "NORMAL",
     isExternal: false,

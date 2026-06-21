@@ -81,7 +81,7 @@ export function FriendLinkFab() {
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[780px] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 border-zinc-200 dark:border-zinc-800 p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-[780px] max-h-[90vh] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 border-zinc-200 dark:border-zinc-800 p-0 overflow-hidden overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-[1fr_280px]">
             {/* 左侧 - 申请表单区域 */}
             <div className="p-6">

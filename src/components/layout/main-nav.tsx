@@ -74,13 +74,13 @@ export function MainNav() {
       <div className="flex w-full items-center justify-between px-6 h-16 bg-[#09090b]">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded overflow-hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full overflow-hidden">
               <Image
-                src="/static/logo/hog.png"
+                src="https://img2.leileihog.top/images/a7b3ebd302c432d8aaad116f7e2b3574.png"
                 alt="Logo"
                 width={32}
                 height={32}
-                className="object-contain"
+                className="object-cover"
               />
             </div>
             <span className="font-mono text-lg font-bold tracking-tighter text-white whitespace-nowrap">

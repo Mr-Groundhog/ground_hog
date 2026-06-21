@@ -1,46 +1,43 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+const LAUNCH_TIME = new Date('2026-01-21T11:09:02.055+08:00').getTime();
+
+function calcUptime(): string {
+  const diff = Date.now() - LAUNCH_TIME;
+  if (diff < 0) return '时间未到';
+
+  const totalSeconds = Math.floor(diff / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (days === 0 && hours === 0 && minutes === 0 && seconds === 0) return '刚刚';
+
+  let text = '';
+  if (days > 0) text += `${days}天`;
+  if (hours > 0) text += `${hours}小时`;
+  if (minutes > 0) text += `${minutes}分钟`;
+  if (seconds > 0) text += `${seconds}秒`;
+  return text;
+}
 
 export function SiteFooter() {
-  const [uptime, setUptime] = useState<string>('');
+  const [mounted, setMounted] = useState(false);
+  const [uptime, setUptime] = useState('');
+
+  const tick = useCallback(() => {
+    setUptime(calcUptime());
+  }, []);
 
   useEffect(() => {
-    const launchTime = new Date('2026-01-21T11:09:02.055+08');
-    
-    const calculateUptime = () => {
-      const now = new Date();
-      const diff = now.getTime() - launchTime.getTime();
-      
-      if (diff < 0) {
-        setUptime('时间未到');
-        return;
-      }
-      
-      const totalSeconds = Math.floor(diff / 1000);
-      const days = Math.floor(totalSeconds / (24 * 3600));
-      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      
-      let uptimeText = '';
-      if (days > 0) uptimeText += `${days}天`;
-      if (hours > 0) uptimeText += `${hours}小时`;
-      if (minutes > 0) uptimeText += `${minutes}分钟`;
-      if (seconds > 0) uptimeText += `${seconds}秒`;
-      
-      if (days === 0 && hours === 0 && minutes === 0 && seconds === 0) {
-        setUptime('刚刚');
-      } else {
-        setUptime(uptimeText);
-      }
-    };
-
-    calculateUptime();
-    const interval = setInterval(calculateUptime, 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
+    setMounted(true);
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [tick]);
 
   return (
     <footer className="mt-16 border-t border-zinc-800 py-6 px-4 text-[10px] text-zinc-500 font-mono uppercase tracking-wider md:mt-20 md:py-8">
@@ -52,7 +49,7 @@ export function SiteFooter() {
           </div>
           <span>内核版本: 5.15.0-88-GENERIC</span>
           <span>时区: UTC+8</span>
-          <span>运行时间: {uptime}</span>
+          <span suppressHydrationWarning>运行时间: {mounted ? uptime : '计算中...'}</span>
         </div>
 
        

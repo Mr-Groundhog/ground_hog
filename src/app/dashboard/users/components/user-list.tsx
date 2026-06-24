@@ -180,7 +180,7 @@ export function UserList({ data, page, totalPages, total }: UserListProps) {
                 <TableRow key={user.id}>
                   <TableCell className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} />
+                      <AvatarImage src={user.avatar ?? undefined} />
                       <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">

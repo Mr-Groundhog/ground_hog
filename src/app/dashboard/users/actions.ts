@@ -13,9 +13,9 @@ const getCachedUsers = unstable_cache(
       isDelete: 0,
       OR: query
         ? [
-            { username: { contains: query } },
-            { email: { contains: query } },
-            { nickname: { contains: query } },
+            { username: { contains: query, mode: "insensitive" as const } },
+            { email: { contains: query, mode: "insensitive" as const } },
+            { nickname: { contains: query, mode: "insensitive" as const } },
           ]
         : undefined,
     };

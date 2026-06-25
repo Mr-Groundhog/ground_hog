@@ -102,6 +102,16 @@ export const adminRoutes: AdminRoute[] = [
         isExternal: false,
       },
       {
+        name: "提示词管理",
+        path: "/dashboard/prompt-templates",
+        icon: FileText,
+        type: "MENU",
+        sort: 5.5,
+        visible: true,
+        status: "NORMAL",
+        isExternal: false,
+      },
+      {
         name: "工具箱管理",
         path: "/dashboard/tools",
         icon: Briefcase,

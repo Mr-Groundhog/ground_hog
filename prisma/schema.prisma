@@ -305,3 +305,72 @@ enum EmailStatus {
   SENT
   FAILED
 }
+
+model PromptTemplate {
+  id            String                 @id @default(cuid())
+  /// 模板标题
+  title         String
+  /// 简短描述
+  description   String
+  /// 提示词正文
+  content       String
+  /// 分类（如：写作、编程、翻译...）
+  category      String
+  /// 逗号分隔标签
+  tags          String?
+  /// 提交者昵称
+  author        String?
+  /// 提交者邮箱
+  email         String?
+  /// 审核状态
+  status        PromptTemplateStatus   @default(PENDING)
+  /// 浏览次数
+  viewCount     Int                    @default(0) @map("view_count")
+  /// 点赞次数
+  likeCount     Int                    @default(0) @map("like_count")
+  /// 使用次数（复制次数）
+  useCount      Int                    @default(0) @map("use_count")
+  createdAt     DateTime               @db.Timestamptz @default(now()) @map("created_at")
+  updatedAt     DateTime               @db.Timestamptz @updatedAt @map("updated_at")
+  likes         PromptLike[]
+  comments      PromptComment[]
+
+  @@index([category])
+  @@index([status])
+  @@index([status, category])
+  @@index([likeCount])
+  @@map("prompt_templates")
+}
+
+model PromptLike {
+  id         String   @id @default(cuid())
+  templateId String   @map("template_id")
+  /// 用户 IP（未登录用户用 IP 去重）
+  ip         String?
+  createdAt  DateTime @db.Timestamptz @default(now()) @map("created_at")
+  template   PromptTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, ip])
+  @@index([templateId])
+  @@map("prompt_likes")
+}
+
+model PromptComment {
+  id         String   @id @default(cuid())
+  templateId String   @map("template_id")
+  /// 评论者昵称
+  author     String
+  /// 评论内容
+  content    String
+  createdAt  DateTime @db.Timestamptz @default(now()) @map("created_at")
+  template   PromptTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@map("prompt_comments")
+}
+
+enum PromptTemplateStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

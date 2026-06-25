@@ -60,6 +60,7 @@ export function MainNav() {
   const navItems = [
     { href: "/tools", label: "工具箱" },
     { href: "/ai-platform", label: "AI 平台" },
+    { href: "/prompt-templates", label: "提示词" },
     // { href: "/history", label: "个人简介" },
     { href: "/graph", label: "生活随笔" },
     { href: "/friends", label: "友链" },

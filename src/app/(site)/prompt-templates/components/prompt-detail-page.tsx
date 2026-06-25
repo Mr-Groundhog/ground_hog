@@ -27,6 +27,8 @@ export function PromptDetailPageClient({ template }: PromptDetailPageProps) {
   const [commentAuthor, setCommentAuthor] = useState("");
   const [commentContent, setCommentContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [liking, setLiking] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     incrementViewCount(template.id);
@@ -36,6 +38,7 @@ export function PromptDetailPageClient({ template }: PromptDetailPageProps) {
   }, [template.id]);
 
   const handleCopy = async () => {
+    if (copied) return; // 防抖：复制动画期间禁止重复点击
     try {
       const mdText = template.content;
       if (navigator.clipboard && window.isSecureContext) {
@@ -63,20 +66,28 @@ export function PromptDetailPageClient({ template }: PromptDetailPageProps) {
   };
 
   const handleDownloadMd = () => {
-    const mdContent = `# ${template.title}\n\n${template.content}`;
-    const blob = new Blob([mdContent], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${template.title}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success("已下载 .md 文件");
+    if (downloading) return; // 防抖
+    setDownloading(true);
+    try {
+      const mdContent = `# ${template.title}\n\n${template.content}`;
+      const blob = new Blob([mdContent], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${template.title}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("已下载 .md 文件");
+    } finally {
+      setTimeout(() => setDownloading(false), 1000);
+    }
   };
 
   const handleLike = async () => {
+    if (liking) return; // 防抖
+    setLiking(true);
     try {
       const ip = localStorage.getItem("user_ip") || "anonymous";
       const result = await likePromptTemplate(template.id, ip);
@@ -86,6 +97,8 @@ export function PromptDetailPageClient({ template }: PromptDetailPageProps) {
       localStorage.setItem(likedKey, result.liked ? "true" : "false");
     } catch {
       toast.error("操作失败");
+    } finally {
+      setLiking(false);
     }
   };
 
@@ -162,6 +175,7 @@ export function PromptDetailPageClient({ template }: PromptDetailPageProps) {
             size="sm"
             className="bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white"
             onClick={handleCopy}
+            disabled={copied}
           >
             {copied ? <Check className="h-4 w-4 mr-1.5" /> : <Copy className="h-4 w-4 mr-1.5" />}
             {copied ? "已复制" : "复制提示词"}
@@ -171,9 +185,10 @@ export function PromptDetailPageClient({ template }: PromptDetailPageProps) {
             size="sm"
             className="bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white"
             onClick={handleDownloadMd}
+            disabled={downloading}
           >
             <Download className="h-4 w-4 mr-1.5" />
-            下载 .md
+            {downloading ? "下载中..." : "下载 .md"}
           </Button>
           <Button
             variant={liked ? "default" : "outline"}
@@ -183,9 +198,10 @@ export function PromptDetailPageClient({ template }: PromptDetailPageProps) {
               : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-red-400 hover:border-red-500/30"
             }
             onClick={handleLike}
+            disabled={liking}
           >
             <Heart className={`h-4 w-4 mr-1.5 ${liked ? "fill-current" : ""}`} />
-            {liked ? "已赞" : "点赞"} ({likeCount})
+            {liking ? "处理中..." : liked ? "已赞" : "点赞"} ({likeCount})
           </Button>
         </div>
 

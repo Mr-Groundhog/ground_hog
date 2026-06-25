@@ -35,6 +35,8 @@ export function PromptDetailDialog({ template, open, onOpenChange, onSelectTag }
   const [commentAuthor, setCommentAuthor] = useState("");
   const [commentContent, setCommentContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [liking, setLiking] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (template && open) {
@@ -51,9 +53,8 @@ export function PromptDetailDialog({ template, open, onOpenChange, onSelectTag }
   }, [template, open]);
 
   const handleCopy = async () => {
-    if (!template) return;
+    if (!template || copied) return; // 防抖
     try {
-      // 复制原始 Markdown 文本
       const mdText = template.content;
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(mdText);
@@ -70,7 +71,7 @@ export function PromptDetailDialog({ template, open, onOpenChange, onSelectTag }
         document.body.removeChild(textarea);
       }
       setCopied(true);
-      setUseCount(prev => prev + 1);
+      setUseCount((prev: number) => prev + 1);
       incrementUseCount(template.id);
       toast.success("已复制到剪贴板");
       setTimeout(() => setCopied(false), 2000);
@@ -80,34 +81,39 @@ export function PromptDetailDialog({ template, open, onOpenChange, onSelectTag }
   };
 
   const handleDownloadMd = () => {
-    if (!template) return;
-    // 构建 .md 文件内容：标题 + 空行 + 内容
-    const mdContent = `# ${template.title}\n\n${template.content}`;
-    const blob = new Blob([mdContent], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${template.title}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success("已下载 .md 文件");
+    if (!template || downloading) return; // 防抖
+    setDownloading(true);
+    try {
+      const mdContent = `# ${template.title}\n\n${template.content}`;
+      const blob = new Blob([mdContent], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${template.title}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("已下载 .md 文件");
+    } finally {
+      setTimeout(() => setDownloading(false), 1000);
+    }
   };
 
   const handleLike = async () => {
-    if (!template) return;
+    if (!template || liking) return; // 防抖
+    setLiking(true);
     try {
-      // 用简单 ID 模拟 IP（实际应该从服务端获取）
       const ip = localStorage.getItem("user_ip") || "anonymous";
       const result = await likePromptTemplate(template.id, ip);
       setLiked(result.liked);
-      setLikeCount(prev => result.liked ? prev + 1 : prev - 1);
-      // 记录到 localStorage
+      setLikeCount((prev: number) => result.liked ? prev + 1 : prev - 1);
       const likedKey = `prompt_liked_${template.id}`;
       localStorage.setItem(likedKey, result.liked ? "true" : "false");
     } catch {
       toast.error("操作失败");
+    } finally {
+      setLiking(false);
     }
   };
 
@@ -195,15 +201,17 @@ export function PromptDetailDialog({ template, open, onOpenChange, onSelectTag }
                 variant="outline"
                 className="h-7 px-2 bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-white text-xs"
                 onClick={handleDownloadMd}
+                disabled={downloading}
               >
                 <Download className="h-3 w-3 mr-1" />
-                下载
+                {downloading ? "..." : "下载"}
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 className="h-7 px-2 bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-white text-xs"
                 onClick={handleCopy}
+                disabled={copied}
               >
                 {copied ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
                 {copied ? "已复制" : "复制"}
@@ -257,9 +265,10 @@ export function PromptDetailDialog({ template, open, onOpenChange, onSelectTag }
                 : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-red-400 hover:border-red-500/30"
               }
               onClick={handleLike}
+              disabled={liking}
             >
               <Heart className={`h-4 w-4 mr-1 ${liked ? "fill-current" : ""}`} />
-              {liked ? "已赞" : "点赞"} ({likeCount})
+              {liking ? "处理中..." : liked ? "已赞" : "点赞"} ({likeCount})
             </Button>
           </div>
 

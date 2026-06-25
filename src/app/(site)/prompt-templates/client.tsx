@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { PromptHero } from "./components/prompt-hero";
 import { PromptSidebar } from "./components/prompt-sidebar";
 import { PromptGrid } from "./components/prompt-grid";
-import { PromptDetailDialog } from "./components/prompt-detail-dialog";
 import { PromptTemplateFab } from "./components/prompt-template-fab";
 import { PROMPT_CATEGORIES } from "@/config/prompt-categories";
 import { cn } from "@/lib/utils";
@@ -19,8 +17,6 @@ export function PromptTemplatesClient({ initialTemplates, hotTemplates }: Prompt
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("全部");
   const [selectedTag, setSelectedTag] = useState("");
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
 
   // 客户端筛选逻辑
   const filteredTemplates = initialTemplates.filter(template => {
@@ -50,11 +46,6 @@ export function PromptTemplatesClient({ initialTemplates, hotTemplates }: Prompt
 
     return true;
   });
-
-  const handleSelectTemplate = (template: any) => {
-    setSelectedTemplate(template);
-    setDetailOpen(true);
-  };
 
   const handleSelectTag = (tag: string) => {
     setSelectedTag(selectedTag === tag ? "" : tag);
@@ -124,20 +115,9 @@ export function PromptTemplatesClient({ initialTemplates, hotTemplates }: Prompt
             )}
           </div>
           
-          <PromptGrid 
-            templates={filteredTemplates} 
-            onSelectTemplate={handleSelectTemplate}
-          />
+          <PromptGrid templates={filteredTemplates} />
         </div>
       </div>
-
-      {/* 详情弹窗 */}
-      <PromptDetailDialog 
-        template={selectedTemplate}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        onSelectTag={handleSelectTag}
-      />
 
       {/* 悬浮提交按钮 */}
       <PromptTemplateFab />

@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROMPT_CATEGORIES } from "@/config/prompt-categories";
-import { LayoutGrid, PenTool, Code, Languages, Megaphone, GraduationCap, Coffee, MoreHorizontal, Flame, Eye } from "lucide-react";
+import { LayoutGrid, PenTool, Code, Languages, Megaphone, GraduationCap, Coffee, MoreHorizontal, Flame } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, any> = {
   "全部": LayoutGrid,
@@ -23,7 +24,7 @@ interface PromptSidebarProps {
   onSelectTag: (tag: string) => void;
 }
 
-export function PromptSidebar({ selectedCategory, onSelectCategory, hotTemplates, onSelectTag }: PromptSidebarProps) {
+export function PromptSidebar({ selectedCategory, onSelectCategory, hotTemplates }: PromptSidebarProps) {
   const categories = ["全部", ...PROMPT_CATEGORIES];
 
   return (
@@ -65,13 +66,10 @@ export function PromptSidebar({ selectedCategory, onSelectCategory, hotTemplates
         ) : (
           <div className="space-y-2">
             {hotTemplates.map((template, index) => (
-              <div
+              <Link
                 key={template.id}
+                href={`/prompt-templates/${template.id}`}
                 className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-900 transition-colors cursor-pointer group"
-                onClick={() => {
-                  // 点击热门项时筛选该分类
-                  onSelectCategory(template.category);
-                }}
               >
                 <span className={cn(
                   "flex-shrink-0 w-5 h-5 rounded text-xs flex items-center justify-center font-bold",
@@ -88,7 +86,7 @@ export function PromptSidebar({ selectedCategory, onSelectCategory, hotTemplates
                   <span className="text-red-400">♥</span>
                   <span>{template.likeCount}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

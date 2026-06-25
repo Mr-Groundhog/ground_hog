@@ -64,6 +64,13 @@ export async function getPublicPromptTemplates() {
   });
 }
 
+// 获取单个公开模板
+export async function getPublicPromptTemplateById(id: string) {
+  return await prisma.promptTemplate.findFirst({
+    where: { id, status: "APPROVED" },
+  });
+}
+
 // 获取热门模板（按点赞数排序，取前10）
 export async function getHotPromptTemplates(limit: number = 10) {
   return await prisma.promptTemplate.findMany({

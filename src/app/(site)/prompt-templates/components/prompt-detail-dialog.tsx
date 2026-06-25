@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Copy, Check, Eye, User, MessageCircle, Send, Zap, Download } from "lucide-react";
@@ -152,7 +151,7 @@ export function PromptDetailDialog({ template, open, onOpenChange, onSelectTag }
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
+        <div className="flex-1 overflow-y-auto min-h-0 pr-1">
           {/* 描述 */}
           <p className="text-sm text-zinc-400 mb-4">{template.description}</p>
 
@@ -324,7 +323,7 @@ export function PromptDetailDialog({ template, open, onOpenChange, onSelectTag }
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );

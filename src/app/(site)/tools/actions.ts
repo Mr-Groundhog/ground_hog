@@ -44,6 +44,32 @@ const LOCAL_TOOLS = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    id: "local-infographic",
+    name: "一图胜千言",
+    description: "输入文字和数据，一键生成精美信息图表卡片，内置 7 种风格模板（瑞士杂志、复古终端、编辑报告、街头海报、蒸汽波、报纸拼贴、工程蓝图），拯救不会设计的程序员",
+    icon: "BarChart3",
+    version: "v1.0.0",
+    status: "NORMAL" as const,
+    type: "LOCAL" as const,
+    url: "/tools/infographic",
+    category: "创意工具",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "local-docker-compose",
+    name: "Docker Compose 生成器",
+    description: "勾选需要的服务（Redis、PostgreSQL、Nginx 等），自动生成带注释的 compose.yml",
+    icon: "Container",
+    version: "v1.0.0",
+    status: "NORMAL" as const,
+    type: "LOCAL" as const,
+    url: "/tools/docker-compose",
+    category: "开发工具",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ];
 
 export async function getPublicTools() {

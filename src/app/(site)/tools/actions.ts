@@ -70,6 +70,19 @@ const LOCAL_TOOLS = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    id: "local-auth-to-cpa",
+    name: "auth转cpa",
+    description: "纯前端工具，将 ChatGPT Web session JSON 转换为 CPA、sub2api、Codex、AxonHub 格式。",
+    icon: "KeyRound",
+    version: "v1.0.0",
+    status: "NORMAL" as const,
+    type: "LOCAL" as const,
+    url: "/tools/auth-to-cpa",
+    category: "开发工具",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ];
 
 export async function getPublicTools() {

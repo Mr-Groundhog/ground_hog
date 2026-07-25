@@ -83,6 +83,19 @@ const LOCAL_TOOLS = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    id: "local-ip-query",
+    name: "IP 地址查询",
+    description: "查询当前 IP 或指定 IP 的地理位置、运营商、ASN 等信息",
+    icon: "Globe",
+    version: "v1.0.0",
+    status: "NORMAL" as const,
+    type: "LOCAL" as const,
+    url: "/tools/ip-query",
+    category: "网络工具",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ];
 
 export async function getPublicTools() {

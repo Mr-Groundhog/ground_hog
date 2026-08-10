@@ -8,7 +8,7 @@ import { getClientIp } from "@/lib/ip";
 
 const commentSchema = z.object({
   nickname: z.string().min(1, "昵称不能为空").max(20, "昵称过长"),
-  content: z.string().min(1, "评论不能为空").max(500, "评论过长"),
+  content: z.string().min(1, "评论不能为空").max(50, "评论不能超过 50 字"),
 });
 
 /**
@@ -71,11 +71,11 @@ export async function submitComment(data: z.infer<typeof commentSchema>) {
   };
 }
 
-/** 公开评论墙（最新 50 条） */
+/** 公开评论墙（最新 20 条） */
 export async function getRecentComments() {
   const list = await prisma.creditComment.findMany({
     orderBy: { createdAt: "desc" },
-    take: 50,
+    take: 20,
     select: {
       id: true,
       nickname: true,

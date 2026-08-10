@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Ban, RefreshCw, Ticket } from "lucide-react";
+import { Plus, Trash2, Ban, RefreshCw, Ticket, Upload } from "lucide-react";
 import {
   importCreditCodes,
   disableCreditCode,
@@ -54,6 +54,32 @@ export function CreditCodesList({ data, total, page, limit, totalPages }: Props)
   const [batchNote, setBatchNote] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [search, setSearch] = useState("");
+
+  // 前端解析 txt：每行一个码，自动去除空白与空行
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || "");
+      const lines = text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      if (lines.length === 0) {
+        toast.error("文件中未识别到任何额度码");
+        return;
+      }
+      // 若某行含逗号/制表符分隔，取首列作为码（兼容 code,amount 格式）
+      const parsed = lines.map((l) => l.split(/[,\t]/)[0].trim()).filter(Boolean);
+      setCodes(parsed.join("\n"));
+      toast.success(`已从文件识别 ${parsed.length} 个额度码`);
+    };
+    reader.onerror = () => toast.error("文件读取失败");
+    reader.readAsText(file, "utf-8");
+    // 允许重复选择同一文件
+    e.target.value = "";
+  };
 
   const handleImport = async () => {
     if (!codes.trim()) {
@@ -283,13 +309,29 @@ export function CreditCodesList({ data, total, page, limit, totalPages }: Props)
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>额度码（每行一个）</Label>
+              <div className="flex items-center justify-between">
+                <Label>额度码（每行一个）</Label>
+                <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-cyan-400 hover:text-cyan-300">
+                  <Upload className="h-3.5 w-3.5" /> 导入 txt 自动识别
+                  <input
+                    type="file"
+                    accept=".txt,text/plain"
+                    className="hidden"
+                    onChange={handleFile}
+                  />
+                </label>
+              </div>
               <Textarea
                 placeholder={"sk-xxxxxx\nabc123def456\ngpt-xxxxx"}
                 value={codes}
                 onChange={(e) => setCodes(e.target.value)}
                 className="min-h-[160px] font-mono"
               />
+              {codes.trim().split("\n").filter((l) => l.trim()).length > 0 && (
+                <p className="text-xs text-zinc-500">
+                  已识别 {codes.trim().split("\n").filter((l) => l.trim()).length} 个额度码
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">

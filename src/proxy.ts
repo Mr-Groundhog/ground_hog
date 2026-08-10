@@ -5,7 +5,7 @@ import { logtoConfig } from '@/lib/logto';
 
 const logtoClient = new LogtoClient(logtoConfig);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === '/dashboard') {

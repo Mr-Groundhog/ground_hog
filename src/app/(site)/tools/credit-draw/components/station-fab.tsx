@@ -49,7 +49,7 @@ interface StationQueryResult {
 
 function StatusBadge({ status }: { status: string }) {
   if (status === "APPROVED")
-    return <Badge className="bg-green-600 hover:bg-green-700">已通过</Badge>;
+    return <Badge className="bg-cyan-600 hover:bg-cyan-700">已通过</Badge>;
   if (status === "REJECTED")
     return <Badge variant="destructive">已拒绝</Badge>;
   return <Badge variant="secondary">待审核</Badge>;
@@ -156,7 +156,7 @@ export function StationFab() {
     <>
       <Button
         size="icon"
-        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 rounded-full h-14 w-14 md:h-16 md:w-16 shadow-xl bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer"
+        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 rounded-full h-14 w-14 md:h-16 md:w-16 shadow-xl bg-cyan-500 hover:bg-cyan-600 text-white cursor-pointer"
         onClick={() => setDialogOpen(true)}
         title="共建公益站"
       >
@@ -167,7 +167,7 @@ export function StationFab() {
         <DialogContent className="sm:max-w-[520px] max-h-[90vh] bg-zinc-950 text-zinc-50 border-zinc-800 p-0 overflow-hidden overflow-y-auto">
           <DialogHeader className="px-6 pt-6">
             <DialogTitle className="flex items-center gap-2 text-zinc-50">
-              <HandHeart className="h-5 w-5 text-emerald-400" />
+              <HandHeart className="h-5 w-5 text-cyan-400" />
               共建公益站
             </DialogTitle>
             <DialogDescription className="text-zinc-400">
@@ -188,12 +188,12 @@ export function StationFab() {
             {/* 提交面板 */}
             <TabsContent value="submit">
               {extractCode ? (
-                <div className="mt-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-6 text-center">
-                  <CheckCircle2 className="h-10 w-10 mx-auto text-emerald-400 mb-3" />
+                <div className="mt-4 rounded-lg border border-cyan-500/40 bg-cyan-500/10 p-6 text-center">
+                  <CheckCircle2 className="h-10 w-10 mx-auto text-cyan-400 mb-3" />
                   <p className="text-sm text-zinc-300 mb-2">提交成功！请妥善保存你的提取码</p>
                   <p className="text-xs text-zinc-500 mb-3">凭此码可随时查询审核进度</p>
                   <div className="flex items-center justify-center gap-2">
-                    <code className="text-2xl font-mono font-bold tracking-widest text-emerald-300 bg-zinc-900 px-4 py-2 rounded-md">
+                    <code className="text-2xl font-mono font-bold tracking-widest text-cyan-300 bg-zinc-900 px-4 py-2 rounded-md">
                       {extractCode}
                     </code>
                     <Button
@@ -205,9 +205,9 @@ export function StationFab() {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <Button
-                    className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
-                    onClick={() => {
+                    <Button
+                      className="mt-4 bg-cyan-600 hover:bg-cyan-700 text-white"
+                      onClick={() => {
                       setTab("query");
                       setQueryResult(null);
                       setQueryError("");
@@ -260,7 +260,7 @@ export function StationFab() {
                     />
                     {submitErrors.email && <p className="text-xs text-red-400">{submitErrors.email}</p>}
                   </div>
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleSubmit}>
+                  <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white" onClick={handleSubmit}>
                     提交审核
                   </Button>
                 </div>
@@ -311,12 +311,12 @@ export function StationFab() {
                     </div>
 
                     {queryResult.status === "APPROVED" && queryResult.creditCode && (
-                      <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 space-y-2">
-                        <div className="flex items-center gap-1.5 text-emerald-300 text-sm font-medium">
+                      <div className="rounded-md border border-cyan-500/40 bg-cyan-500/10 p-3 space-y-2">
+                        <div className="flex items-center gap-1.5 text-cyan-300 text-sm font-medium">
                           <KeyRound className="h-4 w-4" /> 你的额度码
                         </div>
                         <div className="flex items-center gap-2">
-                          <code className="flex-1 text-lg font-mono font-bold tracking-widest text-emerald-300 bg-zinc-950 px-3 py-2 rounded-md break-all">
+                          <code className="flex-1 text-lg font-mono font-bold tracking-widest text-cyan-300 bg-zinc-950 px-3 py-2 rounded-md break-all">
                             {queryResult.creditCode}
                           </code>
                           <Button size="icon" variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800" onClick={() => copyCode(queryResult.creditCode)}>
@@ -357,7 +357,7 @@ export function StationFab() {
           <AlertDialogFooter>
             <AlertDialogCancel className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">暂不</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-cyan-600 hover:bg-cyan-700 text-white"
               onClick={() => window.open(jumpUrl, "_blank")}
             >
               前往兑换

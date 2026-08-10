@@ -14,18 +14,19 @@ export default async function CreditDrawPage() {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-50">
-      <div className="container px-4 py-10 md:py-14 max-w-3xl mx-auto">
-        {/* 英雄区 */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-xs mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            限时活动 · 评论即抽额度
+      <div className="container px-4 py-10 md:py-14 max-w-5xl mx-auto">
+        {/* 顶部标题栏（紧凑一行） */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
+          <div className="flex items-baseline gap-2">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-cyan-300 bg-clip-text text-transparent">
+              额度兑换码抽奖
+            </h1>
+            <span className="hidden sm:inline text-xs text-zinc-500">
+              留下建议或使用记录即抽额度
+            </span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-400 bg-clip-text text-transparent">
-            额度兑换码抽奖
-          </h1>
-          <p className="text-base md:text-lg text-zinc-400 max-w-xl mx-auto">
-            留下你的建议或使用记录，即可参与平台额度码抽取。每个 IP 限参与一次，中奖码当场展示、留言即刻上墙。
+          <p className="text-xs md:text-sm text-cyan-400/90">
+            右下角参与共建可获得更多额度 →
           </p>
         </div>
 

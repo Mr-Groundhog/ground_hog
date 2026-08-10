@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Settings2 } from "lucide-react";
 import { toast } from "sonner";
-import { setRedeemUrl, DEFAULT_REDEEM_URL } from "@/app/dashboard/credit-codes/actions";
+import { setRedeemUrl } from "@/app/dashboard/credit-codes/actions";
+import { DEFAULT_REDEEM_URL } from "@/app/dashboard/credit-codes/config";
 import { useLoadingStore } from "@/store/loading-store";
 
 export function RedeemUrlConfig({ currentUrl }: { currentUrl: string }) {

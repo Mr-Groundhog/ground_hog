@@ -5,11 +5,9 @@ import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { importCodesSchema } from "./schema";
+import { DEFAULT_REDEEM_URL } from "./config";
 
 const CREDIT_CODES_TAG = "dashboard-credit-codes";
-
-/** 公益站额度兑换入口兜底地址（后台未配置时使用） */
-export const DEFAULT_REDEEM_URL = "https://fapi.leileihog.top";
 
 /** 读取公益站额度兑换入口地址：优先后台配置，未配置则兜底默认地址 */
 export async function getRedeemUrl(): Promise<string> {

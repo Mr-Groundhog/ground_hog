@@ -83,6 +83,19 @@ const LOCAL_TOOLS = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    id: "local-credit-draw",
+    name: "共建公益",
+    description: "留下你的建议或使用记录，可参与平台额度码抽取，并申请共建公益站。",
+    icon: "HandHeart",
+    version: "v1.0.0",
+    status: "NORMAL" as const,
+    type: "LOCAL" as const,
+    url: "/tools/credit-draw",
+    category: "公益工具",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ];
 
 export async function getPublicTools() {

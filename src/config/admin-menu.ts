@@ -1,5 +1,5 @@
 
-import { LucideIcon, LayoutDashboard, Airplay, Settings, FileText, Users, Shield, Activity, Briefcase, Layers, Coffee, BookOpen, Tag, MessageSquare, Link, Mail, Eye } from "lucide-react";
+import { LucideIcon, LayoutDashboard, Airplay, Settings, FileText, Users, Shield, Activity, Briefcase, Layers, Coffee, BookOpen, Tag, MessageSquare, Link, Mail, Eye, Ticket, HandHeart } from "lucide-react";
 
 export type MenuType = "CATALOG" | "MENU" | "BUTTON";
 
@@ -137,6 +137,26 @@ export const adminRoutes: AdminRoute[] = [
     icon: Mail,
     type: "MENU",
     sort: 8,
+    visible: true,
+    status: "NORMAL",
+    isExternal: false,
+  },
+  {
+    name: "额度码管理",
+    path: "/dashboard/credit-codes",
+    icon: Ticket,
+    type: "MENU",
+    sort: 7,
+    visible: true,
+    status: "NORMAL",
+    isExternal: false,
+  },
+  {
+    name: "公益站管理",
+    path: "/dashboard/public-stations",
+    icon: HandHeart,
+    type: "MENU",
+    sort: 7.5,
     visible: true,
     status: "NORMAL",
     isExternal: false,

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mailer";
 import { render } from '@react-email/render';
 import { FriendApproveTemplate } from "@/app/dashboard/friend-links/components/contact-template";
+import { StationApproveTemplate } from "@/app/dashboard/public-stations/components/station-approve-template";
 import { unstable_cache } from "next/cache";
 
 // 确保 React Email 组件可以在服务器端渲染
@@ -118,6 +119,79 @@ export async function sendFriendApproveEmail(
       });
     }
 
+    throw error;
+  }
+}
+
+// 发送公益站审核通过邮件（含额度码、额度、失效时间）
+export async function sendStationApproveEmail(
+  toEmail: string,
+  data: {
+    url: string;
+    creditCode: string;
+    amount: number | string;
+    expireAt: Date | string;
+  },
+  ip: string
+) {
+  // 检查IP限制
+  const ipCheck = await checkIPLimit(ip);
+  if (!ipCheck.allowed) {
+    throw new Error(ipCheck.message);
+  }
+
+  const emailHtml = await render(
+    createElement(StationApproveTemplate, {
+      url: data.url,
+      creditCode: data.creditCode,
+      amount: data.amount,
+      expireAt: data.expireAt,
+    })
+  );
+
+  let emailLog: any;
+
+  try {
+    emailLog = await prisma.emailLog.create({
+      data: {
+        fromEmail: process.env.GMAIL_USER || "",
+        toEmail,
+        subject: "🎉 你的公益站申请已通过，额度码已下发",
+        content: emailHtml,
+        ip,
+        status: "PENDING",
+      },
+    });
+
+    const result = await sendMail({
+      to: toEmail,
+      subject: "🎉 你的公益站申请已通过，额度码已下发",
+      html: emailHtml,
+    });
+
+    await prisma.emailLog.update({
+      where: { id: emailLog.id },
+      data: {
+        status: "SENT",
+        sentAt: new Date(),
+      },
+    });
+
+    return {
+      success: true,
+      messageId: result.messageId,
+      logId: emailLog.id,
+    };
+  } catch (error) {
+    if (emailLog) {
+      await prisma.emailLog.update({
+        where: { id: emailLog.id },
+        data: {
+          status: "FAILED",
+          errorMessage: error instanceof Error ? error.message : "未知错误",
+        },
+      });
+    }
     throw error;
   }
 }

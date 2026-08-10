@@ -374,3 +374,94 @@ enum PromptTemplateStatus {
   APPROVED
   REJECTED
 }
+
+/// 额度码状态（评论抽奖奖池）
+enum CreditCodeStatus {
+  /// 待领取（在池中）
+  AVAILABLE
+  /// 已领取
+  CLAIMED
+  /// 已作废（如批量停用）
+  DISABLED
+}
+
+/// 公益站审核状态
+enum StationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// 额度码（评论抽奖奖池，按批次导入）。码本身由外部网关生成，本表仅存储展示。
+model CreditCode {
+  id        String          @id @default(cuid())
+  /// 平台下发的额度码（明文存储，用户领取后展示）
+  code      String          @unique
+  /// 该批次额度（美元，如 5 表示 $5）
+  amount    Decimal         @db.Decimal(10, 2)
+  status    CreditCodeStatus @default(AVAILABLE)
+  /// 领取时的评论 id（便于溯源）
+  commentId String?         @map("comment_id")
+  /// 领取者 IP（限领一次用）
+  claimIp   String?         @map("claim_ip")
+  /// 所属批次备注
+  batchNote String?         @map("batch_note")
+  createdAt DateTime        @db.Timestamptz @default(now()) @map("created_at")
+  updatedAt DateTime        @db.Timestamptz @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("credit_codes")
+}
+
+/// 评论领额度活动页的评论（提交即上墙）
+model CreditComment {
+  id        String   @id @default(cuid())
+  /// 评论者昵称
+  nickname  String
+  /// 评论内容
+  content   String
+  /// 评论者 IP（限领一次用）
+  ip        String
+  /// 是否已抽中额度码（true 表示本次领取了 creditCodes 中一条）
+  claimed   Boolean  @default(false)
+  /// 抽中的额度码（claimed 为 true 时有效）
+  code      String?
+  /// 抽中的额度（美元）
+  amount    Decimal? @db.Decimal(10, 2)
+  createdAt DateTime @db.Timestamptz @default(now()) @map("created_at")
+
+  @@index([ip])
+  @@index([createdAt])
+  @@map("credit_comments")
+}
+
+/// 共建公益站提交记录（与评论奖池完全独立，额度码由管理员手动粘贴下发）
+model PublicStation {
+  id         String       @id @default(cuid())
+  /// 提交者邮箱（必填，审核通过时发通知用）
+  email      String
+  /// 站点地址（审核通过后即用户跳转的目标 url）
+  url        String
+  /// 站点 key（脱敏展示）
+  keyValue   String       @map("key_value")
+  /// 支持模型（自由文本，如 "gpt-4o, claude-3.5"）
+  models     String
+  /// 用户提取码（提交后生成，用于前台查询审核进度）
+  extractCode String      @map("extract_code")
+  status     StationStatus @default(PENDING)
+  /// 审核通过后下发的额度码（管理员手动粘贴，随邮件发出）
+  creditCode String?      @map("credit_code")
+  /// 额度（美元，Decimal）
+  amount     Decimal?     @db.Decimal(10, 2)
+  /// 失效时间（用户需在失效前兑换）
+  expireAt   DateTime?    @db.Timestamptz @map("expire_at")
+  /// 审核备注
+  reviewNote String?      @map("review_note")
+  createdAt  DateTime     @db.Timestamptz @default(now()) @map("created_at")
+  reviewedAt DateTime?    @db.Timestamptz @map("reviewed_at")
+
+  @@unique([extractCode])
+  @@index([status])
+  @@map("public_stations")
+}

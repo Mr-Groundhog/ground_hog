@@ -445,7 +445,10 @@ export function PublicStationsList({ data, total, page, limit, totalPages }: Pro
                       onChange={(e) => setReviewNote(e.target.value)}
                     />
                   </div>
-                  <Button className="w-full" onClick={handleApprove}>
+                  <Button
+                    className="w-full bg-cyan-600 hover:bg-cyan-500 text-white"
+                    onClick={handleApprove}
+                  >
                     通过并发送邮件
                   </Button>
                 </>

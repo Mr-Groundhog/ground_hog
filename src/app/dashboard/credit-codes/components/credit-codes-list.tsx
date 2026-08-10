@@ -211,7 +211,10 @@ export function CreditCodesList({ batches, activeBatchId }: Props) {
             ))}
           </select>
         </div>
-        <Button className="ml-auto" onClick={() => setImportOpen(true)}>
+        <Button
+          className="ml-auto bg-cyan-600 hover:bg-cyan-500 text-white"
+          onClick={() => setImportOpen(true)}
+        >
           <Plus className="mr-2 h-4 w-4" /> 导入奖池
         </Button>
       </div>
@@ -362,7 +365,7 @@ export function CreditCodesList({ batches, activeBatchId }: Props) {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label>额度码（每行一个）</Label>
-                <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-cyan-400 hover:text-cyan-300">
+                <label className="inline-flex items-center gap-1.5 cursor-pointer rounded-md border border-cyan-600/60 bg-cyan-600/10 px-2.5 py-1.5 text-xs text-cyan-300 transition-colors hover:bg-cyan-600/20 hover:text-cyan-200">
                   <Upload className="h-3.5 w-3.5" /> 导入 txt 自动识别
                   <input
                     type="file"
@@ -404,7 +407,10 @@ export function CreditCodesList({ batches, activeBatchId }: Props) {
                 />
               </div>
             </div>
-            <Button className="w-full" onClick={handleImport}>
+            <Button
+              className="w-full bg-cyan-600 hover:bg-cyan-500 text-white"
+              onClick={handleImport}
+            >
               导入奖池
             </Button>
           </div>

@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { getClientIp } from "@/lib/ip";
 
@@ -12,26 +13,59 @@ const commentSchema = z.object({
 });
 
 /**
- * 评论即抽码：提交评论（上墙），若该 IP 未参与过则从奖池随机领取一张可用额度码。
- * 奖池为空时评论仍上墙，但标记已抽空。
+ * 计算「今天东八区（北京时间）06:00」对应的 UTC 时间，作为每日抽奖重置点。
+ * 在该时刻之后，同一 IP 可再次参与。
+ */
+function getDailyResetPoint(): Date {
+  const now = new Date();
+  // 转成东八区时间轴
+  const shanghaiMs = now.getTime() + 8 * 60 * 60 * 1000;
+  const shanghai = new Date(shanghaiMs);
+  shanghai.setUTCHours(6, 0, 0, 0);
+  // 还原回真实 UTC
+  return new Date(shanghai.getTime() - 8 * 60 * 60 * 1000);
+}
+
+/** 读取当前活动抽奖批次（单例配置） */
+async function getActiveBatchId(): Promise<string | null> {
+  const cfg = await prisma.creditActivityConfig.findUnique({
+    where: { id: "singleton" },
+  });
+  return cfg?.activeBatchId ?? null;
+}
+
+/**
+ * 评论即抽码：提交评论（上墙），若该 IP 当天（东八区 06:00 起算）未参与过，
+ * 则从「当前活动批次」随机领取一张可用额度码。奖池为空时评论仍上墙。
  */
 export async function submitComment(data: z.infer<typeof commentSchema>) {
   const validated = commentSchema.parse(data);
   const ip = await getClientIp();
+  const resetPoint = getDailyResetPoint();
 
-  // IP 限领一次
-  const existed = await prisma.creditComment.findFirst({ where: { ip } });
+  // 当天限领一次（东八区 06:00 为每日重置点）
+  const existed = await prisma.creditComment.findFirst({
+    where: { ip, createdAt: { gte: resetPoint } },
+  });
   if (existed) {
-    return { success: false, limited: true, message: "你已参与过本次活动啦~" };
+    return { success: false, limited: true, message: "你今天已经参与过啦，明天再来吧~" };
   }
 
-  // 事务内原子领取：随机取一条 AVAILABLE 码并标记 CLAIMED
+  const activeBatchId = await getActiveBatchId();
+
+  // 事务内原子领取：随机取一条 AVAILABLE 码并标记 CLAIMED（限定活动批次）
   const claimed = await prisma.$transaction(async (tx) => {
+    const where: Prisma.CreditCodeWhereInput = { status: "AVAILABLE" };
+    if (activeBatchId) where.batchId = activeBatchId;
+
+    const availableCount = await tx.creditCode.count({ where });
+    if (availableCount === 0) return null;
+
     const code = await tx.creditCode.findFirst({
-      where: { status: "AVAILABLE" },
+      where,
       orderBy: { id: "asc" },
       // 随机偏移取一条，避免总是抽最前面的码
-      skip: Math.floor(Math.random() * Math.max(await tx.creditCode.count({ where: { status: "AVAILABLE" } }), 1)),
+      skip: Math.floor(Math.random() * availableCount),
     });
 
     if (!code) return null;
@@ -58,7 +92,7 @@ export async function submitComment(data: z.infer<typeof commentSchema>) {
     return {
       success: true,
       claimed: false,
-      message: "评论已上墙，但奖池已空，下次再来吧~",
+      message: "评论已上墙，但当前奖池已空，下次再来吧~",
     };
   }
 
@@ -91,11 +125,15 @@ export async function getRecentComments() {
   }));
 }
 
-/** 奖池进度：总码数 / 已领取 / 剩余 */
+/** 奖池进度（按当前活动批次）：总码数 / 已领取 / 剩余 */
 export async function getPoolStats() {
+  const activeBatchId = await getActiveBatchId();
+  const where: Prisma.CreditCodeWhereInput = {};
+  if (activeBatchId) where.batchId = activeBatchId;
+
   const [total, claimed] = await Promise.all([
-    prisma.creditCode.count(),
-    prisma.creditCode.count({ where: { status: "CLAIMED" } }),
+    prisma.creditCode.count({ where }),
+    prisma.creditCode.count({ where: { ...where, status: "CLAIMED" } }),
   ]);
   const available = total - claimed;
   return { total, claimed, available };
@@ -106,7 +144,7 @@ export async function getPoolStats() {
 const stationSchema = z.object({
   url: z.string().url("请输入有效的站点 URL"),
   keyValue: z.string().min(1, "站点 key 不能为空"),
-  models: z.string().min(1, "支持模型不能为空").max(200, "支持模型描述过长"),
+  models: z.string().max(150, "支持模型描述不能超过 150 字").optional(),
   email: z.string().email("请输入有效的邮箱"),
 });
 

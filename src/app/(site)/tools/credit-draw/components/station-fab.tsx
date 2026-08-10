@@ -91,7 +91,6 @@ export function StationFab() {
     if (!url) errs.url = "请输入站点 URL";
     else if (!/^https?:\/\/.+/.test(url)) errs.url = "请输入有效的站点 URL";
     if (!keyValue) errs.keyValue = "请输入站点 key";
-    if (!models) errs.models = "请输入支持模型";
     if (!email) errs.email = "请输入邮箱";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "邮箱格式不正确";
     setSubmitErrors(errs);
@@ -240,10 +239,14 @@ export function StationFab() {
                     {submitErrors.keyValue && <p className="text-xs text-red-400">{submitErrors.keyValue}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-zinc-300">支持模型 <span className="text-red-400">*</span></Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-zinc-300">支持模型</Label>
+                      <span className="text-xs text-zinc-500">{models.length}/150</span>
+                    </div>
                     <Textarea
                       placeholder="如：gpt-4o, claude-3.5, gemini-1.5"
                       value={models}
+                      maxLength={150}
                       onChange={(e) => setModels(e.target.value)}
                       className="bg-zinc-900 border-zinc-700 text-zinc-50"
                     />

@@ -404,14 +404,28 @@ model CreditCode {
   commentId String?         @map("comment_id")
   /// 领取者 IP（限领一次用）
   claimIp   String?         @map("claim_ip")
+  /// 所属批次 id（每批导入统一生成，便于分批管理与设置活动批次）
+  batchId   String          @map("batch_id")
   /// 所属批次备注
   batchNote String?         @map("batch_note")
   createdAt DateTime        @db.Timestamptz @default(now()) @map("created_at")
   updatedAt DateTime        @db.Timestamptz @updatedAt @map("updated_at")
 
   @@index([status])
+  @@index([batchId])
   @@index([createdAt])
   @@map("credit_codes")
+}
+
+/// 评论抽奖活动配置（单例，记录当前抽奖使用的批次）
+model CreditActivityConfig {
+  /// 固定单例行 id
+  id            String   @id @default("singleton")
+  /// 当前活动抽奖批次 id（null 表示不限批次，从全部 AVAILABLE 中抽取）
+  activeBatchId String?  @map("active_batch_id")
+  updatedAt     DateTime @db.Timestamptz @updatedAt @map("updated_at")
+
+  @@map("credit_activity_config")
 }
 
 /// 评论领额度活动页的评论（提交即上墙）

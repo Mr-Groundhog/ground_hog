@@ -64,7 +64,7 @@ export async function getCreditCodes({
   return getCachedCreditCodes(page, limit, status, search);
 }
 
-/** 导入奖池：批量创建额度码 */
+/** 导入奖池：批量创建额度码（自动生成批次 id） */
 export async function importCreditCodes(data: {
   codes: string;
   amount: number;
@@ -89,20 +89,29 @@ export async function importCreditCodes(data: {
   const toCreate = unique.filter((c) => !existingSet.has(c));
 
   if (toCreate.length === 0) {
-    return { success: true, created: 0, skipped: unique.length, message: "全部码已存在，未导入" };
+    return { success: true, created: 0, skipped: unique.length, batchId: null, message: "全部码已存在，未导入" };
   }
+
+  // 每批导入统一生成一个批次 id
+  const batchId = `b_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
   await prisma.creditCode.createMany({
     data: toCreate.map((code) => ({
       code,
       amount: validated.amount,
+      batchId,
       batchNote: validated.batchNote || null,
     })),
   });
 
   revalidateTag(CREDIT_CODES_TAG);
   revalidatePath("/dashboard/credit-codes");
-  return { success: true, created: toCreate.length, skipped: unique.length - toCreate.length };
+  return {
+    success: true,
+    created: toCreate.length,
+    skipped: unique.length - toCreate.length,
+    batchId,
+  };
 }
 
 /** 停用某个码（仅未领取的可停用） */
@@ -200,4 +209,95 @@ export async function batchDeleteCreditComments(ids: string[]) {
   revalidateTag(CREDIT_CODES_TAG);
   revalidatePath("/dashboard/credit-codes");
   return { success: true, deleted: ids.length };
+}
+
+/* ----------------------------- 批次管理 ----------------------------- */
+
+const CREDIT_BATCHES_TAG = "dashboard-credit-batches";
+
+/** 批次列表：按 batchId 分组统计，并标注哪个是当前活动批次 */
+export async function getBatches() {
+  await assertAdmin();
+  const cfg = await prisma.creditActivityConfig.findUnique({
+    where: { id: "singleton" },
+  });
+  const activeBatchId = cfg?.activeBatchId ?? null;
+
+  const groups = await prisma.creditCode.groupBy({
+    by: ["batchId"],
+    _count: { _all: true },
+    orderBy: { _count: { batchId: "desc" } },
+  });
+
+  const batches = await Promise.all(
+    groups.map(async (g) => {
+      const [available, claimed, disabled, sample] = await Promise.all([
+        prisma.creditCode.count({ where: { batchId: g.batchId, status: "AVAILABLE" } }),
+        prisma.creditCode.count({ where: { batchId: g.batchId, status: "CLAIMED" } }),
+        prisma.creditCode.count({ where: { batchId: g.batchId, status: "DISABLED" } }),
+        prisma.creditCode.findFirst({
+          where: { batchId: g.batchId },
+          orderBy: { createdAt: "asc" },
+          select: { batchNote: true, createdAt: true },
+        }),
+      ]);
+      return {
+        batchId: g.batchId,
+        total: g._count._all,
+        available,
+        claimed,
+        disabled,
+        batchNote: sample?.batchNote ?? null,
+        createdAt: sample?.createdAt.toISOString() ?? null,
+        isActive: g.batchId === activeBatchId,
+      };
+    })
+  );
+
+  return { batches, activeBatchId };
+}
+
+/** 某批次的码明细（分页） */
+export async function getBatchCodes(batchId: string, page = 1, limit = 30) {
+  await assertAdmin();
+  const skip = (page - 1) * limit;
+  const [data, total] = await Promise.all([
+    prisma.creditCode.findMany({
+      where: { batchId },
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.creditCode.count({ where: { batchId } }),
+  ]);
+  return {
+    data: data.map((d) => ({
+      ...d,
+      amount: d.amount.toString(),
+      createdAt: d.createdAt.toISOString(),
+      updatedAt: d.updatedAt.toISOString(),
+    })),
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+/** 设置当前活动抽奖批次（batchId 为 null 表示不限批次） */
+export async function setActiveBatch(batchId: string | null) {
+  await assertAdmin();
+  if (batchId) {
+    const exists = await prisma.creditCode.findFirst({ where: { batchId } });
+    if (!exists) throw new Error("批次不存在");
+  }
+  await prisma.creditActivityConfig.upsert({
+    where: { id: "singleton" },
+    update: { activeBatchId: batchId },
+    create: { id: "singleton", activeBatchId: batchId },
+  });
+  revalidateTag(CREDIT_BATCHES_TAG);
+  revalidateTag(CREDIT_CODES_TAG);
+  revalidatePath("/dashboard/credit-codes");
+  return { success: true };
 }

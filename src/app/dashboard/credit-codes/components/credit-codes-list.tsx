@@ -21,22 +21,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Ban, RefreshCw, Ticket, Upload } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Ban,
+  RefreshCw,
+  Ticket,
+  Upload,
+  ChevronDown,
+  ChevronRight,
+  Star,
+} from "lucide-react";
 import {
   importCreditCodes,
   disableCreditCode,
   deleteCreditCode,
+  setActiveBatch,
+  getBatchCodes,
 } from "../actions";
 import { toast } from "sonner";
 import { useLoadingStore } from "@/store/loading-store";
 import { useRouter } from "next/navigation";
 
-interface Props {
-  data: any[];
+interface BatchItem {
+  batchId: string;
   total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  available: number;
+  claimed: number;
+  disabled: number;
+  batchNote: string | null;
+  createdAt: string | null;
+  isActive: boolean;
+}
+
+interface Props {
+  batches: BatchItem[];
+  activeBatchId: string | null;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -45,15 +65,16 @@ const STATUS_LABEL: Record<string, string> = {
   DISABLED: "已停用",
 };
 
-export function CreditCodesList({ data, total, page, limit, totalPages }: Props) {
+export function CreditCodesList({ batches, activeBatchId }: Props) {
   const router = useRouter();
   const { startLoading, stopLoading } = useLoadingStore();
   const [importOpen, setImportOpen] = useState(false);
   const [codes, setCodes] = useState("");
   const [amount, setAmount] = useState("5");
   const [batchNote, setBatchNote] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [batchCodes, setBatchCodes] = useState<Record<string, any[]>>({});
+  const [activeSelect, setActiveSelect] = useState(activeBatchId ?? "");
 
   // 前端解析 txt：每行一个码，自动去除空白与空行
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,14 +91,12 @@ export function CreditCodesList({ data, total, page, limit, totalPages }: Props)
         toast.error("文件中未识别到任何额度码");
         return;
       }
-      // 若某行含逗号/制表符分隔，取首列作为码（兼容 code,amount 格式）
       const parsed = lines.map((l) => l.split(/[,\t]/)[0].trim()).filter(Boolean);
       setCodes(parsed.join("\n"));
       toast.success(`已从文件识别 ${parsed.length} 个额度码`);
     };
     reader.onerror = () => toast.error("文件读取失败");
     reader.readAsText(file, "utf-8");
-    // 允许重复选择同一文件
     e.target.value = "";
   };
 
@@ -111,11 +130,44 @@ export function CreditCodesList({ data, total, page, limit, totalPages }: Props)
     }
   };
 
+  const toggleExpand = async (batchId: string) => {
+    if (expanded === batchId) {
+      setExpanded(null);
+      return;
+    }
+    setExpanded(batchId);
+    if (!batchCodes[batchId]) {
+      startLoading();
+      try {
+        const res = await getBatchCodes(batchId, 1, 50);
+        setBatchCodes((prev) => ({ ...prev, [batchId]: res.data }));
+      } catch (error: any) {
+        toast.error(error?.message || "加载明细失败");
+      } finally {
+        stopLoading();
+      }
+    }
+  };
+
+  const handleSetActive = async (batchId: string) => {
+    startLoading();
+    try {
+      await setActiveBatch(batchId || null);
+      setActiveSelect(batchId);
+      toast.success(batchId ? "已设为当前抽奖批次" : "已取消批次限制");
+    } catch (error: any) {
+      toast.error(error?.message || "设置失败");
+    } finally {
+      stopLoading();
+    }
+  };
+
   const handleDisable = async (id: string) => {
     startLoading();
     try {
       await disableCreditCode(id);
       toast.success("已停用");
+      router.refresh();
     } catch (error: any) {
       toast.error(error?.message || "操作失败");
     } finally {
@@ -128,6 +180,7 @@ export function CreditCodesList({ data, total, page, limit, totalPages }: Props)
     try {
       await deleteCreditCode(id);
       toast.success("已删除");
+      router.refresh();
     } catch (error: any) {
       toast.error(error?.message || "删除失败");
     } finally {
@@ -135,167 +188,165 @@ export function CreditCodesList({ data, total, page, limit, totalPages }: Props)
     }
   };
 
-  const updateQuery = (params: Record<string, string>) => {
-    const sp = new URLSearchParams(window.location.search);
-    Object.entries(params).forEach(([k, v]) => {
-      if (v) sp.set(k, v);
-      else sp.delete(k);
-    });
-    sp.set("page", "1");
-    router.push(`/dashboard/credit-codes?${sp.toString()}`);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    const sp = new URLSearchParams(window.location.search);
-    sp.set("page", newPage.toString());
-    router.push(`/dashboard/credit-codes?${sp.toString()}`);
-  };
-
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") updateQuery({ search });
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-lg font-semibold">
-        <Ticket className="h-5 w-5 text-cyan-400" /> 额度码奖池
+        <Ticket className="h-5 w-5 text-cyan-400" /> 额度码奖池（按批次）
       </div>
-      <div className="flex flex-wrap justify-between items-center gap-2">
-        <div className="flex gap-2 items-center">
-          <Input
-            placeholder="搜索额度码..."
-            className="max-w-xs"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={handleSearch}
-          />
+
+      {/* 当前抽奖批次 + IP 重置 */}
+      <div className="flex flex-wrap items-end gap-4 rounded-md border border-zinc-800 bg-zinc-950/40 p-3">
+        <div className="flex items-center gap-2">
+          <Label className="text-zinc-300 shrink-0">当前抽奖批次</Label>
           <select
             className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              updateQuery({ status: e.target.value });
-            }}
+            value={activeSelect}
+            onChange={(e) => handleSetActive(e.target.value)}
           >
-            <option value="">全部状态</option>
-            <option value="AVAILABLE">可领取</option>
-            <option value="CLAIMED">已领取</option>
-            <option value="DISABLED">已停用</option>
+            <option value="">不限批次（全部可领）</option>
+            {batches.map((b) => (
+              <option key={b.batchId} value={b.batchId}>
+                {b.batchNote || b.batchId}
+              </option>
+            ))}
           </select>
-          <Button
-            variant="outline"
-            size="icon"
-            title="刷新"
-            onClick={() => router.refresh()}
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
         </div>
-        <Button onClick={() => setImportOpen(true)}>
+        <Button className="ml-auto" onClick={() => setImportOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> 导入奖池
         </Button>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>额度码</TableHead>
-              <TableHead>额度</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>领取者 IP</TableHead>
-              <TableHead>批次备注</TableHead>
-              <TableHead>创建时间</TableHead>
-              <TableHead className="text-right">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  暂无数据，点击「导入奖池」批量添加额度码
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-mono font-medium">{c.code}</TableCell>
-                  <TableCell>
-                    <span className="text-emerald-500 font-semibold">${c.amount}</span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        c.status === "AVAILABLE"
-                          ? "default"
-                          : c.status === "CLAIMED"
-                          ? "secondary"
-                          : "destructive"
-                      }
-                    >
-                      {STATUS_LABEL[c.status] || c.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">
-                    {c.claimIp || "-"}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground max-w-[160px] truncate">
-                    {c.batchNote || "-"}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {new Date(c.createdAt).toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {c.status === "AVAILABLE" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-orange-500 hover:text-orange-600"
-                          title="停用"
-                          onClick={() => handleDisable(c.id)}
-                        >
-                          <Ban className="h-4 w-4" />
-                        </Button>
+      {/* 批次卡片列表（默认折叠） */}
+      <div className="space-y-2">
+        {batches.length === 0 ? (
+          <div className="rounded-md border border-dashed p-8 text-center text-zinc-500">
+            暂无批次，点击「导入奖池」批量添加额度码
+          </div>
+        ) : (
+          batches.map((b) => {
+            const isOpen = expanded === b.batchId;
+            return (
+              <div key={b.batchId} className="rounded-md border border-zinc-800">
+                <div className="flex items-center gap-3 px-3 py-3">
+                  <button
+                    className="text-zinc-400 hover:text-zinc-100"
+                    onClick={() => toggleExpand(b.batchId)}
+                    title={isOpen ? "收起" : "展开明细"}
+                  >
+                    {isOpen ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium truncate">
+                        {b.batchNote || "未命名批次"}
+                      </span>
+                      {b.isActive && (
+                        <Badge className="bg-cyan-600 hover:bg-cyan-700">
+                          <Star className="mr-1 h-3 w-3" /> 当前抽奖
+                        </Badge>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-500 hover:text-red-600"
-                        title="删除"
-                        onClick={() => handleDelete(c.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                    <div className="text-xs text-zinc-500 font-mono truncate">
+                      {b.batchId}
+                      {b.createdAt && ` · ${new Date(b.createdAt).toLocaleString()}`}
+                    </div>
+                  </div>
+                  <div className="hidden sm:flex gap-3 text-xs text-muted-foreground">
+                    <span>共 {b.total}</span>
+                    <span className="text-emerald-500">可领 {b.available}</span>
+                    <span className="text-zinc-400">已领 {b.claimed}</span>
+                    <span className="text-red-400">停用 {b.disabled}</span>
+                  </div>
+                  <Button
+                    variant={b.isActive ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={() => handleSetActive(b.isActive ? "" : b.batchId)}
+                  >
+                    {b.isActive ? "取消当前" : "设为当前"}
+                  </Button>
+                </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">共 {total} 条记录</div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page <= 1}
-          >
-            上一页
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page >= totalPages}
-          >
-            下一页
-          </Button>
-        </div>
+                {isOpen && (
+                  <div className="border-t border-zinc-800 px-3 py-3">
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>额度码</TableHead>
+                            <TableHead>额度</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>领取者 IP</TableHead>
+                            <TableHead className="text-right">操作</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {(batchCodes[b.batchId] ?? []).map((c) => (
+                            <TableRow key={c.id}>
+                              <TableCell className="font-mono font-medium">{c.code}</TableCell>
+                              <TableCell>
+                                <span className="text-emerald-500 font-semibold">${c.amount}</span>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    c.status === "AVAILABLE"
+                                      ? "default"
+                                      : c.status === "CLAIMED"
+                                      ? "secondary"
+                                      : "destructive"
+                                  }
+                                >
+                                  {STATUS_LABEL[c.status] || c.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="font-mono text-xs text-muted-foreground">
+                                {c.claimIp || "-"}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  {c.status === "AVAILABLE" && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="text-orange-500 hover:text-orange-600"
+                                      title="停用"
+                                      onClick={() => handleDisable(c.id)}
+                                    >
+                                      <Ban className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-red-500 hover:text-red-600"
+                                    title="删除"
+                                    onClick={() => handleDelete(c.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {!batchCodes[b.batchId] && (
+                      <p className="text-xs text-zinc-500 py-2">加载中…</p>
+                    )}
+                    {batchCodes[b.batchId]?.length === 0 && (
+                      <p className="text-xs text-zinc-500 py-2">该批次暂无额度码</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* 导入奖池 Dialog */}
@@ -304,7 +355,7 @@ export function CreditCodesList({ data, total, page, limit, totalPages }: Props)
           <DialogHeader>
             <DialogTitle>导入额度码奖池</DialogTitle>
             <DialogDescription>
-              每行一个额度码，本批次将统一使用下方额度。重复码自动跳过。
+              每行一个额度码，本批次将统一使用下方额度。重复码自动跳过。导入后将以独立批次显示。
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">

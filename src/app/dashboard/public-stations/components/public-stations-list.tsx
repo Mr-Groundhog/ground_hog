@@ -22,7 +22,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Eye, RefreshCw, Mail } from "lucide-react";
-import { approveStation, rejectStation } from "../actions";
+import { approveStation, rejectStation, resendStationEmail } from "../actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useLoadingStore } from "@/store/loading-store";
 import { useRouter } from "next/navigation";
@@ -65,6 +75,9 @@ export function PublicStationsList({ data, total, page, limit, totalPages }: Pro
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<any>(null);
   const [rejectNote, setRejectNote] = useState("");
+
+  const [resendOpen, setResendOpen] = useState(false);
+  const [resendTarget, setResendTarget] = useState<any>(null);
 
   const openReview = (s: any) => {
     setCurrent(s);
@@ -130,6 +143,20 @@ export function PublicStationsList({ data, total, page, limit, totalPages }: Pro
       setRejectOpen(false);
     } catch (error: any) {
       toast.error(error?.message || "操作失败");
+    } finally {
+      stopLoading();
+    }
+  };
+
+  const handleResend = async () => {
+    if (!resendTarget) return;
+    startLoading();
+    try {
+      const res = await resendStationEmail(resendTarget.id);
+      toast.success("邮件已重发至用户邮箱");
+      setResendOpen(false);
+    } catch (error: any) {
+      toast.error(error?.message || "重发失败");
     } finally {
       stopLoading();
     }
@@ -276,27 +303,9 @@ export function PublicStationsList({ data, total, page, limit, totalPages }: Pro
                           size="icon"
                           className="text-cyan-500 hover:text-cyan-600"
                           title="重新发送邮件"
-                          onClick={async () => {
-                            startLoading();
-                            try {
-                              const resp = await fetch("/api/send-station-approval", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                  email: s.email,
-                                  url: s.url,
-                                  creditCode: s.creditCode,
-                                  amount: s.amount,
-                                  expireAt: s.expireAt,
-                                }),
-                              });
-                              const json = await resp.json();
-                              toast[json.success ? "success" : "warning"](
-                                json.success ? "邮件已重发" : `重发失败：${json.message}`
-                              );
-                            } finally {
-                              stopLoading();
-                            }
+                          onClick={() => {
+                            setResendTarget(s);
+                            setResendOpen(true);
                           }}
                         >
                           <Mail className="h-4 w-4" />
@@ -477,6 +486,28 @@ export function PublicStationsList({ data, total, page, limit, totalPages }: Pro
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* 重发邮件二次确认 */}
+      <AlertDialog open={resendOpen} onOpenChange={setResendOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认重发审核邮件？</AlertDialogTitle>
+            <AlertDialogDescription>
+              将向 {resendTarget?.email} 重新发送含额度码、额度与失效时间的审核通过邮件。
+              为确保不过度打扰用户，每个记录每天仅可重发一次（北京时间 00:00 刷新）。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-cyan-600 hover:bg-cyan-500 text-white"
+              onClick={handleResend}
+            >
+              确认重发
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

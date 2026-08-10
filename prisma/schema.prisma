@@ -472,6 +472,8 @@ model PublicStation {
   expireAt   DateTime?    @db.Timestamptz @map("expire_at")
   /// 审核备注
   reviewNote String?      @map("review_note")
+  /// 最近一次重发邮件时间（用于限制每记录每天仅可重发一次）
+  lastEmailedAt DateTime? @db.Timestamptz @map("last_emailed_at")
   createdAt  DateTime     @db.Timestamptz @default(now()) @map("created_at")
   reviewedAt DateTime?    @db.Timestamptz @map("reviewed_at")
 

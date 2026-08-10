@@ -3,6 +3,8 @@
 import { Prisma } from "@prisma/client";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
+import { sendStationApproveEmail } from "@/lib/email-service";
+import { headers } from "next/headers";
 
 const PUBLIC_STATIONS_TAG = "dashboard-public-stations";
 
@@ -123,4 +125,68 @@ export async function rejectStation(id: string, reviewNote?: string) {
   revalidateTag(PUBLIC_STATIONS_TAG);
   revalidatePath("/dashboard/public-stations");
   return { success: true };
+}
+
+/**
+ * 重发审核通过邮件。限制：同一记录每天（东八区 00:00 起算）仅可点击重发一次。
+ * 先落库更新 lastEmailedAt 再发邮件；邮件失败不影响限流状态，可稍后重试（次日）。
+ */
+export async function resendStationEmail(id: string) {
+  const station = await prisma.publicStation.findUnique({ where: { id } });
+  if (!station) {
+    throw new Error("记录不存在");
+  }
+  if (station.status !== "APPROVED" || !station.creditCode) {
+    throw new Error("仅审核通过且已填写额度码的记录可重发");
+  }
+
+  // 东八区（UTC+8）当天 00:00 作为限流起点
+  const now = new Date();
+  const beijingNow = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  const dayStart = new Date(
+    beijingNow.getUTCFullYear(),
+    beijingNow.getUTCMonth(),
+    beijingNow.getUTCDate(),
+    0,
+    0,
+    0,
+    0
+  );
+  const dayStartUtc = new Date(dayStart.getTime() - 8 * 60 * 60 * 1000);
+
+  if (station.lastEmailedAt && station.lastEmailedAt > dayStartUtc) {
+    const next = new Date(dayStartUtc.getTime() + 24 * 60 * 60 * 1000);
+    const hh = next.getUTCHours().toString().padStart(2, "0");
+    const mm = next.getUTCMinutes().toString().padStart(2, "0");
+    throw new Error(`今天已重发过，请于次日 ${hh}:${mm}（北京时间）后再试`);
+  }
+
+  // 先记限流时间，避免重复点击穿透
+  await prisma.publicStation.update({
+    where: { id },
+    data: { lastEmailedAt: new Date() },
+  });
+
+  const h = await headers();
+  let ip = h.get("x-forwarded-for") || h.get("x-real-ip") || "127.0.0.1";
+  if (typeof ip === "string" && ip.includes(",")) {
+    ip = ip.split(",")[0].trim();
+  }
+
+  const result = await sendStationApproveEmail(
+    station.email,
+    {
+      url: station.url,
+      creditCode: station.creditCode,
+      amount: station.amount ? station.amount.toString() : "0",
+      expireAt: station.expireAt
+        ? station.expireAt.toISOString()
+        : new Date().toISOString(),
+    },
+    ip
+  );
+
+  revalidateTag(PUBLIC_STATIONS_TAG);
+  revalidatePath("/dashboard/public-stations");
+  return { success: true, emailSent: !!result };
 }

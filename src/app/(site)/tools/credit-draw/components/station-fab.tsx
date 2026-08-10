@@ -72,6 +72,7 @@ export function StationFab() {
   const [queryInput, setQueryInput] = useState("");
   const [queryResult, setQueryResult] = useState<StationQueryResult | null>(null);
   const [queryError, setQueryError] = useState("");
+  const [querying, setQuerying] = useState(false);
 
   // 跳转询问
   const [jumpOpen, setJumpOpen] = useState(false);
@@ -115,12 +116,15 @@ export function StationFab() {
   };
 
   const handleQuery = async (code?: string) => {
-    const target = (code ?? queryInput).trim();
+    // 按钮 onClick 会把 MouseEvent 作为首个参数传入，需确保只取字符串入参
+    const raw = typeof code === "string" ? code : queryInput;
+    const target = (raw ?? "").trim();
     if (!target) {
       setQueryError("请输入提取码");
       return;
     }
     setQueryError("");
+    setQuerying(true);
     startLoading();
     try {
       const res = await queryStation(target);
@@ -134,6 +138,7 @@ export function StationFab() {
       toast.error("查询失败");
     } finally {
       stopLoading();
+      setQuerying(false);
     }
   };
 
@@ -277,11 +282,20 @@ export function StationFab() {
                   <Input
                     placeholder="输入提取码查询"
                     value={queryInput}
+                    disabled={querying}
                     onChange={(e) => setQueryInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !querying) handleQuery();
+                    }}
                     className="bg-zinc-900 border-zinc-700 text-zinc-50 font-mono"
                   />
-                  <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800" onClick={handleQuery}>
-                    查询
+                  <Button
+                    variant="outline"
+                    disabled={querying}
+                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 disabled:opacity-60"
+                    onClick={() => handleQuery()}
+                  >
+                    {querying ? "查询中…" : "查询"}
                   </Button>
                 </div>
                 {queryError && <p className="text-xs text-red-400">{queryError}</p>}

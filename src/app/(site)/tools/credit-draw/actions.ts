@@ -198,6 +198,8 @@ interface StationQueryResult {
   amount?: string | null;
   expireAt?: string | null;
   reviewNote?: string | null;
+  /// 额度兑换入口地址（优先后台配置，兜底默认地址）
+  redeemUrl?: string;
 }
 
 function maskKey(key: string): string {
@@ -247,6 +249,14 @@ export async function queryStation(extractCode: string): Promise<StationQueryRes
     result.creditCode = station.creditCode ?? null;
     result.amount = station.amount ? station.amount.toString() : null;
     result.expireAt = station.expireAt ? station.expireAt.toISOString() : null;
+  }
+
+  // 兑换入口地址：优先后台配置，未配置则兜底默认地址
+  try {
+    const { getRedeemUrl } = await import("@/app/dashboard/credit-codes/actions");
+    result.redeemUrl = await getRedeemUrl();
+  } catch {
+    result.redeemUrl = "https://fapi.leileihog.top";
   }
 
   return result;

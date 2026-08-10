@@ -8,6 +8,21 @@ import { importCodesSchema } from "./schema";
 
 const CREDIT_CODES_TAG = "dashboard-credit-codes";
 
+/** 公益站额度兑换入口兜底地址（后台未配置时使用） */
+export const DEFAULT_REDEEM_URL = "https://fapi.leileihog.top";
+
+/** 读取公益站额度兑换入口地址：优先后台配置，未配置则兜底默认地址 */
+export async function getRedeemUrl(): Promise<string> {
+  try {
+    const cfg = await prisma.creditActivityConfig.findUnique({
+      where: { id: "singleton" },
+    });
+    return cfg?.redeemUrl?.trim() || DEFAULT_REDEEM_URL;
+  } catch {
+    return DEFAULT_REDEEM_URL;
+  }
+}
+
 /** 后台敏感操作前置校验：必须是 ADMIN 角色，否则抛错（Server Action 是公开可调用端点） */
 async function assertAdmin() {
   const user = await getCurrentUser();
@@ -300,4 +315,20 @@ export async function setActiveBatch(batchId: string | null) {
   revalidateTag(CREDIT_CODES_TAG);
   revalidatePath("/dashboard/credit-codes");
   return { success: true };
+}
+
+/** 设置公益站额度兑换入口地址（空字符串表示清除，回落到默认兜底地址） */
+export async function setRedeemUrl(url: string) {
+  await assertAdmin();
+  const trimmed = (url || "").trim();
+  if (trimmed && !/^https?:\/\/.+/.test(trimmed)) {
+    throw new Error("请输入合法的 http(s) 链接");
+  }
+  await prisma.creditActivityConfig.upsert({
+    where: { id: "singleton" },
+    update: { redeemUrl: trimmed || null },
+    create: { id: "singleton", redeemUrl: trimmed || null },
+  });
+  revalidatePath("/dashboard/public-stations");
+  return { success: true, redeemUrl: trimmed || DEFAULT_REDEEM_URL };
 }

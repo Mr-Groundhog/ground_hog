@@ -104,27 +104,10 @@ export function PublicStationsList({ data, total, page, limit, totalPages }: Pro
         expireAt: new Date(expireAt).toISOString(),
         reviewNote: reviewNote || undefined,
       });
-      // 审核通过后将额度码等信息发送到用户邮箱
-      try {
-        const resp = await fetch("/api/send-station-approval", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: res.email,
-            url: res.url,
-            creditCode: res.creditCode,
-            amount: res.amount,
-            expireAt: res.expireAt,
-          }),
-        });
-        const json = await resp.json();
-        if (!json.success) {
-          toast.warning(`已通过审核，但邮件发送失败：${json.message}`);
-        } else {
-          toast.success("已通过，额度码已发送至用户邮箱");
-        }
-      } catch {
-        toast.warning("已通过审核，但邮件发送请求失败");
+      if (res.emailSent) {
+        toast.success("已通过，额度码已发送至用户邮箱");
+      } else {
+        toast.warning(`已通过审核${res.emailError ? `，但邮件发送失败：${res.emailError}` : "，但邮件发送失败"}（可稍后重发）`);
       }
       setReviewOpen(false);
     } catch (error: any) {

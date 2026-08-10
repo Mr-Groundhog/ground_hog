@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import { sendStationApproveEmail } from "@/lib/email-service";
+import { getRedeemUrl } from "@/app/dashboard/credit-codes/actions";
 import { headers } from "next/headers";
 
 const PUBLIC_STATIONS_TAG = "dashboard-public-stations";
@@ -63,9 +64,9 @@ export async function getPublicStations({
 }
 
 /**
- * 审核通过：更新记录为 APPROVED，写入管理员手动粘贴的额度码、额度、失效时间。
- * 发邮件由前端 fetch /api/send-station-approval 完成（route 内取 IP），
- * 这里仅返回发邮件所需的字段。
+ * 审核通过：更新记录为 APPROVED，写入管理员手动粘贴的额度码、额度、失效时间，
+ * 并自动向提交者邮箱发送通知邮件（邮件跳转链接取后台配置的兑换入口地址）。
+ * 邮件失败不回滚审核状态，可稍后通过「重发邮件」重新触发。
  */
 export async function approveStation(
   id: string,
@@ -101,14 +102,38 @@ export async function approveStation(
   revalidateTag(PUBLIC_STATIONS_TAG);
   revalidatePath("/dashboard/public-stations");
 
+  // 取后台配置的兑换入口地址（兜底默认地址）
+  const redeemUrl = await getRedeemUrl();
+
+  const h = await headers();
+  let ip = h.get("x-forwarded-for") || h.get("x-real-ip") || "127.0.0.1";
+  if (typeof ip === "string" && ip.includes(",")) {
+    ip = ip.split(",")[0].trim();
+  }
+
+  let emailSent = false;
+  let emailError: string | undefined;
+  try {
+    await sendStationApproveEmail(
+      updated.email,
+      {
+        url: redeemUrl,
+        creditCode: updated.creditCode,
+        amount: updated.amount.toString(),
+        expireAt: updated.expireAt.toISOString(),
+      },
+      ip
+    );
+    emailSent = true;
+  } catch (error: any) {
+    emailError = error?.message || "邮件发送失败";
+    console.error("[approveStation] 邮件发送失败 stationId=", id, emailError);
+  }
+
   return {
     success: true,
-    // 供前端发邮件使用
-    email: updated.email,
-    url: updated.url,
-    creditCode: updated.creditCode,
-    amount: updated.amount.toString(),
-    expireAt: updated.expireAt.toISOString(),
+    emailSent,
+    emailError,
   };
 }
 
@@ -176,7 +201,7 @@ export async function resendStationEmail(id: string) {
   const result = await sendStationApproveEmail(
     station.email,
     {
-      url: station.url,
+      url: await getRedeemUrl(),
       creditCode: station.creditCode,
       amount: station.amount ? station.amount.toString() : "0",
       expireAt: station.expireAt

@@ -152,7 +152,7 @@ export const adminRoutes: AdminRoute[] = [
     isExternal: false,
   },
   {
-    name: "公益站管理",
+    name: "公益key管理",
     path: "/dashboard/public-stations",
     icon: HandHeart,
     type: "MENU",

@@ -1,10 +1,9 @@
 import {
-  Body, Container, Head, Heading, Html, Link, Preview, Section, Text, Hr
+  Body, Container, Head, Html, Link, Preview, Section, Text, Hr
 } from '@react-email/components';
-import * as React from 'react';
 
 interface StationApproveTemplateProps {
-  /// 站点地址（用户跳转目标）
+  /// 额度兑换入口地址（后台配置，兜底默认地址）
   url: string;
   /// 额度码（管理员手动粘贴，明文下发）
   creditCode: string;
@@ -35,14 +34,10 @@ export const StationApproveTemplate = ({
     <Preview>🎉 你的公益站申请已通过，额度码已下发</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={logoSection}>
-          <Heading style={h1}>HOG&apos;S PLATFORM</Heading>
-        </Section>
-
         <Section style={section}>
-          <Text style={text}>你好，站长：</Text>
+          <Text style={text}>您好：</Text>
           <Text style={text}>
-            恭喜！你提交的公益站申请已经通过审核。以下是本次下发的权益信息，请在
+            恭喜！您的共建公益key已经通过审核。以下是本次下发的权益信息，请在
             <strong>失效时间前</strong>完成兑换。
           </Text>
 
@@ -88,13 +83,16 @@ export const StationApproveTemplate = ({
 // 样式配置（普通简洁风）
 const main = { backgroundColor: '#f9fafb', fontFamily: 'sans-serif' };
 const container = { margin: '0 auto', padding: '40px 20px', maxWidth: '520px' };
-const logoSection = { textAlign: 'center' as const, marginBottom: '24px' };
-const h1 = { color: '#111827', fontSize: '24px', textAlign: 'center' as const, letterSpacing: '2px', margin: '0' };
 const section = { backgroundColor: '#ffffff', padding: '32px', borderRadius: '12px', border: '1px solid #e5e7eb' };
 const text = { color: '#4b5563', fontSize: '16px', lineHeight: '26px' };
 const codeBox = { backgroundColor: '#f3f4f6', borderRadius: '10px', padding: '20px', textAlign: 'center' as const, margin: '24px 0' };
 const codeLabel = { color: '#9ca3af', fontSize: '12px', margin: '0 0 10px', letterSpacing: '1px' };
-const codeValue = { color: '#111827', fontSize: '22px', letterSpacing: '2px', fontWeight: 'bold' as const, margin: '0' };
+const codeValue = {
+  color: '#111827', fontSize: '22px', letterSpacing: '2px', fontWeight: 'bold' as const, margin: '0',
+  // 允许用户在邮件客户端中选中/长按复制额度码
+  userSelect: 'text' as const, WebkitUserSelect: 'text' as const, MozUserSelect: 'text' as const, MsUserSelect: 'text' as const,
+  wordBreak: 'break-all' as const, cursor: 'text' as const
+};
 const infoGrid = { margin: '0 0 8px' };
 const infoRow = { color: '#4b5563', fontSize: '15px', margin: '8px 0' };
 const infoLabel = { color: '#9ca3af' };

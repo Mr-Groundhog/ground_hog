@@ -141,9 +141,9 @@ export function StationFab() {
     try {
       await navigator.clipboard.writeText(code);
       toast.success("已复制额度码");
-      // 复制后询问是否跳转公益站
-      if (queryResult?.url) {
-        setJumpUrl(queryResult.url);
+      // 复制后询问是否跳转兑换入口（优先后台配置地址，兜底默认）
+      if (queryResult?.redeemUrl) {
+        setJumpUrl(queryResult.redeemUrl);
         setJumpOpen(true);
       }
     } catch {

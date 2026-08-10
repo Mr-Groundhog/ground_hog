@@ -423,6 +423,8 @@ model CreditActivityConfig {
   id            String   @id @default("singleton")
   /// 当前活动抽奖批次 id（null 表示不限批次，从全部 AVAILABLE 中抽取）
   activeBatchId String?  @map("active_batch_id")
+  /// 公益站额度兑换入口地址（邮件按钮/前台跳转优先使用，未配置则兜底默认地址）
+  redeemUrl     String?  @map("redeem_url")
   updatedAt     DateTime @db.Timestamptz @updatedAt @map("updated_at")
 
   @@map("credit_activity_config")

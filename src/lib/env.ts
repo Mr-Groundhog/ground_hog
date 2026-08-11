@@ -1,8 +1,11 @@
 // 环境变量配置
 export const env = {
-  // Gmail 配置
-  GMAIL_USER: process.env.GMAIL_USER || '',
-  GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD || '',
+  // Brevo (Sendinblue) 配置
+  BREVO_API_KEY: process.env.BREVO_API_KEY || '',
+  // Brevo SMTP 中继账户（用于发件人邮箱与 SMTP 回退，通常格式为 contact@yourdomain.com 或 Brevo 提供的 smtp 用户名）
+  BREVO_SMTP_USER: process.env.BREVO_SMTP_USER || '',
+  // 经过 Brevo 验证的发件人邮箱（必须在 Brevo 后台 Senders 中验证）
+  BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || '',
   
   // 网站配置
   SITE_NAME: process.env.SITE_NAME || '一梦五千年',

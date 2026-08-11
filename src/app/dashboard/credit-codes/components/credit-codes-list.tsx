@@ -31,6 +31,8 @@ import {
   ChevronDown,
   ChevronRight,
   Star,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 import {
   importCreditCodes,
@@ -38,6 +40,8 @@ import {
   deleteCreditCode,
   setActiveBatch,
   getBatchCodes,
+  batchDisableCreditCodes,
+  batchDeleteCreditCodes,
 } from "../actions";
 import { toast } from "sonner";
 import { useLoadingStore } from "@/store/loading-store";
@@ -75,6 +79,10 @@ export function CreditCodesList({ batches, activeBatchId }: Props) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [batchCodes, setBatchCodes] = useState<Record<string, any[]>>({});
   const [activeSelect, setActiveSelect] = useState(activeBatchId ?? "");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchBusy, setBatchBusy] = useState(false);
+  const [showBatchDisable, setShowBatchDisable] = useState(false);
+  const [showBatchDelete, setShowBatchDelete] = useState(false);
 
   // 前端解析 txt：每行一个码，自动去除空白与空行
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,6 +157,65 @@ export function CreditCodesList({ batches, activeBatchId }: Props) {
     }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // 当前展开批次明细的全选/取消全选
+  const toggleSelectAll = (rows: any[]) => {
+    const ids = rows.map((r) => r.id);
+    const allSelected = ids.every((id) => selectedIds.has(id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) ids.forEach((id) => next.delete(id));
+      else ids.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const runBatchDisable = async () => {
+    setBatchBusy(true);
+    startLoading();
+    try {
+      const res = await batchDisableCreditCodes(Array.from(selectedIds));
+      toast.success(
+        `已停用 ${res.disabled} 个额度码${res.skipped ? `，跳过 ${res.skipped} 个（已领取/已停用）` : ""}`
+      );
+      setShowBatchDisable(false);
+      clearSelection();
+      router.refresh();
+    } catch (error: any) {
+      toast.error(error?.message || "批量停用失败");
+    } finally {
+      stopLoading();
+      setBatchBusy(false);
+    }
+  };
+
+  const runBatchDelete = async () => {
+    setBatchBusy(true);
+    startLoading();
+    try {
+      const res = await batchDeleteCreditCodes(Array.from(selectedIds));
+      toast.success(`已删除 ${res.deleted} 个额度码`);
+      setShowBatchDelete(false);
+      clearSelection();
+      router.refresh();
+    } catch (error: any) {
+      toast.error(error?.message || "批量删除失败");
+    } finally {
+      stopLoading();
+      setBatchBusy(false);
+    }
+  };
+
   const handleSetActive = async (batchId: string) => {
     startLoading();
     try {
@@ -219,6 +286,40 @@ export function CreditCodesList({ batches, activeBatchId }: Props) {
         </Button>
       </div>
 
+      {/* 批量操作栏：展开明细后勾选额度码出现 */}
+      {selectedIds.size > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-md border border-cyan-900/60 bg-cyan-950/20 p-3">
+          <span className="text-sm text-cyan-200">已选 {selectedIds.size} 个额度码</span>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-zinc-700 text-zinc-200 hover:bg-zinc-800"
+            onClick={() => setShowBatchDisable(true)}
+            disabled={batchBusy}
+          >
+            <Ban className="mr-2 h-4 w-4" /> 批量停用
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-red-800 text-red-300 hover:bg-red-950/40"
+            onClick={() => setShowBatchDelete(true)}
+            disabled={batchBusy}
+          >
+            <Trash2 className="mr-2 h-4 w-4" /> 批量删除
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-zinc-400 hover:text-zinc-200"
+            onClick={clearSelection}
+            disabled={batchBusy}
+          >
+            取消选择
+          </Button>
+        </div>
+      )}
+
       {/* 批次卡片列表（默认折叠） */}
       <div className="space-y-2">
         {batches.length === 0 ? (
@@ -279,6 +380,20 @@ export function CreditCodesList({ batches, activeBatchId }: Props) {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-10">
+                              <button
+                                type="button"
+                                title="全选本批次"
+                                onClick={() => toggleSelectAll(batchCodes[b.batchId] ?? [])}
+                                className="text-zinc-400 hover:text-zinc-100"
+                              >
+                                {(batchCodes[b.batchId] ?? []).every((r) => selectedIds.has(r.id)) ? (
+                                  <CheckSquare className="h-4 w-4" />
+                                ) : (
+                                  <Square className="h-4 w-4" />
+                                )}
+                              </button>
+                            </TableHead>
                             <TableHead>额度码</TableHead>
                             <TableHead>额度</TableHead>
                             <TableHead>状态</TableHead>
@@ -288,7 +403,24 @@ export function CreditCodesList({ batches, activeBatchId }: Props) {
                         </TableHeader>
                         <TableBody>
                           {(batchCodes[b.batchId] ?? []).map((c) => (
-                            <TableRow key={c.id}>
+                            <TableRow
+                              key={c.id}
+                              className={selectedIds.has(c.id) ? "bg-cyan-950/20" : ""}
+                            >
+                              <TableCell className="w-10">
+                                <button
+                                  type="button"
+                                  title="选择"
+                                  onClick={() => toggleSelect(c.id)}
+                                  className="text-zinc-400 hover:text-zinc-100"
+                                >
+                                  {selectedIds.has(c.id) ? (
+                                    <CheckSquare className="h-4 w-4 text-cyan-400" />
+                                  ) : (
+                                    <Square className="h-4 w-4" />
+                                  )}
+                                </button>
+                              </TableCell>
                               <TableCell className="font-mono font-medium">{c.code}</TableCell>
                               <TableCell>
                                 <span className="text-emerald-500 font-semibold">${c.amount}</span>
@@ -412,6 +544,54 @@ export function CreditCodesList({ batches, activeBatchId }: Props) {
               onClick={handleImport}
             >
               导入奖池
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 批量停用确认 */}
+      <Dialog open={showBatchDisable} onOpenChange={setShowBatchDisable}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>批量停用额度码</DialogTitle>
+            <DialogDescription>
+              即将停用选中的 {selectedIds.size} 个额度码。已领取/已停用的码将被自动跳过，仅停用仍「可领取」的码。此操作不可直接恢复，但可重新导入。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" onClick={() => setShowBatchDisable(false)} disabled={batchBusy}>
+              取消
+            </Button>
+            <Button
+              className="bg-orange-600 hover:bg-orange-500 text-white"
+              onClick={runBatchDisable}
+              disabled={batchBusy}
+            >
+              {batchBusy ? "处理中…" : "确认停用"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 批量删除确认 */}
+      <Dialog open={showBatchDelete} onOpenChange={setShowBatchDelete}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>批量删除额度码</DialogTitle>
+            <DialogDescription>
+              即将永久删除选中的 {selectedIds.size} 个额度码。已失效或已使用的 key 也一并删除，删除后不可恢复。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" onClick={() => setShowBatchDelete(false)} disabled={batchBusy}>
+              取消
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-500 text-white"
+              onClick={runBatchDelete}
+              disabled={batchBusy}
+            >
+              {batchBusy ? "处理中…" : "确认删除"}
             </Button>
           </div>
         </DialogContent>

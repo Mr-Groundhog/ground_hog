@@ -24,11 +24,11 @@
 - **数据获取**: TanStack Query
 - **表单**: React Hook Form + Zod 验证
 - **认证**: JWT + Argon2 密码哈希
-- **邮件**: Nodemailer + Gmail SMTP
+- **邮件**: Brevo (Sendinblue) HTTP API
 
 ## 📧 邮件功能
 
-本项目已集成 Gmail 邮件发送功能，支持：
+本项目已集成 Brevo 邮件发送功能，支持：
 
 - 普通邮件发送
 - 验证码邮件模板
@@ -77,9 +77,10 @@ ground_hog/
 
 2. 编辑 `.env` 文件，配置必要信息：
    ```env
-   # Gmail 邮件配置
-   GMAIL_USER=your-email@gmail.com
-   GMAIL_APP_PASSWORD=your-app-password
+   # Brevo 邮件配置
+   BREVO_API_KEY=your-brevo-api-key
+   BREVO_SENDER_EMAIL=contact@yourdomain.com
+   BREVO_SMTP_USER=your-smtp-user@yourdomain.com
    
    # 数据库配置
    DATABASE_URL=postgresql://user:password@localhost:5432/dbname

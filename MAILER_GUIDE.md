@@ -1,8 +1,8 @@
-# Gmail 邮件发送功能使用指南
+# Brevo (Sendinblue) 邮件发送功能使用指南
 
 ## 📧 功能介绍
 
-本项目已集成 Gmail 邮件发送功能，支持以下类型的邮件发送：
+本项目已集成 Brevo 邮件发送功能（通过 Brevo HTTP API），支持以下类型的邮件发送：
 
 1. **普通邮件发送** - 自定义邮件内容
 2. **验证码邮件** - 美观的验证码模板
@@ -18,27 +18,30 @@
 cp .env.example .env
 ```
 
-### 2. 配置 Gmail 凭据
+### 2. 配置 Brevo 凭据
 
 在 `.env` 文件中填写以下信息：
 
 ```env
-# Gmail 账户邮箱地址
-GMAIL_USER=your-email@gmail.com
+# Brevo API Key（在 Brevo 后台 https://app.brevo.com/ 设置 > SMTP & API 中获取）
+BREVO_API_KEY=your-brevo-api-key
 
-# Gmail 应用专用密码（重要：不是账户密码）
-GMAIL_APP_PASSWORD=your-app-password
+# 经过 Brevo 验证的发件人邮箱（必须在 Brevo 后台 Senders 中验证）
+BREVO_SENDER_EMAIL=contact@yourdomain.com
+
+# Brevo SMTP 中继用户名（通常为你的登录邮箱或 SMTP 用户名，用于回退与日志识别）
+BREVO_SMTP_USER=your-smtp-user@yourdomain.com
 ```
 
-### 3. 获取 Gmail 应用专用密码
+### 3. 获取 Brevo API Key 与配置发件人
 
-1. 登录你的 Google 账户
-2. 进入 [Google 账户安全设置](https://myaccount.google.com/security)
-3. 启用「两步验证」
-4. 在「两步验证」下方找到「应用专用密码」
-5. 选择应用为「邮件」，设备为「其他（自定义名称）」
-6. 输入名称如「Ground Hog」，点击生成
-7. 复制生成的 16 位密码填入 `GMAIL_APP_PASSWORD`
+1. 注册并登录 [Brevo](https://app.brevo.com/)
+2. 进入 **SMTP & API**（设置 → SMTP & API）
+3. 在 **API keys** 标签下点击 **Generate a new API key**，复制生成的 Key 填入 `BREVO_API_KEY`
+4. 进入 **Senders & IP**（设置 → Senders），添加并验证你的发件人域名/邮箱（如 `contact@yourdomain.com`）
+5. 将验证过的邮箱填入 `BREVO_SENDER_EMAIL`
+
+> 注意：Brevo 免费版（Free）每天有发送额度限制，且要求发件人必须经过验证。
 
 ## 🚀 API 接口使用
 
@@ -175,8 +178,9 @@ npx tsx scripts/test-mailer.ts
 
 **Q: 邮件发送失败怎么办？**
 A: 检查以下几点：
-- Gmail 凭据是否正确配置
-- 应用专用密码是否有效
+- Brevo API Key 是否正确配置（`BREVO_API_KEY`）
+- 发件人邮箱是否已在 Brevo 后台验证（`BREVO_SENDER_EMAIL`）
+- 是否超出 Brevo 每日发送额度
 - 网络连接是否正常
 - 查看控制台错误日志
 

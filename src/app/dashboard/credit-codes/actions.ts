@@ -148,6 +148,39 @@ export async function deleteCreditCode(id: string) {
   return { success: true };
 }
 
+/** 批量停用额度码：仅停用未领取（AVAILABLE）的码，已领取/已停用的忽略 */
+export async function batchDisableCreditCodes(ids: string[]) {
+  await assertAdmin();
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { success: true, disabled: 0, skipped: 0 };
+  }
+  const res = await prisma.creditCode.updateMany({
+    where: { id: { in: ids }, status: "AVAILABLE" },
+    data: { status: "DISABLED" },
+  });
+  revalidateTag(CREDIT_CODES_TAG);
+  revalidateTag(CREDIT_BATCHES_TAG);
+  revalidatePath("/dashboard/credit-codes");
+  return {
+    success: true,
+    disabled: res.count,
+    skipped: ids.length - res.count,
+  };
+}
+
+/** 批量删除额度码 */
+export async function batchDeleteCreditCodes(ids: string[]) {
+  await assertAdmin();
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { success: true, deleted: 0 };
+  }
+  const res = await prisma.creditCode.deleteMany({ where: { id: { in: ids } } });
+  revalidateTag(CREDIT_CODES_TAG);
+  revalidateTag(CREDIT_BATCHES_TAG);
+  revalidatePath("/dashboard/credit-codes");
+  return { success: true, deleted: res.count };
+}
+
 /* ----------------------------- 评论管理 ----------------------------- */
 
 const CREDIT_COMMENTS_TAG = "dashboard-credit-comments";

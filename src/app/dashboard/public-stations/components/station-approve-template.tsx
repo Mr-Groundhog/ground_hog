@@ -37,7 +37,7 @@ export const StationApproveTemplate = ({
         <Section style={section}>
           <Text style={text}>您好：</Text>
           <Text style={text}>
-            恭喜！您的共建公益key已经通过审核。以下是本次下发的权益信息，请在
+            恭喜！您的公益key分享已经通过审核。以下是本次下发的权益信息，请在
             <strong>失效时间前</strong>完成兑换。
           </Text>
 

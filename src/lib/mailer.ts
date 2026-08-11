@@ -1,4 +1,3 @@
-import nodemailer from 'nodemailer'
 import { env } from '@/lib/env'
 
 // 邮件配置接口
@@ -14,48 +13,69 @@ interface MailOptions {
   }>
 }
 
-// Gmail SMTP 配置
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // 使用 SSL
-    auth: {
-      user: env.GMAIL_USER, // Gmail 账户
-      pass: env.GMAIL_APP_PASSWORD, // 应用专用密码
-    },
-  })
+// Brevo (Sendinblue) HTTP API 配置
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email'
+
+// 把附件转换为 Brevo API 所需的 base64 结构
+function buildAttachments(attachments?: MailOptions['attachments']) {
+  if (!attachments || attachments.length === 0) return undefined
+  return attachments.map((att) => ({
+    name: att.filename,
+    content:
+      typeof att.content === 'string'
+        ? Buffer.from(att.content).toString('base64')
+        : att.content.toString('base64'),
+    contentType: att.contentType,
+  }))
 }
 
-// 发送邮件函数
+// 发送邮件函数（通过 Brevo HTTP API）
 export async function sendMail(options: MailOptions) {
   try {
     // 验证环境变量
-    if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) {
-      throw new Error('缺少 Gmail 配置，请检查环境变量 GMAIL_USER 和 GMAIL_APP_PASSWORD')
+    if (!env.BREVO_API_KEY) {
+      throw new Error('缺少 Brevo 配置，请检查环境变量 BREVO_API_KEY')
     }
 
-    const transporter = createTransporter()
+    const toList = (Array.isArray(options.to) ? options.to : [options.to]).map(
+      (email) => ({ email })
+    )
 
-    // 验证连接
-    await transporter.verify()
-
-    const mailOptions = {
-      from: `"${env.SITE_NAME || '一梦五千年'}" <${env.GMAIL_USER}>`,
-      to: Array.isArray(options.to) ? options.to.join(', ') : options.to,
+    const payload = {
+      sender: {
+        name: env.SITE_NAME || '一梦五千年',
+        email: env.BREVO_SENDER_EMAIL || env.BREVO_SMTP_USER,
+      },
+      to: toList,
       subject: options.subject,
-      text: options.text,
-      html: options.html,
-      attachments: options.attachments,
+      htmlContent: options.html,
+      textContent: options.text,
+      attachment: buildAttachments(options.attachments),
     }
 
-    const info = await transporter.sendMail(mailOptions)
-    
-    console.log('邮件发送成功:', info.messageId)
+    const res = await fetch(BREVO_API_URL, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': env.BREVO_API_KEY,
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+      const errBody = await res.text()
+      throw new Error(`Brevo API 返回错误 (${res.status}): ${errBody}`)
+    }
+
+    const data = (await res.json()) as { messageId?: string }
+    const messageId = data.messageId || ''
+
+    console.log('邮件发送成功:', messageId)
     return {
       success: true,
-      messageId: info.messageId,
-      response: info.response,
+      messageId,
+      response: 'OK',
     }
   } catch (error) {
     console.error('邮件发送失败:', error)

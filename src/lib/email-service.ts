@@ -76,7 +76,7 @@ export async function sendFriendApproveEmail(
     // 记录邮件发送尝试
     emailLog = await prisma.emailLog.create({
       data: {
-        fromEmail: process.env.GMAIL_USER || "",
+        fromEmail: process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SMTP_USER || "",
         toEmail: toEmail,
         subject: "🎉 友链申请已通过",
         content: emailHtml,
@@ -154,7 +154,7 @@ export async function sendStationApproveEmail(
   try {
     emailLog = await prisma.emailLog.create({
       data: {
-        fromEmail: process.env.GMAIL_USER || "",
+        fromEmail: process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SMTP_USER || "",
         toEmail,
         subject: "🎉 你的公益站申请已通过，额度码已下发",
         content: emailHtml,

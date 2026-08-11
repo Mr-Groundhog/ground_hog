@@ -10,7 +10,7 @@ export const FriendApproveTemplate = ({ siteName }: { siteName: string }) => (
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
-          <Heading style={h1}>HOG'S BLOG</Heading>
+          <Heading style={h1}>一梦五千年</Heading>
         </Section>
         
         <Section style={section}>
